@@ -17,46 +17,72 @@ const featureList = [
   },
 ];
 
+const heroStats = [
+  { value: '+6', label: 'Cidades monitoradas' },
+  { value: '1s', label: 'Tempo médio de resposta' },
+  { value: '100%', label: 'Integração com API oficial' },
+];
+
+const trustBadges = ['Cobertura oficial', 'Sem limites ocultos', 'Painel responsivo'];
+
 export function LandingPage() {
   return (
     <div className="landing">
-      <section className="hero">
-        <p className="eyebrow">Albion Online • Inteligência de Mercado</p>
-        <h1>
-          Controle total dos preços do mercado com <span>visual profissional</span>
-        </h1>
-        <p className="hero-subtitle">
-          Consulte valores em tempo real, mantenha seus itens sincronizados e descubra onde vender com
-          o melhor retorno.
-        </p>
+      <section className="hero hero-grid">
+        <div className="hero-copy">
+          <p className="eyebrow hero-eyebrow">Albion Online • Inteligência de Mercado</p>
+          <h1>
+            Controle total dos preços do mercado com <span>visual profissional</span>
+          </h1>
+          <p className="hero-subtitle">
+            Consulte valores em tempo real, mantenha seus itens sincronizados e descubra onde vender com
+            o melhor retorno.
+          </p>
 
-        <div className="hero-actions">
-          <Link to="/signup" className="primary-button">
-            Começar agora
-          </Link>
-          <Link to="/dashboard" className="ghost-button">
-            Ver painel
-          </Link>
+          <div className="hero-actions">
+            <Link to="/signup" className="primary-button">
+              Começar agora
+            </Link>
+            <Link to="/dashboard" className="ghost-button">
+              Ver painel
+            </Link>
+          </div>
+
+          <div className="hero-meta">
+            {trustBadges.map((badge) => (
+              <span className="hero-meta-item" key={badge}>
+                {badge}
+              </span>
+            ))}
+          </div>
         </div>
 
-        <div className="hero-highlight">
-          <div>
-            <strong>+6</strong>
-            <span>Cidades monitoradas</span>
+        <div className="hero-panel">
+          <div className="hero-panel-header">
+            <span className="hero-panel-title">Monitoramento instantâneo</span>
+            <span className="pill hero-pill">Tempo real</span>
           </div>
-          <div>
-            <strong>1s</strong>
-            <span>Tempo médio de resposta</span>
+          <div className="hero-stats">
+            {heroStats.map((stat) => (
+              <div key={stat.label} className="hero-stat">
+                <strong>{stat.value}</strong>
+                <span>{stat.label}</span>
+              </div>
+            ))}
           </div>
-          <div>
-            <strong>100%</strong>
-            <span>Integração com API oficial</span>
-          </div>
+          <p className="hero-panel-description">
+            Sem sobrecarga visual: apenas os indicadores essenciais para você decidir onde comprar ou vender
+            com maior margem.
+          </p>
         </div>
       </section>
 
       <section className="features">
-        <h2>Por que usar o Market Albion Online?</h2>
+        <div className="section-heading">
+          <p className="eyebrow">Recursos principais</p>
+          <h2>Por que usar o Market Albion Online?</h2>
+          <p>Estrutura totalmente responsiva, centralizada e com o mesmo padrão de cor do restante do app.</p>
+        </div>
         <div className="feature-grid">
           {featureList.map((feature) => (
             <Card key={feature.title} title={feature.title} description={feature.description}>
