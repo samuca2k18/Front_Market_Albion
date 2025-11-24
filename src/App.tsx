@@ -14,7 +14,14 @@ function App() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route index element={<LandingPage />} />
+        <Route
+          index
+          element={
+            <GuestRoute>
+              <LandingPage />
+            </GuestRoute>
+          }
+        />
         <Route
           path="login"
           element={

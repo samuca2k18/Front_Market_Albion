@@ -2,13 +2,14 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 export function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { token, isBootstrapping } = useAuth();
+  const { token, isBootstrapping, sessionExpiresAt } = useAuth();
+  const isExpired = sessionExpiresAt ? Date.now() > sessionExpiresAt : false;
 
   if (isBootstrapping) {
     return null;
   }
 
-  if (token) {
+  if (token && !isExpired) {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -27,7 +27,7 @@ Interface web profissional para consumir a API do projeto [Market_Albion_Online]
    cp env.example .env.local
    ```
 
-   Ajuste `VITE_API_BASE_URL` para apontar para sua instância FastAPI.
+   Ajuste `VITE_API_BASE_URL` para apontar para sua instância FastAPI. Caso não altere nada, o frontend utilizará automaticamente a API pública hospedada em [`https://market-albion-online.onrender.com`](https://market-albion-online.onrender.com).
 
 2. Instale as dependências:
 

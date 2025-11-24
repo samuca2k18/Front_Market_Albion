@@ -20,6 +20,7 @@ export function Header() {
   };
 
   const availableItems = navItems.filter((item) => (item.protected ? !!token : true));
+  const hasNavigation = availableItems.length > 0;
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -34,30 +35,34 @@ export function Header() {
           <span className="brand-tagline">Mercado em tempo real</span>
         </div>
 
-        <button
-          type="button"
-          className="menu-toggle"
-          aria-expanded={isMenuOpen}
-          aria-label="Alternar navegação"
-          onClick={() => setIsMenuOpen((state) => !state)}
-        >
-          <span />
-          <span />
-        </button>
+        {hasNavigation && (
+          <button
+            type="button"
+            className="menu-toggle"
+            aria-expanded={isMenuOpen}
+            aria-label="Alternar navegação"
+            onClick={() => setIsMenuOpen((state) => !state)}
+          >
+            <span />
+            <span />
+          </button>
+        )}
 
         <div className="header-controls">
-          <nav className={`main-nav${isMenuOpen ? ' open' : ''}`}>
-            {availableItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-                onClick={closeMenu}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          {hasNavigation && (
+            <nav className={`main-nav${isMenuOpen ? ' open' : ''}`}>
+              {availableItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+                  onClick={closeMenu}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+          )}
 
           <div className="header-actions">
             {user ? (

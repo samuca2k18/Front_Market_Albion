@@ -1,10 +1,14 @@
 import axios, { AxiosError } from 'axios';
 
+const DEFAULT_API_URL = 'https://market-albion-online.onrender.com';
+
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://localhost:8000';
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || DEFAULT_API_URL;
 
 export const STORAGE_KEYS = {
   token: 'albion_market_token',
+  sessionExpiry: 'albion_market_session_expiry',
+  user: 'albion_market_user',
 };
 
 export const api = axios.create({
@@ -54,5 +58,5 @@ export function buildQuery(params: Record<string, string | number | undefined | 
   return search.toString();
 }
 
-export { API_BASE_URL };
+export { API_BASE_URL, DEFAULT_API_URL };
 
