@@ -4,7 +4,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { Card } from '../components/common/Card';
 import '../components/common/common.css';
 import { fetchAlbionPrice, fetchMyItemsPrices } from '../api/albion';
-import type { PriceFilters } from '../api/types';
+import type { MyItemPrice, PriceFilters } from '../api/types';
 import { ALBION_CITIES, ALBION_ENCHANTMENTS, ALBION_QUALITIES } from '../constants/albion';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
@@ -33,13 +33,15 @@ export function PricesPage() {
     },
   });
 
+  const watchedCities = watch('cities') ?? [];
+
   // BUSCA EM PARALELO
   const priceQueries = useQueries({
     queries: searchCombinations.map(({ item_name, quality }) => ({
-      queryKey: ['price', item_name, quality, watch('cities')],
+      queryKey: ['price', item_name, quality, watchedCities],
       queryFn: () => fetchAlbionPrice({
         item_name,
-        cities: watch('cities').length ? watch('cities') : undefined,
+        cities: watchedCities.length ? watchedCities : undefined,
         quality,
       }),
       enabled: searchCombinations.length > 0,
@@ -57,14 +59,13 @@ export function PricesPage() {
 
     const baseItem = data.item_name.trim().toUpperCase().replace(/@\d+$/, '');
 
-    // Encantamentos
-    const enchantmentsToSearch = data.enchantment === -1 ? [0, 1, 2, 3, 4] : [data.enchantment || 0];
+    const enchantmentFilter = data.enchantment ?? -1;
+    const enchantmentsToSearch = enchantmentFilter === -1 ? [0, 1, 2, 3, 4] : [enchantmentFilter || 0];
 
-    // QUALIDADES — AGORA RESPEITA O FILTRO EXATO!
-    const selectedQuality = data.quality;
-    const qualitiesToSearch = selectedQuality === 0 
-      ? [1, 2, 3, 4, 5]  // "Todas" → busca todas
-      : [selectedQuality]; // Qualquer outra → só essa!
+    const selectedQuality = data.quality ?? 0;
+    const qualitiesToSearch = selectedQuality === 0
+      ? [1, 2, 3, 4, 5]
+      : [selectedQuality];
 
     const combinations = enchantmentsToSearch.flatMap(ench => {
       const suffix = ench === 0 ? '' : `@${ench}`;
@@ -103,12 +104,12 @@ export function PricesPage() {
   }, [priceQueries, minPrice]);
 
   const isSearching = priceQueries.some(q => q.isFetching);
-  const myItems = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
+  const myItems: MyItemPrice[] = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
   const myItemsFiltered = useMemo(() => {
-    return myItems.filter(item => item.price >= minPrice).sort((a, b) => a.price - b.price);
+    return myItems
+      .filter(item => (item.price ?? 0) >= minPrice)
+      .sort((a, b) => a.price - b.price);
   }, [myItems, minPrice]);
-
-  const watchedCities = watch('cities');
 
   return (
     <div className="prices-page">

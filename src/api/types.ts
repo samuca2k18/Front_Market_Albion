@@ -49,9 +49,13 @@ export interface AlbionPriceResponse {
 
 export interface MyItemPrice {
   item_name: string;
-  cheapest_city: string;
-  cheapest_price: number;
+  price: number;
+  city?: string;
+  quality: number;
+  enchantment: number;
   last_update?: string;
+  cheapest_city?: string;
+  cheapest_price?: number;
 }
 
 export interface PriceFilters {

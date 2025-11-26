@@ -4,7 +4,7 @@ import { Card } from '../components/common/Card';
 import '../components/common/common.css';
 import { createItem, listItems, deleteItem } from '../api/items';
 import { fetchMyItemsPrices } from '../api/albion';
-import type { ItemPayload } from '../api/types';
+import type { ItemPayload, MyItemPrice } from '../api/types';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage'; // IMPORT DA IMAGEM!
 
@@ -55,10 +55,10 @@ export function DashboardPage() {
   };
 
   const trackedItems = itemsQuery.data ?? [];
-  const myPrices = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
+  const myPrices: MyItemPrice[] = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
 
   const lowestPrice = myPrices.length > 0
-    ? myPrices.reduce((min, item) => item.price < min ? item.price : min, myPrices[0].price)
+    ? myPrices.reduce((min, item) => (item.price < min ? item.price : min), myPrices[0].price)
     : null;
 
   return (
@@ -157,8 +157,8 @@ export function DashboardPage() {
                 </thead>
                 <tbody>
                   {myPrices
-                    .sort((a: any, b: any) => a.price - b.price)
-                    .map((item: any) => (
+                    .sort((a, b) => a.price - b.price)
+                    .map((item) => (
                       <tr key={item.item_name}>
                         {/* ITEM COM ÍCONE OFICIAL */}
                         <td className="item-with-image">
