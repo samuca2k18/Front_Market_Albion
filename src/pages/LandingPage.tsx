@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from '../components/common/Card';
+import { useAuth } from '../hooks/useAuth';
 import '../components/common/common.css';
 
 const featureList = [
@@ -13,11 +14,22 @@ const featureList = [
   },
   {
     title: 'Login Seguro',
-    description: 'Autenticação JWT com proteção avançada e auditoria de atividades.',
+    description: 'Autenticação JWT com proteção avançada.',
   },
 ];
 
 export function LandingPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  const handleViewDashboard = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/login', { state: { from: { pathname: '/dashboard' } } });
+    }
+  };
+
   return (
     <div className="landing">
       <section className="hero">
@@ -31,12 +43,15 @@ export function LandingPage() {
         </p>
 
         <div className="hero-actions">
-          <Link to="/signup" className="primary-button">
-            Começar agora
-          </Link>
-          <Link to="/dashboard" className="ghost-button">
+          {!isAuthenticated && (
+            <Link to="/signup" className="primary-button">
+              Começar agora
+            </Link>
+          )}
+
+          <button type="button" className="ghost-button" onClick={handleViewDashboard}>
             Ver painel
-          </Link>
+          </button>
         </div>
 
         <div className="hero-highlight">
@@ -50,7 +65,7 @@ export function LandingPage() {
           </div>
           <div>
             <strong>100%</strong>
-            <span>Integração com API oficial</span>
+            <span>Integração com sua API</span>
           </div>
         </div>
       </section>
@@ -72,4 +87,3 @@ export function LandingPage() {
     </div>
   );
 }
-

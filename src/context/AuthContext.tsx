@@ -1,14 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 import { loginRequest, meRequest, signupRequest } from '../api/auth';
 import { STORAGE_KEYS } from '../api/client';
 import type { AuthCredentials, SignupPayload, User } from '../api/types';
 import { parseApiError } from '../api/client';
+import type { ApiErrorShape } from '../api/client';
 
 interface AuthContextValue {
   user: User | null;
   token: string | null;
   isBootstrapping: boolean;
+  isAuthenticated: boolean;
   login: (credentials: AuthCredentials) => Promise<void>;
   signup: (payload: SignupPayload) => Promise<void>;
   logout: () => void;
@@ -19,7 +28,9 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(STORAGE_KEYS.token));
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem(STORAGE_KEYS.token),
+  );
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   const persistToken = useCallback((value: string | null) => {
@@ -42,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await meRequest();
       setUser(profile);
     } catch (error) {
+      // token inválido ou expirado
       console.error('Erro ao buscar usuário', error);
       persistToken(null);
       setUser(null);
@@ -64,7 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         persistToken(data.access_token);
         await refreshUser();
       } catch (error) {
-        throw parseApiError(error);
+        // sempre lançar ApiErrorShape
+        throw parseApiError(error) as ApiErrorShape;
       }
     },
     [persistToken, refreshUser],
@@ -76,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signupRequest(payload);
         await login({ username: payload.username, password: payload.password });
       } catch (error) {
-        throw parseApiError(error);
+        throw parseApiError(error) as ApiErrorShape;
       }
     },
     [login],
@@ -102,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isBootstrapping,
+      isAuthenticated: !!user,
       login,
       signup,
       logout,
@@ -120,4 +134,3 @@ export function useAuthContext() {
   }
   return context;
 }
-

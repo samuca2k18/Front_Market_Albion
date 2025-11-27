@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate, Link, type Location } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import type { ApiErrorShape } from '../api/client';
 import '../components/common/common.css';
 
 const loginSchema = z.object({
@@ -18,10 +19,13 @@ export function LoginPage() {
   const location = useLocation();
   const { login } = useAuth();
 
-  const mutation = useMutation({
-    mutationFn: login,
+  const mutation = useMutation<void, ApiErrorShape, LoginFormData>({
+    mutationFn: async (formData) => {
+      await login(formData);
+    },
     onSuccess: () => {
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
+      const redirectTo =
+        (location.state as { from?: Location })?.from?.pathname ?? '/dashboard';
       navigate(redirectTo, { replace: true });
     },
   });
@@ -40,30 +44,48 @@ export function LoginPage() {
     <div className="auth-page">
       <div className="card auth-card">
         <h2>Entrar</h2>
-        <p className="muted">Acesse o painel completo e acompanhe seus itens em tempo real.</p>
+        <p className="muted">
+          Acesse o painel completo e acompanhe seus itens em tempo real.
+        </p>
 
         <form className="form" onSubmit={handleSubmit(onSubmit)}>
           <label>
             Usuário
-            <input type="text" placeholder="nome.albion" {...register('username')} />
-            {errors.username && <span className="form-error">{errors.username.message}</span>}
+            <input
+              type="text"
+              placeholder="nome.albion"
+              autoComplete="username"
+              {...register('username')}
+            />
+            {errors.username && (
+              <span className="form-error">{errors.username.message}</span>
+            )}
           </label>
 
           <label>
             Senha
-            <input type="password" placeholder="••••••••" {...register('password')} />
-            {errors.password && <span className="form-error">{errors.password.message}</span>}
+            <input
+              type="password"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              {...register('password')}
+            />
+            {errors.password && (
+              <span className="form-error">{errors.password.message}</span>
+            )}
           </label>
 
           {mutation.error && (
             <p className="form-error">
-              {mutation.error instanceof Error
-                ? mutation.error.message
-                : 'Não foi possível fazer login.'}
+              {mutation.error.message || 'Não foi possível fazer login.'}
             </p>
           )}
 
-          <button type="submit" className="primary-button" disabled={mutation.isPending}>
+          <button
+            type="submit"
+            className="primary-button"
+            disabled={mutation.isPending}
+          >
             {mutation.isPending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
@@ -75,4 +97,3 @@ export function LoginPage() {
     </div>
   );
 }
-

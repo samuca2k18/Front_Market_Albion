@@ -1,11 +1,23 @@
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useQueries, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '../components/common/Card';
 import '../components/common/common.css';
-import { fetchAlbionPrice, fetchMyItemsPrices } from '../api/albion';
-import type { PriceFilters } from '../api/types';
-import { ALBION_CITIES, ALBION_ENCHANTMENTS, ALBION_QUALITIES } from '../constants/albion';
+
+import { fetchAlbionPrices, fetchMyItemsPrices } from '../api/albion';
+import type {
+  PriceFilters,
+  AlbionMarketEntry,
+  MyItemPrice,
+  AlbionPricesResponse,
+} from '../api/types';
+
+import {
+  ALBION_CITIES,
+  ALBION_ENCHANTMENTS,
+  ALBION_QUALITIES,
+} from '../constants/albion';
+
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
 
@@ -13,9 +25,16 @@ interface FiltersForm extends PriceFilters {
   minPrice?: number;
 }
 
+type SearchParams = {
+  items: string[];
+  qualities: number[];
+  cities: string[];
+  minPrice: number;
+};
+
 export function PricesPage() {
+  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
   const [minPrice, setMinPrice] = useState(0);
-  const [searchCombinations, setSearchCombinations] = useState<Array<{ item_name: string; quality: number }>>([]);
 
   const {
     register,
@@ -27,26 +46,32 @@ export function PricesPage() {
     defaultValues: {
       item_name: '',
       cities: [],
-      quality: 0,     // 0 = Todas
+      quality: 0, // 0 = Todas
       enchantment: -1, // -1 = Todos
       minPrice: 0,
     },
   });
 
-  // BUSCA EM PARALELO
-  const priceQueries = useQueries({
-    queries: searchCombinations.map(({ item_name, quality }) => ({
-      queryKey: ['price', item_name, quality, watch('cities')],
-      queryFn: () => fetchAlbionPrice({
-        item_name,
-        cities: watch('cities').length ? watch('cities') : undefined,
-        quality,
-      }),
-      enabled: searchCombinations.length > 0,
-    })),
+  const watchedCities = watch('cities') ?? [];
+
+  // 🔍 Busca de preços avançada (única query, usando /albion/prices)
+  const pricesQuery = useQuery<AlbionPricesResponse | null>({
+    queryKey: ['prices', searchParams],
+    queryFn: () => {
+      if (!searchParams || searchParams.items.length === 0) {
+        return Promise.resolve(null);
+      }
+      return fetchAlbionPrices(
+        searchParams.items,
+        searchParams.cities.length ? searchParams.cities : undefined,
+        searchParams.qualities.length ? searchParams.qualities : undefined,
+      );
+    },
+    enabled: !!searchParams && searchParams.items.length > 0,
   });
 
-  const myPricesQuery = useQuery({
+  // 💾 Meus itens monitorados (/albion/my-items-prices)
+  const myPricesQuery = useQuery<MyItemPrice[]>({
     queryKey: ['my-items-prices'],
     queryFn: fetchMyItemsPrices,
     refetchInterval: 5 * 60 * 1000,
@@ -57,63 +82,72 @@ export function PricesPage() {
 
     const baseItem = data.item_name.trim().toUpperCase().replace(/@\d+$/, '');
 
-    // Encantamentos
-    const enchantmentsToSearch = data.enchantment === -1 ? [0, 1, 2, 3, 4] : [data.enchantment || 0];
+    // Encantamentos → se "Todos", busca 0..4
+    const enchantmentsToSearch =
+      data.enchantment === -1 ? [0, 1, 2, 3, 4] : [data.enchantment || 0];
 
-    // QUALIDADES — AGORA RESPEITA O FILTRO EXATO!
-    const selectedQuality = data.quality;
-    const qualitiesToSearch = selectedQuality === 0 
-      ? [1, 2, 3, 4, 5]  // "Todas" → busca todas
-      : [selectedQuality]; // Qualquer outra → só essa!
+    // Qualidades → 0 = "Todas", senão só a selecionada
+    const selectedQuality = data.quality ?? 0;
+    const qualitiesToSearch =
+      selectedQuality === 0 ? [1, 2, 3, 4, 5] : [selectedQuality];
 
-    const combinations = enchantmentsToSearch.flatMap(ench => {
+    // Monta lista de UniqueNames: T8_BAG, T8_BAG@1, T8_BAG@2...
+    const uniqueItemsSet = new Set<string>();
+    enchantmentsToSearch.forEach((ench) => {
       const suffix = ench === 0 ? '' : `@${ench}`;
-      return qualitiesToSearch.map(q => ({
-        item_name: `${baseItem}${suffix}`,
-        quality: q,
-      }));
+      uniqueItemsSet.add(`${baseItem}${suffix}`);
     });
+    const uniqueItems = Array.from(uniqueItemsSet);
 
-    setSearchCombinations(combinations);
-    setMinPrice(data.minPrice ?? 0);
+    const minPriceValue = data.minPrice ?? 0;
+
+    setSearchParams({
+      items: uniqueItems,
+      qualities: qualitiesToSearch,
+      cities: data.cities ?? [],
+      minPrice: minPriceValue,
+    });
+    setMinPrice(minPriceValue);
   };
 
   const handleReset = () => {
     reset();
+    setSearchParams(null);
     setMinPrice(0);
-    setSearchCombinations([]);
   };
 
-  // RESULTADOS
+  // 🔢 Linhas da tabela principal (busca manual)
   const manualRows = useMemo(() => {
-    const rows: any[] = [];
-    priceQueries.forEach(query => {
-      if (query.data?.all_data) {
-        query.data.all_data.forEach((e: any) => {
-          if (e.sell_price_min >= minPrice && e.sell_price_min > 0) {
-            rows.push({
-              ...e,
-              item_id: query.data.item || e.item_id,
-            });
-          }
-        });
-      }
-    });
-    return rows.sort((a, b) => a.sell_price_min - b.sell_price_min);
-  }, [priceQueries, minPrice]);
+    if (!pricesQuery.data || !pricesQuery.data.all_data) return [];
 
-  const isSearching = priceQueries.some(q => q.isFetching);
+    return pricesQuery.data.all_data
+      .filter(
+        (entry: AlbionMarketEntry) =>
+          entry.sell_price_min > 0 && entry.sell_price_min >= minPrice,
+      )
+      .map((entry: AlbionMarketEntry) => ({
+        ...entry,
+        item_id: entry.item_id ?? '',
+      }))
+      .sort((a, b) => a.sell_price_min - b.sell_price_min);
+  }, [pricesQuery.data, minPrice]);
+
+  const isSearching = pricesQuery.isFetching || pricesQuery.isLoading;
+
+  // 🔁 Meus itens monitorados com filtro de preço mínimo
   const myItems = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
   const myItemsFiltered = useMemo(() => {
-    return myItems.filter(item => item.price >= minPrice).sort((a, b) => a.price - b.price);
+    return myItems
+      .filter((item) => Number(item.price) >= minPrice)
+      .sort((a, b) => a.price - b.price);
   }, [myItems, minPrice]);
-
-  const watchedCities = watch('cities');
 
   return (
     <div className="prices-page">
-
-      <Card title="Busca Avançada de Preços" description="Filtre exatamente pela qualidade que quiser">
+      <Card
+        title="Busca Avançada de Preços"
+        description="Filtre exatamente pela qualidade, encantamento, cidades e preço mínimo."
+      >
         <form className="filters-form" onSubmit={handleSubmit(onSubmit)}>
           <div className="form-grid">
             <label>
@@ -123,14 +157,18 @@ export function PricesPage() {
                 placeholder="T8_BAG, T6_CAPE..."
                 {...register('item_name', { required: 'Digite o item' })}
               />
-              {errors.item_name && <span className="form-error">{errors.item_name.message}</span>}
+              {errors.item_name && (
+                <span className="form-error">{errors.item_name.message}</span>
+              )}
             </label>
 
             <label>
               Qualidade
               <select {...register('quality', { valueAsNumber: true })}>
-                {ALBION_QUALITIES.map(q => (
-                  <option key={q.value} value={q.value}>{q.label}</option>
+                {ALBION_QUALITIES.map((q) => (
+                  <option key={q.value} value={q.value}>
+                    {q.label}
+                  </option>
                 ))}
               </select>
             </label>
@@ -138,23 +176,36 @@ export function PricesPage() {
             <label>
               Encantamento
               <select {...register('enchantment', { valueAsNumber: true })}>
-                {ALBION_ENCHANTMENTS.map(e => (
-                  <option key={e.value} value={e.value}>{e.label}</option>
+                {ALBION_ENCHANTMENTS.map((e) => (
+                  <option key={e.value} value={e.value}>
+                    {e.label}
+                  </option>
                 ))}
               </select>
             </label>
 
             <label>
               Preço mínimo
-              <input type="number" min={0} {...register('minPrice', { valueAsNumber: true })} />
+              <input
+                type="number"
+                min={0}
+                {...register('minPrice', { valueAsNumber: true })}
+              />
             </label>
           </div>
 
           <fieldset className="city-selector">
             <legend>Cidades</legend>
             <div className="city-grid">
-              {ALBION_CITIES.map(city => (
-                <label key={city} className={watchedCities?.includes(city) ? 'city-option active' : 'city-option'}>
+              {ALBION_CITIES.map((city) => (
+                <label
+                  key={city}
+                  className={
+                    watchedCities.includes(city)
+                      ? 'city-option active'
+                      : 'city-option'
+                  }
+                >
                   <input type="checkbox" value={city} {...register('cities')} />
                   <span>{city}</span>
                 </label>
@@ -163,10 +214,18 @@ export function PricesPage() {
           </fieldset>
 
           <div className="filters-actions">
-            <button type="submit" className="primary-button" disabled={isSearching}>
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={isSearching}
+            >
               {isSearching ? 'Buscando...' : 'Buscar'}
             </button>
-            <button type="button" className="ghost-button" onClick={handleReset}>
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={handleReset}
+            >
               Limpar
             </button>
           </div>
@@ -190,27 +249,53 @@ export function PricesPage() {
               </thead>
               <tbody>
                 {manualRows.map((e, i) => (
-                  <tr key={i}>
+                  <tr key={`${e.item_id}-${e.city}-${e.quality}-${i}`}>
                     <td className="item-with-image">
                       <img
                         src={getItemImageUrl(e.item_id)}
                         alt={e.item_id}
                         className="item-icon"
                         loading="lazy"
-                        onError={(img) => img.currentTarget.src = 'https://render.albiononline.com/v1/item/T1_BAG.png'}
+                        onError={(img) => {
+                          img.currentTarget.src =
+                            'https://render.albiononline.com/v1/item/T1_BAG.png';
+                        }}
                       />
                       <strong>{e.item_id}</strong>
                     </td>
-                    <td><span className="pill">{e.city}</span></td>
-                    <td style={{
-                      color: getQualityColor(e.quality),
-                      fontWeight: 700,
-                      textShadow: e.quality === 5 ? '0 0 10px #FF9800' : 'none'
-                    }}>
-                      {getQualityLabel(e.quality)}
+
+                    <td>
+                      <span className="pill">{e.city}</span>
                     </td>
-                    <td>{e.sell_price_min.toLocaleString('pt-BR')} silver</td>
-                    <td>{e.sell_price_min_date ? new Date(e.sell_price_min_date).toLocaleTimeString('pt-BR') : '—'}</td>
+
+                    <td
+                      style={{
+                        color: getQualityColor(e.quality ?? 1),
+                        fontWeight: 700,
+                        textShadow:
+                          e.quality === 5 ? '0 0 10px #FF9800' : 'none',
+                      }}
+                    >
+                      {getQualityLabel(e.quality ?? 1)}
+                    </td>
+
+                    <td>
+                      {e.sell_price_min.toLocaleString('pt-BR')} silver
+                    </td>
+
+                    <td>
+                      {e.sell_price_min_date
+                        ? new Date(e.sell_price_min_date).toLocaleString(
+                            'pt-BR',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            },
+                          )
+                        : '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -219,10 +304,14 @@ export function PricesPage() {
         </Card>
       )}
 
-      {/* MEUS ITENS */}
+      {/* MEUS ITENS MONITORADOS */}
       <Card title="Meus itens monitorados">
-        {myPricesQuery.isLoading && <p className="muted">Carregando...</p>}
-        {myPricesQuery.isError && <p className="form-error">Erro ao carregar.</p>}
+        {myPricesQuery.isLoading && (
+          <p className="muted">Carregando itens monitorados...</p>
+        )}
+        {myPricesQuery.isError && (
+          <p className="form-error">Erro ao carregar seus itens.</p>
+        )}
 
         {myItemsFiltered.length > 0 ? (
           <div className="table-wrapper">
@@ -237,18 +326,44 @@ export function PricesPage() {
                 </tr>
               </thead>
               <tbody>
-                {myItemsFiltered.map((item: any) => (
-                  <tr key={item.item_name}>
+                {myItemsFiltered.map((item) => (
+                  <tr
+                    key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
+                  >
                     <td className="item-with-image">
-                      <img src={getItemImageUrl(item.item_name)} alt={item.item_name} className="item-icon" loading="lazy" />
+                      <img
+                        src={getItemImageUrl(item.item_name)}
+                        alt={item.item_name}
+                        className="item-icon"
+                        loading="lazy"
+                        onError={(img) => {
+                          img.currentTarget.src =
+                            'https://render.albiononline.com/v1/item/T1_BAG.png';
+                        }}
+                      />
                       <strong>{item.item_name}</strong>
                     </td>
-                    <td><span className="pill">{item.city || '—'}</span></td>
-                    <td>{Number(item.price).toLocaleString('pt-BR')} silver</td>
-                    <td style={{ color: getQualityColor(item.quality), fontWeight: 700 }}>
+
+                    <td>
+                      <span className="pill">{item.city || '—'}</span>
+                    </td>
+
+                    <td>
+                      {Number(item.price).toLocaleString('pt-BR')} silver
+                    </td>
+
+                    <td
+                      style={{
+                        color: getQualityColor(item.quality),
+                        fontWeight: 700,
+                      }}
+                    >
                       {getQualityLabel(item.quality)}
                     </td>
-                    <td>{item.enchantment > 0 ? `@${item.enchantment}` : '—'}</td>
+
+                    <td>
+                      {item.enchantment > 0 ? `@${item.enchantment}` : '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -257,7 +372,9 @@ export function PricesPage() {
         ) : myPricesQuery.isSuccess && myItems.length === 0 ? (
           <div className="empty-state">Nenhum item monitorado.</div>
         ) : myPricesQuery.isSuccess ? (
-          <p className="muted">Nenhum item acima do preço mínimo.</p>
+          <p className="muted">
+            Nenhum item acima do preço mínimo definido ({minPrice} silver).
+          </p>
         ) : null}
       </Card>
     </div>

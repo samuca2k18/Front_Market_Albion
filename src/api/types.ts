@@ -1,3 +1,6 @@
+// src/api/types.ts
+
+// === Auth / User ===
 export interface User {
   id: number;
   username: string;
@@ -18,6 +21,7 @@ export interface AuthResponse {
   token_type: string;
 }
 
+// === Itens do usuário ===
 export interface ItemPayload {
   item_name: string;
 }
@@ -28,6 +32,7 @@ export interface Item {
   created_at?: string;
 }
 
+// === Albion API (resposta de /albion/prices) ===
 export interface AlbionMarketEntry {
   city: string;
   item_id?: string;
@@ -37,27 +42,58 @@ export interface AlbionMarketEntry {
   sell_price_min_date?: string;
   buy_price_max?: number;
   buy_price_max_date?: string;
+  enchantment?: number;
 }
 
-export interface AlbionPriceResponse {
-  item: string;
-  cities_checked: string[];
-  cheapest_city: string;
-  cheapest_price: number;
+// Resumo que o backend devolve em /albion/prices
+// { items: { [itemId]: { city, price, quality, enchantment, updated } }, all_data: [...dados brutos] }
+export interface AlbionCheapestEntry {
+  city: string;
+  price: number;
+  quality: number;
+  enchantment: number;
+  updated: string;
+}
+
+export interface AlbionPricesResponse {
+  items: Record<string, AlbionCheapestEntry>;
   all_data: AlbionMarketEntry[];
 }
 
-export interface MyItemPrice {
-  item_name: string;
+// === /albion/price-by-name ===
+export interface AlbionPriceByNameResponse {
+  searched: string;
+  item_found: string;
+  name_pt: string;
+  name_en: string;
   cheapest_city: string;
-  cheapest_price: number;
-  last_update?: string;
+  price: number;
+  quality: number;
+  updated_at: string;
+  all_prices: AlbionMarketEntry[];
 }
 
+// === /albion/search ===
+export interface AlbionSearchItem {
+  unique_name: string;
+  name_pt: string;
+  name_en: string;
+  matched: string;
+}
+
+// === /albion/my-items-prices ===
+export interface MyItemPrice {
+  item_name: string;
+  city: string;
+  price: number;
+  quality: number;
+  enchantment: number;
+}
+
+// === Filtros (frontend) ===
 export interface PriceFilters {
   item_name: string;
   cities?: string[];
   quality?: number;
   enchantment?: number;
 }
-

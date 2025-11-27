@@ -1,3 +1,4 @@
+// src/api/client.ts
 import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL =
@@ -15,6 +16,7 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(STORAGE_KEYS.token);
   if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -28,11 +30,36 @@ export interface ApiErrorShape {
 
 export function parseApiError(error: unknown): ApiErrorShape {
   if (axios.isAxiosError(error)) {
-    const err = error as AxiosError<{ detail?: string | string[] }>;
+    const err = error as AxiosError<{ detail?: any }>;
+    const status = err.response?.status;
+
     const detail = err.response?.data?.detail;
+
+    // FastAPI pode mandar:
+    // - string: "msg"
+    // - lista de strings: ["msg1", "msg2"]
+    // - lista de objetos: [{ msg: "erro", loc: [...], type: "..." }]
+    let message = 'Erro inesperado.';
+
+    if (typeof detail === 'string') {
+      message = detail;
+    } else if (Array.isArray(detail)) {
+      const msgs = detail
+        .map((d) => {
+          if (typeof d === 'string') return d;
+          if (d && typeof d === 'object' && 'msg' in d) return String(d.msg);
+          return null;
+        })
+        .filter(Boolean) as string[];
+
+      if (msgs.length > 0) {
+        message = msgs.join(', ');
+      }
+    }
+
     return {
-      message: Array.isArray(detail) ? detail.join(', ') : detail ?? 'Erro inesperado.',
-      status: err.response?.status,
+      message,
+      status,
     };
   }
 
@@ -55,4 +82,3 @@ export function buildQuery(params: Record<string, string | number | undefined | 
 }
 
 export { API_BASE_URL };
-

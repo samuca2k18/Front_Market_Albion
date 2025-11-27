@@ -1,12 +1,47 @@
+// src/pages/DashboardPage.tsx
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
 import { Card } from '../components/common/Card';
 import '../components/common/common.css';
 import { createItem, listItems, deleteItem } from '../api/items';
-import { fetchMyItemsPrices } from '../api/albion';
-import type { ItemPayload } from '../api/types';
+import {
+  fetchMyItemsPrices,
+  fetchAlbionHistory,
+  type AlbionHistoryResponse,
+} from '../api/albion';
+import type { ItemPayload, Item, MyItemPrice } from '../api/types';
+import type { ApiErrorShape } from '../api/client';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
-import { getItemImageUrl } from '../utils/itemImage'; // IMPORT DA IMAGEM!
+import { getItemImageUrl } from '../utils/itemImage';
+import { ALBION_TIERS } from '../constants/albion';
+
+// recharts
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
+
+type TierFilter = 'all' | 'no-tier' | number;
+
+// helper: extrai o tier do nome interno (T4_BAG@2 -> 4, T1_BAG -> 1, etc.)
+function getTierFromItemName(itemName: string): number | null {
+  if (!itemName) return null;
+
+  const match = itemName.match(/^T(\d+)_/);
+  if (!match) return null;
+
+  const tier = parseInt(match[1], 10);
+  if (Number.isNaN(tier)) return null;
+
+  if (tier < 1 || tier > 8) return null;
+  return tier;
+}
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
@@ -14,31 +49,51 @@ export function DashboardPage() {
     defaultValues: { item_name: '' },
   });
 
-  const itemsQuery = useQuery({
+  const [selectedTier, setSelectedTier] = useState<TierFilter>('all');
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(null);
+
+  // Itens salvos pelo usuário
+  const itemsQuery = useQuery<Item[]>({
     queryKey: ['items'],
     queryFn: listItems,
   });
 
-  const myPricesQuery = useQuery({
+  // Preços dos itens do usuário
+  const myPricesQuery = useQuery<MyItemPrice[]>({
     queryKey: ['my-items-prices'],
     queryFn: fetchMyItemsPrices,
     refetchInterval: 5 * 60 * 1000,
   });
 
-  const createMutation = useMutation({
-    mutationFn: createItem,
+  // Histórico do item selecionado
+  const historyQuery = useQuery<AlbionHistoryResponse>({
+    queryKey: ['albion-history', selectedHistoryItem],
+    queryFn: () => fetchAlbionHistory(selectedHistoryItem!, 7, ['Caerleon'], '6h'),
+    enabled: !!selectedHistoryItem,
+  });
+
+  // Criar item
+  const createMutation = useMutation<void, ApiErrorShape, ItemPayload>({
+    mutationFn: async (payload) => {
+      await createItem(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       queryClient.invalidateQueries({ queryKey: ['my-items-prices'] });
+      myPricesQuery.refetch();
       reset();
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteItem,
+  // Remover item
+  const deleteMutation = useMutation<void, ApiErrorShape, number>({
+    mutationFn: async (id) => {
+      await deleteItem(id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       queryClient.invalidateQueries({ queryKey: ['my-items-prices'] });
+      myPricesQuery.refetch();
     },
   });
 
@@ -55,16 +110,59 @@ export function DashboardPage() {
   };
 
   const trackedItems = itemsQuery.data ?? [];
-  const myPrices = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
+  const myPricesRaw = myPricesQuery.data ?? [];
 
-  const lowestPrice = myPrices.length > 0
-    ? myPrices.reduce((min, item) => item.price < min ? item.price : min, myPrices[0].price)
-    : null;
+  // 1) filtra por preço válido + tier
+  const filtered = myPricesRaw
+    .filter((p) => p && typeof p.price === 'number' && p.price > 0)
+    .filter((p) => {
+      const tier = getTierFromItemName(p.item_name);
+
+      if (selectedTier === 'all') return true;
+      if (selectedTier === 'no-tier') return tier === null;
+      return tier === selectedTier;
+    });
+
+  // 2) agrupa por item_name e pega o MAIS BARATO de cada item
+  const cheapestByItem = new Map<string, MyItemPrice>();
+
+  for (const p of filtered) {
+    const existing = cheapestByItem.get(p.item_name);
+    if (!existing || p.price < existing.price) {
+      cheapestByItem.set(p.item_name, p);
+    }
+  }
+
+  // 3) vira array e ordena por preço
+  const myPrices = Array.from(cheapestByItem.values()).sort(
+    (a, b) => a.price - b.price,
+  );
+
+  const lowestPrice = myPrices.length > 0 ? myPrices[0].price : null;
+
+  // Dados formatados para o gráfico
+  const chartData = useMemo(() => {
+    if (!historyQuery.data) return [];
+    return historyQuery.data.data.map((point) => ({
+      // pega só a data/hora curta pra eixo X
+      time: new Date(point.date).toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      avg_price: point.avg_price,
+      city: point.city,
+    }));
+  }, [historyQuery.data]);
 
   return (
     <div className="dashboard">
       <section className="dashboard-grid">
-        <Card title="Resumo rápido" description="Seus itens monitorados em tempo real.">
+        <Card
+          title="Resumo rápido"
+          description="Seus itens monitorados em tempo real."
+        >
           <div className="stat-grid">
             <div className="stat-card">
               <span>Itens rastreados</span>
@@ -85,31 +183,44 @@ export function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Adicionar item" description="Digite o nome interno do item (ex: T8_BAG@3)">
+        <Card
+          title="Adicionar item"
+          description="Digite o nome interno do item (ex: T8_BAG@3) ou nome PT/EN"
+        >
           <form className="form inline" onSubmit={handleSubmit(onSubmit)}>
             <input
               type="text"
-              placeholder="T8_CAPE@2, T6_BAG..."
+              placeholder="T8_CAPE@2, Bolsa do Adepto..."
               {...register('item_name')}
               disabled={createMutation.isPending}
               autoFocus
             />
-            <button className="primary-button" type="submit" disabled={createMutation.isPending}>
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={createMutation.isPending}
+            >
               {createMutation.isPending ? 'Adicionando...' : 'Adicionar'}
             </button>
           </form>
+
           {createMutation.error && (
             <p className="form-error">
-              {(createMutation.error as any)?.message || 'Erro ao adicionar'}
+              {createMutation.error.message || 'Erro ao adicionar item.'}
             </p>
           )}
         </Card>
       </section>
 
       <section className="dashboard-grid two-columns">
-        <Card title="Itens cadastrados" description="Clique em Remover para excluir.">
+        <Card
+          title="Itens cadastrados"
+          description="Clique em Remover para excluir."
+        >
           {itemsQuery.isLoading ? (
             <p className="muted">Carregando...</p>
+          ) : itemsQuery.isError ? (
+            <p className="form-error">Erro ao carregar itens.</p>
           ) : trackedItems.length > 0 ? (
             <ul className="item-list">
               {trackedItems.map((item) => (
@@ -117,7 +228,9 @@ export function DashboardPage() {
                   <div>
                     <strong>{item.item_name}</strong>
                     <span className="muted">
-                      {item.created_at ? new Date(item.created_at).toLocaleDateString('pt-BR') : ''}
+                      {item.created_at
+                        ? new Date(item.created_at).toLocaleDateString('pt-BR')
+                        : ''}
                     </span>
                   </div>
                   <button
@@ -133,34 +246,70 @@ export function DashboardPage() {
             </ul>
           ) : (
             <div className="empty-state">
-              Nenhum item adicionado ainda.<br />
+              Nenhum item adicionado ainda.
+              <br />
               Comece adicionando um acima!
             </div>
           )}
         </Card>
 
-        {/* TABELA COM ÍCONES + QUALIDADE COLORIDA */}
-        <Card title="Preços em tempo real" description="Atualiza automaticamente a cada 5 minutos">
+        <Card
+          title="Preços em tempo real"
+          description="Clique em um item para ver o histórico de preço."
+        >
+          {/* FILTRO DE TIER */}
+          <div className="filters-row">
+            <label>
+              Tier
+              <select
+                value={String(selectedTier)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === 'all') {
+                    setSelectedTier('all');
+                  } else if (value === 'no-tier') {
+                    setSelectedTier('no-tier');
+                  } else {
+                    setSelectedTier(Number(value) as number);
+                  }
+                }}
+              >
+                <option value="all">Todos</option>
+                <option value="no-tier">Sem tier</option>
+                {ALBION_TIERS.map((tier) => (
+                  <option key={tier} value={tier}>
+                    T{tier}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           {myPricesQuery.isLoading ? (
             <p className="muted">Buscando preços nas cidades...</p>
+          ) : myPricesQuery.isError ? (
+            <p className="form-error">Erro ao carregar preços.</p>
           ) : myPrices.length > 0 ? (
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Cidade</th>
-                    <th>Preço</th>
-                    <th>Qualidade</th>
-                    <th>Encant.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {myPrices
-                    .sort((a: any, b: any) => a.price - b.price)
-                    .map((item: any) => (
-                      <tr key={item.item_name}>
-                        {/* ITEM COM ÍCONE OFICIAL */}
+            <>
+              <div className="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Cidade</th>
+                      <th>Preço</th>
+                      <th>Qualidade</th>
+                      <th>Encant.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myPrices.map((item) => (
+                      <tr
+                        key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
+                        className="clickable-row"
+                        onClick={() => setSelectedHistoryItem(item.item_name)}
+                        title="Clique para ver o histórico deste item"
+                      >
                         <td className="item-with-image">
                           <img
                             src={getItemImageUrl(item.item_name)}
@@ -168,32 +317,88 @@ export function DashboardPage() {
                             className="item-icon"
                             loading="lazy"
                             onError={(e) => {
-                              e.currentTarget.src = 'https://render.albiononline.com/v1/item/T1_BAG.png';
+                              e.currentTarget.src =
+                                'https://render.albiononline.com/v1/item/T1_BAG.png';
                             }}
                           />
                           <strong>{item.item_name}</strong>
                         </td>
 
-                        <td><span className="pill">{item.city || '—'}</span></td>
-                        <td>{item.price?.toLocaleString('pt-BR') || '—'} silver</td>
-
-                        {/* QUALIDADE COLORIDA */}
-                        <td style={{ 
-                          color: getQualityColor(item.quality),
-                          fontWeight: 700,
-                          textShadow: item.quality === 5 ? '0 0 10px #FF9800' : 'none'
-                        }}>
-                          {getQualityLabel(item.quality)}
+                        <td>
+                          <span className="pill">{item.city || '—'}</span>
                         </td>
 
                         <td>
-                          {item.enchantment > 0 ? `@${item.enchantment}` : '—'}
+                          {typeof item.price === 'number'
+                            ? `${item.price.toLocaleString('pt-BR')} silver`
+                            : '—'}
                         </td>
+
+                        <td
+                          style={{
+                            color: getQualityColor(item.quality),
+                            fontWeight: 700,
+                            textShadow:
+                              item.quality === 5 ? '0 0 10px #FF9800' : 'none',
+                          }}
+                        >
+                          {getQualityLabel(item.quality)}
+                        </td>
+
+                        <td>{item.enchantment > 0 ? `@${item.enchantment}` : '—'}</td>
                       </tr>
                     ))}
-                </tbody>
-              </table>
-            </div>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* GRÁFICO DE HISTÓRICO */}
+              {selectedHistoryItem && (
+                <div className="chart-wrapper" style={{ marginTop: 24 }}>
+                  <h3>
+                    Histórico de preço —{' '}
+                    <span className="muted">{selectedHistoryItem}</span>
+                  </h3>
+
+                  {historyQuery.isLoading && <p className="muted">Carregando gráfico...</p>}
+
+                  {historyQuery.isError && (
+                    <p className="form-error">
+                      Não foi possível carregar o histórico deste item.
+                    </p>
+                  )}
+
+                  {!historyQuery.isLoading &&
+                    !historyQuery.isError &&
+                    chartData.length === 0 && (
+                      <p className="muted">
+                        Sem dados suficientes de histórico para este item.
+                      </p>
+                    )}
+
+                  {!historyQuery.isLoading &&
+                    !historyQuery.isError &&
+                    chartData.length > 0 && (
+                      <div style={{ width: '100%', height: 260 }}>
+                        <ResponsiveContainer>
+                          <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} />
+                            <Tooltip />
+                            <Line
+                              type="monotone"
+                              dataKey="avg_price"
+                              dot={false}
+                              strokeWidth={2}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                </div>
+              )}
+            </>
           ) : (
             <div className="empty-state">
               Adicione itens para começar a monitorar os preços!
