@@ -1,15 +1,23 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 import { loginRequest, meRequest, signupRequest } from '../api/auth';
 import { STORAGE_KEYS, type ApiErrorShape } from '../api/client';
 import type { AuthCredentials, SignupPayload, User } from '../api/types';
 import { parseApiError } from '../api/client';
+import type { ApiErrorShape } from '../api/client';
 
 interface AuthContextValue {
   user: User | null;
   token: string | null;
   isBootstrapping: boolean;
-  sessionExpiresAt: number | null;
+  isAuthenticated: boolean;
   login: (credentials: AuthCredentials) => Promise<void>;
   signup: (payload: SignupPayload) => Promise<void>;
   logout: () => void;
@@ -41,9 +49,8 @@ function loadStoredExpiry(): number | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => loadStoredUser());
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(STORAGE_KEYS.token));
-  const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(() => loadStoredExpiry());
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   const persistToken = useCallback((value: string | null) => {
@@ -93,15 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await meRequest();
       persistUser(profile);
     } catch (error) {
-      const apiError = error as ApiErrorShape;
-
-      if (apiError.status === 404) {
-        // Backend sem rota /me: mantemos o usuário em cache e seguimos.
-        return;
-      }
-
-      // Para evitar desconexões por instabilidade do backend, mantemos o cache local.
-      console.warn('Falha ao atualizar perfil, mantendo sessão ativa.', apiError);
+      console.error('Erro ao buscar usuário', error);
+      persistToken(null);
+      setUser(null);
     }
   }, [token, sessionExpiresAt, persistToken, persistSessionExpiry, persistUser]);
 
@@ -137,7 +138,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         await refreshUser();
       } catch (error) {
-        throw parseApiError(error);
+        // sempre lançar ApiErrorShape
+        throw parseApiError(error) as ApiErrorShape;
       }
     },
     [persistToken, persistSessionExpiry, persistUser, refreshUser, user],
@@ -149,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signupRequest(payload);
         await login({ username: payload.username, password: payload.password });
       } catch (error) {
-        throw parseApiError(error);
+        throw parseApiError(error) as ApiErrorShape;
       }
     },
     [login],
@@ -182,7 +184,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isBootstrapping,
-      sessionExpiresAt,
       login,
       signup,
       logout,
@@ -201,4 +202,3 @@ export function useAuthContext() {
   }
   return context;
 }
-

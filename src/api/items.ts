@@ -1,3 +1,4 @@
+// src/api/items.ts
 import { api, parseApiError } from './client';
 import type { Item, ItemPayload } from './types';
 
@@ -19,11 +20,9 @@ export async function createItem(payload: ItemPayload): Promise<Item> {
   }
 }
 
-// NOVO: Função de delete com o mesmo padrão lindo que você usa
 export async function deleteItem(id: number): Promise<void> {
   try {
     await api.delete(`/items/${id}`);
-    // Não precisa retornar nada, só sucesso
   } catch (error) {
     throw parseApiError(error);
   }

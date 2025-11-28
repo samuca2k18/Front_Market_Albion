@@ -11,7 +11,7 @@ export const ALBION_CITIES = [
 
 export const ALBION_QUALITIES = [
   { label: 'Todas', value: 0 },
-  { label: 'Normal', value: 1 },     
+  { label: 'Normal', value: 1 },
   { label: 'Bom', value: 2 },
   { label: 'Excepcional', value: 3 },
   { label: 'Excelente', value: 4 },
@@ -26,3 +26,6 @@ export const ALBION_ENCHANTMENTS = [
   { label: '.3', value: 3 },
   { label: '.4', value: 4 },
 ] as const;
+
+// 🔥 NOVO: tiers de 1 a 8
+export const ALBION_TIERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
