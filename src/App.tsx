@@ -13,47 +13,22 @@ import { GuestRoute } from './components/routing/GuestRoute';
 function App() {
   return (
     <Routes>
+      {/* Layout principal (navbar, etc) */}
       <Route element={<AppLayout />}>
-        <Route
-          index
-          element={
-            <GuestRoute>
-              <LandingPage />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="login"
-          element={
-            <GuestRoute>
-              <LoginPage />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="signup"
-          element={
-            <GuestRoute>
-              <SignupPage />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="dashboard"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="prices"
-          element={
-            <ProtectedRoute>
-              <PricesPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Rotas para visitantes (não logados) */}
+        <Route element={<GuestRoute />}>
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
+        </Route>
+
+        {/* Rotas protegidas (somente logado) */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="prices" element={<PricesPage />} />
+        </Route>
+
+        {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
