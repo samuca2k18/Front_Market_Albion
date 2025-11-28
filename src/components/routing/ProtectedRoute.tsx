@@ -1,21 +1,24 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { LoadingScreen } from '../common/LoadingScreen';
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { token, isBootstrapping, sessionExpiresAt } = useAuth();
+export function ProtectedRoute() {
+  const { isAuthenticated, isBootstrapping } = useAuth();
   const location = useLocation();
 
-  const isExpired = sessionExpiresAt ? Date.now() > sessionExpiresAt : false;
-
+  // Enquanto não sabemos se o usuário está logado (carregando /me)
   if (isBootstrapping) {
-    return <LoadingScreen label="Validando sessão..." />;
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        Carregando...
+      </div>
+    );
   }
 
-  if (!token || isExpired) {
+  // Se não está autenticado, manda para o login
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  return <>{children}</>;
+  // Se está autenticado, libera a rota interna
+  return <Outlet />;
 }
-
