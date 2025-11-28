@@ -7,11 +7,10 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
+
 import { loginRequest, meRequest, signupRequest } from '../api/auth';
-import { STORAGE_KEYS, type ApiErrorShape } from '../api/client';
+import { STORAGE_KEYS, parseApiError, type ApiErrorShape } from '../api/client';
 import type { AuthCredentials, SignupPayload, User } from '../api/types';
-import { parseApiError } from '../api/client';
-import type { ApiErrorShape } from '../api/client';
 
 interface AuthContextValue {
   user: User | null;
@@ -26,33 +25,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 horas
-
-function parseUser(value: string | null): User | null {
-  if (!value) return null;
-  try {
-    return JSON.parse(value) as User;
-  } catch {
-    return null;
-  }
-}
-
-function loadStoredUser(): User | null {
-  return parseUser(localStorage.getItem(STORAGE_KEYS.user));
-}
-
-function loadStoredExpiry(): number | null {
-  const raw = localStorage.getItem(STORAGE_KEYS.sessionExpiry);
-  if (!raw) return null;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(STORAGE_KEYS.token));
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem(STORAGE_KEYS.token),
+  );
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
+  // salva/remove token no localStorage
   const persistToken = useCallback((value: string | null) => {
     if (!value) {
       localStorage.removeItem(STORAGE_KEYS.token);
@@ -63,86 +43,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(value);
   }, []);
 
-  const persistSessionExpiry = useCallback((value: number | null) => {
-    if (!value) {
-      localStorage.removeItem(STORAGE_KEYS.sessionExpiry);
-      setSessionExpiresAt(null);
-      return;
-    }
-    localStorage.setItem(STORAGE_KEYS.sessionExpiry, String(value));
-    setSessionExpiresAt(value);
-  }, []);
-
-  const persistUser = useCallback((value: User | null) => {
-    if (!value) {
-      localStorage.removeItem(STORAGE_KEYS.user);
-      setUser(null);
-      return;
-    }
-    localStorage.setItem(STORAGE_KEYS.user, JSON.stringify(value));
-    setUser(value);
-  }, []);
-
+  // busca /me quando tem token
   const refreshUser = useCallback(async () => {
     if (!token) {
-      persistUser(null);
-      return;
-    }
-
-    if (sessionExpiresAt && Date.now() > sessionExpiresAt) {
-      persistToken(null);
-      persistSessionExpiry(null);
-      persistUser(null);
+      setUser(null);
       return;
     }
 
     try {
       const profile = await meRequest();
-      persistUser(profile);
+      setUser(profile);
     } catch (error) {
       console.error('Erro ao buscar usuário', error);
       persistToken(null);
       setUser(null);
     }
-  }, [token, sessionExpiresAt, persistToken, persistSessionExpiry, persistUser]);
+  }, [token, persistToken]);
 
+  // bootstrap inicial: se tem token, tenta carregar usuário
   useEffect(() => {
     if (!token) {
-      persistSessionExpiry(null);
-      persistUser(null);
-      setIsBootstrapping(false);
-      return;
-    }
-
-    if (sessionExpiresAt && Date.now() > sessionExpiresAt) {
-      persistToken(null);
-      persistSessionExpiry(null);
-      persistUser(null);
       setIsBootstrapping(false);
       return;
     }
 
     refreshUser().finally(() => setIsBootstrapping(false));
-  }, [token, sessionExpiresAt, refreshUser, persistSessionExpiry, persistToken, persistUser]);
+  }, [token, refreshUser]);
 
   const login = useCallback(
     async (credentials: AuthCredentials) => {
       try {
         const data = await loginRequest(credentials);
         persistToken(data.access_token);
-        persistSessionExpiry(Date.now() + SESSION_DURATION_MS);
-        persistUser({
-          id: user?.id ?? 0,
-          username: credentials.username,
-          email: user?.email ?? '',
-        });
         await refreshUser();
       } catch (error) {
         // sempre lançar ApiErrorShape
         throw parseApiError(error) as ApiErrorShape;
       }
     },
-    [persistToken, persistSessionExpiry, persistUser, refreshUser, user],
+    [persistToken, refreshUser],
   );
 
   const signup = useCallback(
@@ -159,20 +98,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     persistToken(null);
-    persistSessionExpiry(null);
-    persistUser(null);
-  }, [persistToken, persistSessionExpiry, persistUser]);
+    setUser(null);
+  }, [persistToken]);
 
+  // sincroniza login/logout entre abas do navegador
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === STORAGE_KEYS.token) {
         setToken(event.newValue);
-      }
-      if (event.key === STORAGE_KEYS.sessionExpiry) {
-        setSessionExpiresAt(event.newValue ? Number(event.newValue) : null);
-      }
-      if (event.key === STORAGE_KEYS.user) {
-        setUser(parseUser(event.newValue));
       }
     };
     window.addEventListener('storage', onStorage);
@@ -184,12 +117,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isBootstrapping,
+      isAuthenticated: !!user,
       login,
       signup,
       logout,
       refreshUser,
     }),
-    [user, token, isBootstrapping, sessionExpiresAt, login, signup, logout, refreshUser],
+    [user, token, isBootstrapping, login, signup, logout, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
