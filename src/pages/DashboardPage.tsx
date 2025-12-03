@@ -15,6 +15,7 @@ import type { ApiErrorShape } from '../api/client';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
 import { ALBION_TIERS } from '../constants/albion';
+import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
 
 // recharts
 import {
@@ -188,20 +189,10 @@ export function DashboardPage() {
           description="Digite o nome interno do item (ex: T8_BAG@3) ou nome PT/EN"
         >
           <form className="form inline" onSubmit={handleSubmit(onSubmit)}>
-            <input
-              type="text"
-              placeholder="T8_CAPE@2, Bolsa do Adepto..."
-              {...register('item_name')}
-              disabled={createMutation.isPending}
-              autoFocus
-            />
-            <button
-              className="primary-button"
-              type="submit"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending ? 'Adicionando...' : 'Adicionar'}
-            </button>
+            <SearchAutocomplete onSelectProduct={(product) => {
+              createMutation.mutate({ item_name: product.unique_name });
+              reset({ item_name: "" });
+            }} />
           </form>
 
           {createMutation.error && (

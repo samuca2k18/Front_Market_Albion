@@ -20,6 +20,7 @@ import {
 
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
 
 interface FiltersForm extends PriceFilters {
   minPrice?: number;
@@ -41,6 +42,7 @@ export function PricesPage() {
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FiltersForm>({
     defaultValues: {
@@ -137,10 +139,32 @@ export function PricesPage() {
   // 🔁 Meus itens monitorados com filtro de preço mínimo
   const myItems = Array.isArray(myPricesQuery.data) ? myPricesQuery.data : [];
   const myItemsFiltered = useMemo(() => {
-    return myItems
-      .filter((item) => Number(item.price) >= minPrice)
-      .sort((a, b) => a.price - b.price);
+    // mantém apenas o mais barato de cada item_name
+    const cheapestByItem = new Map<string, MyItemPrice>();
+
+    for (const item of myItems) {
+      if (!item || Number(item.price) < minPrice) continue;
+
+      const existing = cheapestByItem.get(item.item_name);
+      if (!existing || Number(item.price) < Number(existing.price)) {
+        cheapestByItem.set(item.item_name, item);
+      }
+    }
+
+    return Array.from(cheapestByItem.values()).sort(
+      (a, b) => Number(a.price) - Number(b.price),
+    );
   }, [myItems, minPrice]);
+
+  // Quando clica em um item da tabela de resultados manuais,
+  // refaz a busca focando apenas naquele UniqueName.
+  const handleDrilldownToSingleItem = (itemId: string) => {
+    if (!searchParams) return;
+    setSearchParams({
+      ...searchParams,
+      items: [itemId],
+    });
+  };
 
   return (
     <div className="prices-page">
@@ -152,10 +176,32 @@ export function PricesPage() {
           <div className="form-grid">
             <label>
               Item
+              <SearchAutocomplete
+                onSelectProduct={(product) => {
+                  const unique = product.unique_name.toUpperCase();
+                  // pega o @N do unique_name (ex: T8_BAG@3 -> 3)
+                  const match = unique.match(/@(\d)$/);
+                  const enchantment = match ? Number(match[1]) : 0;
+
+                  // item_name fica com o nome completo (T4_BAG@3 ou T4_BAG)
+                  setValue('item_name', unique, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+
+                  // trava o select de encantamento no valor do item clicado
+                  setValue('enchantment', enchantment, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+
+                  // dispara o submit já com esses valores
+                  handleSubmit(onSubmit)();
+                }}
+              />
               <input
-                type="text"
-                placeholder="T8_BAG, T6_CAPE..."
-                {...register('item_name', { required: 'Digite o item' })}
+                type="hidden"
+                {...register('item_name', { required: 'Selecione um item' })}
               />
               {errors.item_name && (
                 <span className="form-error">{errors.item_name.message}</span>
@@ -250,7 +296,12 @@ export function PricesPage() {
               <tbody>
                 {manualRows.map((e, i) => (
                   <tr key={`${e.item_id}-${e.city}-${e.quality}-${i}`}>
-                    <td className="item-with-image">
+                    <td
+                      className="item-with-image"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => handleDrilldownToSingleItem(e.item_id)}
+                      title="Ver apenas este item"
+                    >
                       <img
                         src={getItemImageUrl(e.item_id)}
                         alt={e.item_id}
