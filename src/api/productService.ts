@@ -9,12 +9,12 @@ export interface Product {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
-
-export async function searchProducts(query: string): Promise<Product[]> {
-  const { data } = await api.get<Product[]>("/albion/search", {
-    params: { q: query },
+    baseURL: import.meta.env.VITE_API_URL,
   });
-  return data;
-}
+  
+  export async function searchProducts(query: string) {
+    const { data } = await api.get("/albion/search", {
+      params: { q: query },
+    });
+    return data;
+  }
