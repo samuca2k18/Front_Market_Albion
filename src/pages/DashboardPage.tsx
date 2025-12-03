@@ -46,7 +46,7 @@ function getTierFromItemName(itemName: string): number | null {
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, reset } = useForm<ItemPayload>({
+  const { handleSubmit, reset } = useForm<ItemPayload>({
     defaultValues: { item_name: '' },
   });
 
