@@ -1,7 +1,7 @@
 // src/pages/DashboardPage.tsx
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '../components/common/Card';
 import '../components/common/common.css';
 import { createItem, listItems, deleteItem } from '../api/items';
@@ -14,6 +14,7 @@ import type { ItemPayload, Item, MyItemPrice } from '../api/types';
 import type { ApiErrorShape } from '../api/client';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
+import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
 import { ALBION_TIERS } from '../constants/albion';
 import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
 
@@ -158,7 +159,7 @@ export function DashboardPage() {
   }, [historyQuery.data]);
 
   return (
-    <div className="dashboard">
+    <div className="dashboard-page">
       <section className="dashboard-grid">
         <Card
           title="Resumo rápido"
