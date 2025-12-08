@@ -19,7 +19,6 @@ import { getQualityLabel, getQualityColor } from "../constants/qualities";
 import { ALBION_TIERS } from "../constants/albion";
 import { SearchAutocomplete } from "../components/search/SearchAutocomplete";
 import { getItemDisplayNameWithEnchantment } from "../utils/itemNameMapper";
-import { LanguageSwitcher } from "../components/common/LanguageSwitcher";
 import type { Product } from "@/api/productService";
 
 // Recharts
