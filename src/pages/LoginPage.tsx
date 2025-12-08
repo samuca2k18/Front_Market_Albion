@@ -12,6 +12,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { User, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import "./auth-pages.css";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Usuário obrigatório"),
@@ -132,9 +133,9 @@ export function LoginPage() {
                 </p>
               </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
                 {/* USERNAME */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="username" className="text-sm font-medium text-foreground">
                     Usuário
                   </Label>
@@ -161,7 +162,7 @@ export function LoginPage() {
                 </div>
 
                 {/* PASSWORD */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">
                     Senha
                   </Label>

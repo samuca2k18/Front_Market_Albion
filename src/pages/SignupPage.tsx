@@ -10,6 +10,7 @@ import { ArrowRight, CheckCircle2, User, Mail, Lock } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import type { ApiErrorShape } from "../api/client";
 import { useState } from "react";
+import "./auth-pages.css";
 
 const signupSchema = z
   .object({
@@ -131,9 +132,9 @@ export function SignupPage() {
                 </p>
               </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+              <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
                 {/* USERNAME */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="username" className="text-sm font-medium text-foreground">
                     Usuário
                   </Label>
@@ -158,7 +159,7 @@ export function SignupPage() {
                 </div>
 
                 {/* EMAIL */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="email" className="text-sm font-medium text-foreground">
                     Email
                   </Label>
@@ -183,7 +184,7 @@ export function SignupPage() {
                 </div>
 
                 {/* PASSWORD */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">
                     Senha
                   </Label>
@@ -208,7 +209,7 @@ export function SignupPage() {
                 </div>
 
                 {/* CONFIRM PASSWORD */}
-                <div className="space-y-2">
+                <div className="field">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                     Confirmar senha
                   </Label>
