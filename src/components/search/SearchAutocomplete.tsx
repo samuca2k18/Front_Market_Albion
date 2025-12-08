@@ -95,8 +95,19 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       setIsOpen(false);
+      return;
+    }
+  
+    if (e.key === "Enter") {
+      e.preventDefault();
+  
+      if (results.length > 0) {
+        // seleciona o primeiro resultado da lista
+        handleSelect(results[0] as any);
+      }
     }
   };
+  
 
   return (
     <div className="search-wrapper" ref={wrapperRef}>

@@ -57,6 +57,16 @@ function buildItemImageUrl(item: MyItemPrice): string {
   )}.png`;
 }
 
+function buildItemImageUrlFromName(itemName: string): string {
+  const [baseName, enchant] = itemName.split("@");
+  const enchantSuffix = enchant ? `@${enchant}` : "";
+  const fullName = `${baseName}${enchantSuffix}`;
+  return `https://render.albiononline.com/v1/item/${encodeURIComponent(
+    fullName,
+  )}.png`;
+}
+
+
 export function DashboardPage() {
   const queryClient = useQueryClient();
   const { handleSubmit, reset } = useForm<ItemPayload>({
@@ -281,15 +291,14 @@ export function DashboardPage() {
               onSubmit={handleSubmit(onSubmit)}
             >
               <SearchAutocomplete
-                onSelectProduct={(product: any) => {
-                  // SearchAutocomplete já normaliza unique_name
-                  const internal =
-                    product.unique_name ?? product.UniqueName;
-                  if (!internal) return;
-                  createMutation.mutate({ item_name: internal });
-                  reset({ item_name: "" });
-                }}
-              />
+  onSelectProduct={(product: any) => {
+    const internal = product.unique_name ?? product.UniqueName;
+    if (!internal) return;
+    createMutation.mutate({ item_name: internal });
+    reset({ item_name: "" });
+  }}
+/>
+
 
               {createMutation.error && (
                 <p className="text-xs text-destructive mt-1">
@@ -312,30 +321,59 @@ export function DashboardPage() {
               <p className="text-sm text-destructive">Erro ao carregar itens.</p>
             ) : trackedItems.length > 0 ? (
               <ul className="mt-3 space-y-2">
-                {trackedItems.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium">{item.item_name}</span>
-                      {item.created_at && (
-                        <span className="text-[11px] text-muted-foreground">
-                          Adicionado em{" "}
-                          {new Date(item.created_at).toLocaleDateString("pt-BR")}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
-                      onClick={() => handleDelete(item.id)}
-                      disabled={deleteMutation.isPending}
-                      title="Remover item"
-                    >
-                      Remover
-                    </button>
-                  </li>
-                ))}
+                {trackedItems.length > 0 ? (
+  <ul className="mt-3 space-y-2">
+    {trackedItems.map((item) => (
+      <li
+        key={item.id}
+        className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
+      >
+        <div className="flex items-center gap-3">
+          <img
+            src={buildItemImageUrlFromName(item.item_name)}
+            alt={item.item_name}
+            className="h-9 w-9 rounded-md bg-black/40"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://render.albiononline.com/v1/item/T1_BAG.png";
+            }}
+          />
+          <div className="flex flex-col">
+            <span className="font-medium">
+              {getItemDisplayName(item.item_name)}
+            </span>
+            <span className="text-[11px] text-muted-foreground mt-0.5">
+              {item.item_name}
+            </span>
+            {item.created_at && (
+              <span className="text-[11px] text-muted-foreground mt-0.5">
+                Adicionado em{" "}
+                {new Date(item.created_at).toLocaleDateString("pt-BR")}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <button
+          className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+          onClick={() => handleDelete(item.id)}
+          disabled={deleteMutation.isPending}
+          title="Remover item"
+        >
+          Remover
+        </button>
+      </li>
+    ))}
+  </ul>
+) : (
+  <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+    Nenhum item adicionado ainda.
+    <br />
+    Comece adicionando um acima!
+  </div>
+)}
+
               </ul>
             ) : (
               <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
