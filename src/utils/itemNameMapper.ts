@@ -1,4 +1,5 @@
-// src/utils/itemNameMapper.ts
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Cache para armazenar nomes já buscados
 const nameCache = new Map<string, string>();
@@ -26,12 +27,20 @@ export async function getItemDisplayNameWithEnchantmentAsync(
     const results = await searchItems(baseName);
     
     const found = results.find(r => r.unique_name === baseName);
-    if (found && found.name_pt) {
-      const displayName = internalName.includes('@')
-        ? `${found.name_pt} @${internalName.split('@')[1]}`
-        : found.name_pt;
-      nameCache.set(internalName, displayName);
-      return displayName;
+    if (found) {
+      // Prioriza o idioma atual
+      const currentLanguage = localStorage.getItem('i18nextLng') || 'pt-BR';
+      const nameToUse = currentLanguage === 'pt-BR' 
+        ? (found.name_pt || found.name_en)
+        : (found.name_en || found.name_pt);
+      
+      if (nameToUse) {
+        const displayName = internalName.includes('@')
+          ? `${nameToUse} @${internalName.split('@')[1]}`
+          : nameToUse;
+        nameCache.set(internalName, displayName);
+        return displayName;
+      }
     }
   } catch (error) {
     console.warn('Erro ao buscar nome do item na API:', error);
@@ -46,6 +55,8 @@ export async function getItemDisplayNameWithEnchantmentAsync(
 /**
  * Versão síncrona (fallback) - Converte o nome interno do item de Albion
  * em algo mais legível quando a API não está disponível.
+ * 
+ * Suporta português e inglês baseado no idioma de navegação.
  */
 export function getItemDisplayNameWithEnchantment(internalName: string): string {
   if (!internalName) return '';
@@ -55,14 +66,21 @@ export function getItemDisplayNameWithEnchantment(internalName: string): string 
     return nameCache.get(internalName)!;
   }
 
+  // Detecta idioma atual (fallback para pt-BR)
+  const currentLanguage = typeof localStorage !== 'undefined'
+    ? (localStorage.getItem('i18nextLng') || 'pt-BR')
+    : 'pt-BR';
+
+  const isPT = currentLanguage === 'pt-BR';
+
   // Separa encantamento, se houver (ex: T4_BAG@2 -> ["T4_BAG", "2"])
   const [base, enchant] = internalName.split('@');
 
   // Remove o prefixo de tier (T4_, T5_, etc.)
   const withoutTier = base.replace(/^T\d+_/, '');
 
-  // Mapeamento de alguns nomes comuns para português
-  const nameMap: Record<string, string> = {
+  // Mapeamento de nomes em Português
+  const nameMapPT: Record<string, string> = {
     'MAINSWORD': 'Espada',
     'BAG': 'Bolsa',
     'CAPE': 'Capa',
@@ -87,6 +105,35 @@ export function getItemDisplayNameWithEnchantment(internalName: string): string 
     'ARCANESTAFF': 'Cajado Arcano',
   };
 
+  // Mapeamento de nomes em Inglês
+  const nameMapEN: Record<string, string> = {
+    'MAINSWORD': 'Sword',
+    'BAG': 'Bag',
+    'CAPE': 'Cape',
+    'HELMET': 'Helmet',
+    'ARMOR': 'Armor',
+    'SHOES': 'Shoes',
+    'SHIELD': 'Shield',
+    'BOW': 'Bow',
+    'CROSSBOW': 'Crossbow',
+    'STAFF': 'Staff',
+    'MACE': 'Mace',
+    'AXE': 'Axe',
+    'HAMMER': 'Hammer',
+    'SPEAR': 'Spear',
+    'DAGGER': 'Dagger',
+    'QUARTERSTAFF': 'Quarterstaff',
+    'NATURESTAFF': 'Nature Staff',
+    'FIRESTAFF': 'Fire Staff',
+    'FROSTSTAFF': 'Frost Staff',
+    'CURSEDSTAFF': 'Cursed Staff',
+    'HOLYSTAFF': 'Holy Staff',
+    'ARCANESTAFF': 'Arcane Staff',
+  };
+
+  // Seleciona o mapa correto
+  const nameMap = isPT ? nameMapPT : nameMapEN;
+
   // Tenta mapear o nome
   let prettyName = nameMap[withoutTier] || withoutTier
     .toLowerCase()
@@ -97,7 +144,8 @@ export function getItemDisplayNameWithEnchantment(internalName: string): string 
   const tierMatch = base.match(/^T(\d+)_/);
   if (tierMatch) {
     const tier = tierMatch[1];
-    const tierNames: Record<string, string> = {
+    
+    const tierNamesPT: Record<string, string> = {
       '1': 'Novato',
       '2': 'Iniciante',
       '3': 'Aprendiz',
@@ -107,8 +155,23 @@ export function getItemDisplayNameWithEnchantment(internalName: string): string 
       '7': 'Grão-mestre',
       '8': 'Ancião',
     };
+
+    const tierNamesEN: Record<string, string> = {
+      '1': 'Novice',
+      '2': 'Apprentice',
+      '3': 'Journeyman',
+      '4': 'Adept',
+      '5': 'Expert',
+      '6': 'Master',
+      '7': 'Grandmaster',
+      '8': 'Legendary',
+    };
+
+    const tierNames = isPT ? tierNamesPT : tierNamesEN;
     const tierName = tierNames[tier] || `T${tier}`;
-    prettyName = `${prettyName} do ${tierName}`;
+    
+    const ofWord = isPT ? 'do' : 'of';
+    prettyName = `${prettyName} ${ofWord} ${tierName}`;
   }
 
   if (enchant) {
@@ -118,4 +181,18 @@ export function getItemDisplayNameWithEnchantment(internalName: string): string 
   nameCache.set(internalName, prettyName);
   return prettyName;
 }
+
+/**
+ * Hook React para usar nomes de items com i18n automático
+ * (Opcional - para componentes que precisam reagir à mudança de idioma)
+ */
+export function useItemDisplayName(internalName: string): string {
+  const { i18n } = useTranslation();
   
+  // Limpa cache quando idioma muda para forçar atualização
+  React.useEffect(() => {
+    nameCache.clear();
+  }, [i18n.language]);
+
+  return getItemDisplayNameWithEnchantment(internalName);
+}

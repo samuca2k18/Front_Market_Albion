@@ -1,15 +1,17 @@
-// src/components/layout/Header.tsx
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
+import { LanguageSwitcher } from "../common/LanguageSwitcher";
 
 const navItems = [
-  { label: "Painel", path: "/dashboard", protected: true },
-  { label: "Preços", path: "/prices", protected: true },
+  { label: "dashboard", path: "/dashboard", protected: true },
+  { label: "prices", path: "/prices", protected: true },
 ];
 
 export function Header() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout, token } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,7 +47,7 @@ export function Header() {
                 Albion Market
               </span>
               <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Market Intelligence
+                {t("header.tagline")}
               </span>
             </div>
           </Link>
@@ -69,7 +71,7 @@ export function Header() {
               >
                 {({ isActive }) => (
                   <>
-                    {item.label}
+                    {t(`header.${item.label}`)}
                     {isActive && (
                       <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-primary" />
                     )}
@@ -80,8 +82,11 @@ export function Header() {
           </nav>
         )}
 
-        {/* Right side (user / auth buttons) */}
+        {/* Right side (language switcher + user / auth buttons) */}
         <div className="hidden md:flex items-center gap-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {user ? (
             <>
               <div className="flex items-center gap-3">
@@ -91,7 +96,7 @@ export function Header() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Logado como
+                    {t("header.loggedAs")}
                   </span>
                   <span className="text-sm font-medium truncate max-w-[140px]">
                     {user.username}
@@ -104,7 +109,7 @@ export function Header() {
                 onClick={handleLogout}
                 className="ml-1"
               >
-                Sair
+                {t("header.logout")}
               </Button>
             </>
           ) : (
@@ -115,7 +120,7 @@ export function Header() {
                 asChild
               >
                 <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  Entrar
+                  {t("login.submit")}
                 </Link>
               </Button>
               <Button
@@ -124,7 +129,7 @@ export function Header() {
                 asChild
               >
                 <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  Criar conta
+                  {t("signup.submit")}
                 </Link>
               </Button>
             </>
@@ -137,7 +142,7 @@ export function Header() {
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2 md:hidden border border-border/70 bg-background/80"
             aria-expanded={isMenuOpen}
-            aria-label="Alternar navegação"
+            aria-label={t("header.toggleMenu")}
             onClick={() => setIsMenuOpen((state) => !state)}
           >
             <span
@@ -177,10 +182,15 @@ export function Header() {
                   }
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {item.label}
+                  {t(`header.${item.label}`)}
                 </NavLink>
               ))}
             </nav>
+
+            {/* Mobile Language Switcher */}
+            <div className="py-2 border-t border-border/40">
+              <LanguageSwitcher />
+            </div>
 
             <div className="flex items-center justify-between gap-3 pt-2">
               {user ? (
@@ -192,7 +202,7 @@ export function Header() {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        Logado como
+                        {t("header.loggedAs")}
                       </span>
                       <span className="text-sm font-medium truncate max-w-[120px]">
                         {user.username}
@@ -200,19 +210,19 @@ export function Header() {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" onClick={handleLogout}>
-                    Sair
+                    {t("header.logout")}
                   </Button>
                 </>
               ) : (
                 <>
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                      Entrar
+                      {t("login.submit")}
                     </Link>
                   </Button>
                   <Button variant="hero" size="sm" asChild>
                     <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                      Criar conta
+                      {t("signup.submit")}
                     </Link>
                   </Button>
                 </>

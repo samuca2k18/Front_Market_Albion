@@ -5,26 +5,30 @@ import {
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import type { Product } from "../../api/productService";
 import { searchProducts } from "../../api/productService";
 import { useDebounce } from "../../hooks/useDebounce";
 import "./SearchAutocomplete.css";
+
 interface SearchAutocompleteProps {
   onSelectProduct?: (product: Product | any) => void;
 }
 
 export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps) {
+  const { t, i18n } = useTranslation();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const debouncedQuery = useDebounce(query, 400);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
+  // Quando o idioma muda, refetch os resultados com o novo idioma
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["product-search", debouncedQuery],
+    queryKey: ["product-search", debouncedQuery, i18n.language],
     queryFn: () => searchProducts(debouncedQuery),
-    enabled: debouncedQuery.length >= 2, // só busca com 2+ caracteres
+    enabled: debouncedQuery.length >= 2,
     staleTime: 60_000,
   });
 
@@ -34,16 +38,31 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   const getInternalName = (product: any): string | undefined =>
     product.unique_name ?? product.UniqueName;
 
-  // helper pra extrair nome bonitinho (PT > EN > internal)
+  // helper pra extrair nome bonitinho no idioma atual
+  // PT: name_pt > name_en > internal
+  // EN: name_en > name_pt > internal
   const getLabel = (product: any): string => {
     const internal = getInternalName(product) ?? "";
-    return (
-      product.name_pt ??
-      product["PT-BR"] ??
-      product.name_en ??
-      product["EN-US"] ??
-      internal
-    );
+    const isPortuguese = i18n.language === "pt-BR";
+
+    if (isPortuguese) {
+      return (
+        product.name_pt ??
+        product["PT-BR"] ??
+        product.name_en ??
+        product["EN-US"] ??
+        internal
+      );
+    } else {
+      // English
+      return (
+        product.name_en ??
+        product["EN-US"] ??
+        product.name_pt ??
+        product["PT-BR"] ??
+        internal
+      );
+    }
   };
 
   // Fecha ao clicar fora
@@ -114,7 +133,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
       <div className="search-input-container">
         <input
           type="text"
-          placeholder="Buscar item..."
+          placeholder={t("search.placeholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
@@ -130,17 +149,19 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
       {isOpen && (
         <div className="search-dropdown">
-          {isLoading && <div className="search-loading">Carregando...</div>}
+          {isLoading && (
+            <div className="search-loading">{t("search.loading")}</div>
+          )}
 
           {isError && (
-            <div className="search-error">Erro ao carregar resultados.</div>
+            <div className="search-error">{t("search.error")}</div>
           )}
 
           {!isLoading &&
             !isError &&
             results.length === 0 &&
             debouncedQuery.length >= 2 && (
-              <div className="search-empty">Nenhum item encontrado.</div>
+              <div className="search-empty">{t("search.noResults")}</div>
             )}
 
           {!isLoading &&
@@ -156,28 +177,27 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
               return (
                 <button
-                key={internal}
-                type="button"
-                className="search-result-card"
-                onClick={() => handleSelect(product)}
-              >
-                <img
-                  src={imgUrl}
-                  alt={label}
-                  className="search-item-image"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://render.albiononline.com/v1/item/T1_BAG.png";
-                  }}
-                />
-              
-                <div className="search-item-content">
-                  <span className="search-item-label">{label}</span>
-                  <span className="search-item-internal">{internal}</span>
-                </div>
-              </button>  
+                  key={internal}
+                  type="button"
+                  className="search-result-card"
+                  onClick={() => handleSelect(product)}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={label}
+                    className="search-item-image"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://render.albiononline.com/v1/item/T1_BAG.png";
+                    }}
+                  />
+                
+                  <div className="search-item-content">
+                    <span className="search-item-label">{label}</span>
+                    <span className="search-item-internal">{internal}</span>
+                  </div>
+                </button>  
               );
-              
             })}
         </div>
       )}

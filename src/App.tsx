@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n/i18n';
 import './App.css';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPage } from './pages/LandingPage';
@@ -12,26 +14,28 @@ import { GuestRoute } from './components/routing/GuestRoute';
 
 function App() {
   return (
-    <Routes>
-      {/* Layout principal (navbar, etc) */}
-      <Route element={<AppLayout />}>
-        {/* Rotas para visitantes (não logados) */}
-        <Route element={<GuestRoute />}>
-          <Route index element={<LandingPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="signup" element={<SignupPage />} />
-        </Route>
+    <I18nextProvider i18n={i18n}>
+      <Routes>
+        {/* Layout principal (navbar, etc) */}
+        <Route element={<AppLayout />}>
+          {/* Rotas para visitantes (não logados) */}
+          <Route element={<GuestRoute />}>
+            <Route index element={<LandingPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="signup" element={<SignupPage />} />
+          </Route>
 
-        {/* Rotas protegidas (somente logado) */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="prices" element={<PricesPage />} />
-        </Route>
+          {/* Rotas protegidas (somente logado) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="prices" element={<PricesPage />} />
+          </Route>
 
-        {/* 404 */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+          {/* 404 */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </I18nextProvider>
   );
 }
 

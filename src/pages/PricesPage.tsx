@@ -1,5 +1,6 @@
 // src/pages/PricesPage.tsx
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getItemImageUrl } from '../utils/itemImage';
 import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
 import { fetchMyItemsPrices } from '../api/albion';
@@ -25,6 +26,7 @@ function getBaseItemName(itemName: string): string {
 }
 
 export const PricesPage = () => {
+  const { t } = useTranslation();
   const [rawItems, setRawItems] = useState<MyItemPrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,14 +54,14 @@ export const PricesPage = () => {
         
         setRawItems(enrichedData);
       } catch (err: any) {
-        setError(err?.message || 'Erro ao carregar preços');
+        setError(err?.message || t('prices.errorLoading'));
       } finally {
         setLoading(false);
       }
     };
 
     load();
-  }, []);
+  }, [t]);
 
   // Lista de itens únicos para o select (usando nome base)
   const uniqueItems = useMemo(() => {
@@ -214,7 +216,7 @@ export const PricesPage = () => {
   if (error) {
     return (
       <div className="error-container">
-        <h2>Erro ao carregar preços</h2>
+        <h2>{t('prices.errorLoading')}</h2>
         <p>{error}</p>
       </div>
     );
@@ -223,21 +225,21 @@ export const PricesPage = () => {
   return (
     <div className="prices-page">
       <div className="prices-header">
-        <h1>Preços dos meus itens</h1>
+        <h1>{t('prices.title')}</h1>
         <p className="subtitle">
-          Visualize, filtre e ordene os preços atuais dos itens que você está monitorando.
+          {t('prices.subtitle')}
         </p>
       </div>
 
       <div className="prices-filters">
         <div className="filters-row">
           <label className="filter-group">
-            <span>Selecione um item</span>
+            <span>{t('prices.selectItem')}</span>
             <select
               value={selectedItem}
               onChange={(e) => setSelectedItem(e.target.value)}
             >
-              <option value="">-- Todos os itens --</option>
+              <option value="">{t('prices.allItems')}</option>
               {uniqueItems.map((itemName) => (
                 <option key={itemName} value={itemName}>
                   {getItemDisplayNameWithEnchantment(itemName)}
@@ -247,24 +249,24 @@ export const PricesPage = () => {
           </label>
 
           <label className="filter-group">
-            <span>Buscar item</span>
+            <span>{t('prices.searchItem')}</span>
             <input
               type="search"
-              placeholder="Digite o nome do item..."
+              placeholder={t('prices.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </label>
 
           <label className="filter-group">
-            <span>Ordenar por</span>
+            <span>{t('prices.sortBy')}</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortBy)}
             >
-              <option value="price">Preço (menor primeiro)</option>
-              <option value="city">Cidade</option>
-              <option value="name">Nome do item</option>
+              <option value="price">{t('prices.priceAsc')}</option>
+              <option value="city">{t('prices.city')}</option>
+              <option value="name">{t('prices.itemName')}</option>
             </select>
           </label>
 
@@ -273,12 +275,12 @@ export const PricesPage = () => {
             onClick={handleClearFilters}
             style={{ marginTop: 'auto' }}
           >
-            Limpar filtros
+            {t('prices.clearFilters')}
           </button>
         </div>
 
         <div className="cities-filter">
-          <h3>Filtrar por cidade</h3>
+          <h3>{t('prices.filterByCity')}</h3>
           <div className="cities-grid">
             {cities.map((city) => (
               <label key={city} className="city-checkbox">
@@ -294,7 +296,7 @@ export const PricesPage = () => {
         </div>
 
         <div className="qualities-filter">
-          <h3>Filtrar por qualidade</h3>
+          <h3>{t('prices.filterByQuality')}</h3>
           <div className="qualities-grid">
             {qualities.map((quality) => (
               <label key={quality} className="quality-checkbox">
@@ -310,7 +312,7 @@ export const PricesPage = () => {
         </div>
 
         <div className="enchantments-filter">
-          <h3>Filtrar por encantamento</h3>
+          <h3>{t('prices.filterByEnchantment')}</h3>
           <div className="enchantments-grid">
             {enchantments.length > 0 ? (
               enchantments.map((enchantment) => (
@@ -320,11 +322,11 @@ export const PricesPage = () => {
                     checked={selectedEnchantments.has(enchantment)}
                     onChange={() => handleEnchantmentToggle(enchantment)}
                   />
-                  <span>{enchantment === 0 ? 'Sem encant.' : `@${enchantment}`}</span>
+                  <span>{enchantment === 0 ? t('prices.noEnchantmentFilter') : `@${enchantment}`}</span>
                 </label>
               ))
             ) : (
-              <p className="no-data">Nenhum encantamento encontrado</p>
+              <p className="no-data">{t('prices.noEnchantment')}</p>
             )}
           </div>
         </div>
@@ -333,18 +335,18 @@ export const PricesPage = () => {
       <div className="prices-content">
         {filteredItems.length === 0 ? (
           <div className="empty-state">
-            <p>Nenhum item encontrado com os filtros atuais.</p>
+            <p>{t('prices.noResults')}</p>
           </div>
         ) : (
           <div className="prices-table">
             <table>
               <thead>
                 <tr>
-                  <th>Item</th>
-                  <th>Cidade</th>
-                  <th>Preço</th>
-                  <th>Qualidade</th>
-                  <th>Encant.</th>
+                  <th>{t('prices.table.item')}</th>
+                  <th>{t('prices.table.city')}</th>
+                  <th>{t('prices.table.price')}</th>
+                  <th>{t('prices.table.quality')}</th>
+                  <th>{t('prices.table.enchantment')}</th>
                 </tr>
               </thead>
               <tbody>

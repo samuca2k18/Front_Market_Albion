@@ -1,7 +1,7 @@
-// src/pages/DashboardPage.tsx
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "../components/common/Card";
 import "../components/common/common.css";
 import { createItem, listItems, deleteItem } from "../api/items";
@@ -66,7 +66,6 @@ function buildItemImageUrl(item: MyItemPrice): string {
   )}.png`;
 }
 
-
 function buildItemImageUrlFromName(itemName: string): string {
   const [baseName, enchant] = itemName.split("@");
   const enchantSuffix = enchant ? `@${enchant}` : "";
@@ -76,8 +75,8 @@ function buildItemImageUrlFromName(itemName: string): string {
   )}.png`;
 }
 
-
 export function DashboardPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { handleSubmit, reset } = useForm<ItemPayload>({
     defaultValues: { item_name: "" },
@@ -141,7 +140,7 @@ export function DashboardPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Tem certeza que quer remover este item da sua lista?")) {
+    if (confirm(t("dashboard.confirmDelete"))) {
       deleteMutation.mutate(id);
     }
   };
@@ -189,7 +188,6 @@ export function DashboardPage() {
         .map(async (baseName) => {
           try {
             const results = await searchItems(baseName);
-            // results: AlbionSearchItem[] (unique_name, name_pt, name_en)
             const found = results.find((r) => r.unique_name === baseName);
 
             if (found) {
@@ -203,7 +201,6 @@ export function DashboardPage() {
               }
             }
             return null;
-
           } catch {
             // silenciosamente falha, usa fallback
           }
@@ -231,24 +228,17 @@ export function DashboardPage() {
     }
   }, [myPrices, itemNamesCache]);
 
-  // Função helper para obter nome do item (PT ou fallback)
-  // helper pra pegar só o código base (sem @n)
+  // Função helper para obter nome do item (PT ou fallback) SEM o @n
+  const getItemDisplayName = (itemName: string): string => {
+    const { base } = splitItemName(itemName);
+    const cachedName = itemNamesCache.get(base);
 
+    if (cachedName) {
+      return cachedName;
+    }
 
-// Função helper para obter nome do item (PT ou fallback) SEM o @n
-const getItemDisplayName = (itemName: string): string => {
-  const { base } = splitItemName(itemName);
-  const cachedName = itemNamesCache.get(base);
-
-  if (cachedName) {
-    return cachedName; // sem @n
-  }
-
-  // usa o fallback com o base (sem @)
-  return getItemDisplayNameWithEnchantment(base);
-};
-
-
+    return getItemDisplayNameWithEnchantment(base);
+  };
 
   // Dados formatados para o gráfico
   const chartData = useMemo(() => {
@@ -271,29 +261,29 @@ const getItemDisplayName = (itemName: string): string => {
         {/* Top cards: resumo + adicionar item */}
         <section className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
           <Card
-            title="Resumo rápido"
-            description="Seus itens monitorados em tempo real."
+            title={t("dashboard.quickSummary")}
+            description={t("dashboard.quickSummaryDesc")}
           >
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Itens rastreados
+                  {t("dashboard.trackedItems")}
                 </span>
                 <p className="mt-2 text-2xl font-semibold">{trackedItems.length}</p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Com preço ativo
+                  {t("dashboard.activePrices")}
                 </span>
                 <p className="mt-2 text-2xl font-semibold">{myPrices.length}</p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Melhor oportunidade
+                  {t("dashboard.bestOpportunity")}
                 </span>
                 <p className="mt-2 text-lg font-semibold">
                   {lowestPrice !== null
-                    ? `${lowestPrice.toLocaleString("pt-BR")} silver`
+                    ? `${lowestPrice.toLocaleString("pt-BR")} ${t("dashboard.silver")}`
                     : "—"}
                 </p>
               </div>
@@ -301,26 +291,25 @@ const getItemDisplayName = (itemName: string): string => {
           </Card>
 
           <Card
-            title="Adicionar item"
-            description="Busque pelo nome PT/EN ou código interno (ex: T8_BAG@3)."
+            title={t("dashboard.addItem")}
+            description={t("dashboard.addItemDesc")}
           >
             <form
               className="mt-3 space-y-3"
               onSubmit={handleSubmit(onSubmit)}
             >
               <SearchAutocomplete
-  onSelectProduct={(product: any) => {
-    const internal = product.unique_name ?? product.UniqueName;
-    if (!internal) return;
-    createMutation.mutate({ item_name: internal });
-    reset({ item_name: "" });
-  }}
-/>
-
+                onSelectProduct={(product: any) => {
+                  const internal = product.unique_name ?? product.UniqueName;
+                  if (!internal) return;
+                  createMutation.mutate({ item_name: internal });
+                  reset({ item_name: "" });
+                }}
+              />
 
               {createMutation.error && (
                 <p className="text-xs text-destructive mt-1">
-                  {createMutation.error.message || "Erro ao adicionar item."}
+                  {createMutation.error.message || t("dashboard.errorAdding")}
                 </p>
               )}
             </form>
@@ -329,85 +318,82 @@ const getItemDisplayName = (itemName: string): string => {
 
         {/* Bottom grid: lista + preços em tempo real + gráfico */}
         <section className="grid gap-6 lg:grid-cols-2">
-        <Card
-  title="Itens cadastrados"
-  description="Clique em Remover para excluir da lista."
->
-  {itemsQuery.isLoading ? (
-    <p className="text-sm text-muted-foreground">Carregando...</p>
-  ) : itemsQuery.isError ? (
-    <p className="text-sm text-destructive">Erro ao carregar itens.</p>
-  ) : trackedItems.length > 0 ? (
-    <ul className="mt-3 space-y-2">
-      {trackedItems.map((item) => {
-        const { base } = splitItemName(item.item_name);
-
-        return (
-          <li
-            key={item.id}
-            className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
+          <Card
+            title={t("dashboard.registeredItems")}
+            description={t("dashboard.registeredItemsDesc")}
           >
-            <div className="flex items-center gap-3">
-              <img
-                src={buildItemImageUrlFromName(item.item_name)}
-                alt={item.item_name}
-                className="h-9 w-9 rounded-md bg-black/40"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.src =
-                    "https://render.albiononline.com/v1/item/T1_BAG.png";
-                }}
-              />
-              <div className="flex flex-col">
-                {/* Nome bonito (PT/EN), sem @n */}
-                <span className="font-medium">
-                  {getItemDisplayName(item.item_name)}
-                </span>
+            {itemsQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+            ) : itemsQuery.isError ? (
+              <p className="text-sm text-destructive">{t("dashboard.errorLoadingItems")}</p>
+            ) : trackedItems.length > 0 ? (
+              <ul className="mt-3 space-y-2">
+                {trackedItems.map((item) => {
+                  const { base } = splitItemName(item.item_name);
 
-                {/* Código interno base, sem @n */}
-                <span className="text-[11px] text-muted-foreground mt-0.5">
-                  {base}
-                </span>
+                  return (
+                    <li
+                      key={item.id}
+                      className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={buildItemImageUrlFromName(item.item_name)}
+                          alt={item.item_name}
+                          className="h-9 w-9 rounded-md bg-black/40"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://render.albiononline.com/v1/item/T1_BAG.png";
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {getItemDisplayName(item.item_name)}
+                          </span>
 
-                {item.created_at && (
-                  <span className="text-[11px] text-muted-foreground mt-0.5">
-                    Adicionado em{" "}
-                    {new Date(item.created_at).toLocaleDateString("pt-BR")}
-                  </span>
-                )}
+                          <span className="text-[11px] text-muted-foreground mt-0.5">
+                            {base}
+                          </span>
+
+                          {item.created_at && (
+                            <span className="text-[11px] text-muted-foreground mt-0.5">
+                              {t("dashboard.addedOn")}{" "}
+                              {new Date(item.created_at).toLocaleDateString("pt-BR")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+                        onClick={() => handleDelete(item.id)}
+                        disabled={deleteMutation.isPending}
+                        title={t("common.delete")}
+                      >
+                        {t("common.delete")}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+                {t("dashboard.noItemsAdded")}
+                <br />
+                {t("dashboard.startAdding")}
               </div>
-            </div>
-
-            <button
-              className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
-              onClick={() => handleDelete(item.id)}
-              disabled={deleteMutation.isPending}
-              title="Remover item"
-            >
-              Remover
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  ) : (
-    <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-      Nenhum item adicionado ainda.
-      <br />
-      Comece adicionando um acima!
-    </div>
-  )}
-</Card>
-
+            )}
+          </Card>
 
           <Card
-            title="Preços em tempo real"
-            description="Clique em um item para ver o histórico de preço."
+            title={t("dashboard.realtimePrices")}
+            description={t("dashboard.realtimePricesDesc")}
           >
             {/* FILTRO DE TIER */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                <span>Tier</span>
+                <span>{t("dashboard.tier")}</span>
                 <select
                   className="h-8 rounded-md border border-input bg-background px-2 text-xs"
                   value={String(selectedTier)}
@@ -422,8 +408,8 @@ const getItemDisplayName = (itemName: string): string => {
                     }
                   }}
                 >
-                  <option value="all">Todos</option>
-                  <option value="no-tier">Sem tier</option>
+                  <option value="all">{t("dashboard.allTiers")}</option>
+                  <option value="no-tier">{t("dashboard.noTier")}</option>
                   {ALBION_TIERS.map((tier) => (
                     <option key={tier} value={tier}>
                       T{tier}
@@ -435,10 +421,10 @@ const getItemDisplayName = (itemName: string): string => {
 
             {myPricesQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">
-                Buscando preços nas cidades...
+                {t("dashboard.fetchingPrices")}
               </p>
             ) : myPricesQuery.isError ? (
-              <p className="text-sm text-destructive">Erro ao carregar preços.</p>
+              <p className="text-sm text-destructive">{t("dashboard.errorLoadingPrices")}</p>
             ) : myPrices.length > 0 ? (
               <>
                 <div className="overflow-x-auto rounded-xl border border-border/70">
@@ -446,19 +432,19 @@ const getItemDisplayName = (itemName: string): string => {
                     <thead className="bg-muted/60">
                       <tr>
                         <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                          Item
+                          {t("prices.table.item")}
                         </th>
                         <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                          Cidade
+                          {t("prices.table.city")}
                         </th>
                         <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                          Preço
+                          {t("prices.table.price")}
                         </th>
                         <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                          Qualidade
+                          {t("prices.table.quality")}
                         </th>
                         <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                          Encant.
+                          {t("prices.table.enchantment")}
                         </th>
                       </tr>
                     </thead>
@@ -468,7 +454,7 @@ const getItemDisplayName = (itemName: string): string => {
                           key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
                           className="cursor-pointer hover:bg-muted/60 transition-colors"
                           onClick={() => setSelectedHistoryItem(item.item_name)}
-                          title="Clique para ver o histórico deste item"
+                          title={t("dashboard.clickToViewHistory")}
                         >
                           <td className="px-3 py-2 align-middle">
                             <div className="flex items-center gap-3">
@@ -487,8 +473,8 @@ const getItemDisplayName = (itemName: string): string => {
                                   {getItemDisplayName(item.item_name)}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground mt-0.5">
-  {splitItemName(item.item_name).base}
-</span>
+                                  {splitItemName(item.item_name).base}
+                                </span>
                               </div>
                             </div>
                           </td>
@@ -501,7 +487,7 @@ const getItemDisplayName = (itemName: string): string => {
 
                           <td className="px-3 py-2 align-middle">
                             {typeof item.price === "number"
-                              ? `${item.price.toLocaleString("pt-BR")} silver`
+                              ? `${item.price.toLocaleString("pt-BR")} ${t("dashboard.silver")}`
                               : "—"}
                           </td>
 
@@ -533,7 +519,7 @@ const getItemDisplayName = (itemName: string): string => {
                 {selectedHistoryItem && (
                   <div className="mt-6">
                     <h3 className="text-sm font-semibold mb-2">
-                      Histórico de preço —{" "}
+                      {t("dashboard.priceHistory")}{" "}
                       <span className="text-muted-foreground">
                         {getItemDisplayName(selectedHistoryItem)}
                       </span>
@@ -541,13 +527,13 @@ const getItemDisplayName = (itemName: string): string => {
 
                     {historyQuery.isLoading && (
                       <p className="text-sm text-muted-foreground">
-                        Carregando gráfico...
+                        {t("dashboard.loadingChart")}
                       </p>
                     )}
 
                     {historyQuery.isError && (
                       <p className="text-sm text-destructive">
-                        Não foi possível carregar o histórico deste item.
+                        {t("dashboard.errorLoadingHistory")}
                       </p>
                     )}
 
@@ -555,7 +541,7 @@ const getItemDisplayName = (itemName: string): string => {
                       !historyQuery.isError &&
                       chartData.length === 0 && (
                         <p className="text-sm text-muted-foreground">
-                          Sem dados suficientes de histórico para este item.
+                          {t("dashboard.insufficientData")}
                         </p>
                       )}
 
@@ -584,7 +570,7 @@ const getItemDisplayName = (itemName: string): string => {
               </>
             ) : (
               <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-                Adicione itens para começar a monitorar os preços!
+                {t("dashboard.noItemsToMonitor")}
               </div>
             )}
           </Card>
