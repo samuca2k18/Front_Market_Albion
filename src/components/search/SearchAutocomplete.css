@@ -1,17 +1,38 @@
-/* imagem com o mesmo tamanho do dashboard (36px ~ h-9 w-9) */
-.search-item-image {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  object-fit: contain;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(65, 240, 181, 0.15);
-  padding: 2px;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
+/* CARD do resultado */
+.search-result-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 56px; /* altura fixa como dashboard */
+  padding: 8px 12px;
+
+  background: rgba(20, 28, 43, 0.85);
+  border: 1px solid rgba(65, 240, 181, 0.18);
+  border-radius: 14px;
+
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
+
+.search-result-card:hover {
+  background: rgba(65, 240, 181, 0.08);
+  border-color: rgba(65, 240, 181, 0.35);
+}
+
+.search-result-card:active {
+  transform: scale(0.99);
+}
+
+/* garante que a imagem NÃO estique */
+.search-result-card img {
+  flex-shrink: 0;
+}
+
 
 .search-item:hover .search-item-image {
   border-color: rgba(65, 240, 181, 0.4);
@@ -46,3 +67,11 @@
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
 }
+.search-dropdown {
+  padding: 6px;
+}
+
+.search-result-card + .search-result-card {
+  margin-top: 6px;
+}
+
