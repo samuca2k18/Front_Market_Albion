@@ -9,6 +9,21 @@ import './PricesPage.css';
 
 type SortBy = 'price' | 'city' | 'name';
 
+// Helper para extrair encantamento do nome do item (T4_BAG@2 -> 2)
+function getEnchantmentFromItemName(itemName: string): number {
+  const parts = itemName.split('@');
+  if (parts.length > 1) {
+    const enchant = parseInt(parts[1], 10);
+    return isNaN(enchant) ? 0 : enchant;
+  }
+  return 0;
+}
+
+// Helper para extrair nome base (T4_BAG@2 -> T4_BAG)
+function getBaseItemName(itemName: string): string {
+  return itemName.split('@')[0];
+}
+
 export const PricesPage = () => {
   const [rawItems, setRawItems] = useState<MyItemPrice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,14 +36,21 @@ export const PricesPage = () => {
   const [sortBy, setSortBy] = useState<SortBy>('price');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Carrega preços dos itens do usuário (mesmo endpoint do Dashboard)
+  // Carrega preços dos itens do usuário
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         setError(null);
         const data = await fetchMyItemsPrices();
-        setRawItems(data ?? []);
+        
+        // Enriquece os dados com encantamento extraído do nome
+        const enrichedData = (data ?? []).map(item => ({
+          ...item,
+          enchantment: getEnchantmentFromItemName(item.item_name)
+        }));
+        
+        setRawItems(enrichedData);
       } catch (err: any) {
         setError(err?.message || 'Erro ao carregar preços');
       } finally {
@@ -39,19 +61,19 @@ export const PricesPage = () => {
     load();
   }, []);
 
-  // Lista de itens únicos para o select
+  // Lista de itens únicos para o select (usando nome base)
   const uniqueItems = useMemo(() => {
     const names = new Set<string>();
     const list: string[] = [];
 
     for (const item of rawItems) {
-      if (!names.has(item.item_name)) {
-        names.add(item.item_name);
-        list.push(item.item_name);
+      const baseName = getBaseItemName(item.item_name);
+      if (!names.has(baseName)) {
+        names.add(baseName);
+        list.push(baseName);
       }
     }
 
-    // ordena alfabeticamente pelo nome "bonito"
     return list.sort((a, b) =>
       getItemDisplayNameWithEnchantment(a)
         .localeCompare(getItemDisplayNameWithEnchantment(b), 'pt-BR'),
@@ -76,11 +98,12 @@ export const PricesPage = () => {
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
 
-  // Lista de encantamentos únicos para os checkboxes (incluindo 0)
+  // Lista de encantamentos únicos para os checkboxes
   const enchantments = useMemo(() => {
     const set = new Set<number>();
     for (const item of rawItems) {
-      set.add(item.enchantment);
+      const enchant = getEnchantmentFromItemName(item.item_name);
+      set.add(enchant);
     }
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
@@ -89,9 +112,9 @@ export const PricesPage = () => {
   const filteredItems = useMemo(() => {
     let result = [...rawItems];
 
-    // filtro por item selecionado
+    // filtro por item selecionado (usando nome base)
     if (selectedItem) {
-      result = result.filter((item) => item.item_name === selectedItem);
+      result = result.filter((item) => getBaseItemName(item.item_name) === selectedItem);
     }
 
     // filtro por texto (nome "bonito")
@@ -116,7 +139,10 @@ export const PricesPage = () => {
 
     // filtro por encantamentos selecionados
     if (selectedEnchantments.size > 0) {
-      result = result.filter((item) => selectedEnchantments.has(item.enchantment));
+      result = result.filter((item) => {
+        const enchant = getEnchantmentFromItemName(item.item_name);
+        return selectedEnchantments.has(enchant);
+      });
     }
 
     // ordenação
@@ -322,33 +348,36 @@ export const PricesPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredItems.map((item, idx) => (
-                  <tr key={`${item.item_name}-${item.city}-${idx}`} className="clickable">
-                    <td className="item-with-image">
-                      <img
-                        src={getItemImageUrl(item.item_name)}
-                        alt={item.item_name}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            'https://render.albiononline.com/v1/item/T1_BAG.png';
-                        }}
-                      />
-                      <strong>
-                        {getItemDisplayNameWithEnchantment(item.item_name)}
-                      </strong>
-                    </td>
-                    <td>
-                      <span className="pill">{item.city || '—'}</span>
-                    </td>
-                    <td>
-                      <strong>{item.price.toLocaleString('pt-BR')}</strong>
-                      <span className="muted"> silver</span>
-                    </td>
-                    <td>{item.quality}</td>
-                    <td>{item.enchantment > 0 ? `@${item.enchantment}` : '—'}</td>
-                  </tr>
-                ))}
+                {filteredItems.map((item, idx) => {
+                  const enchant = getEnchantmentFromItemName(item.item_name);
+                  return (
+                    <tr key={`${item.item_name}-${item.city}-${idx}`} className="clickable">
+                      <td className="item-with-image">
+                        <img
+                          src={getItemImageUrl(item.item_name)}
+                          alt={item.item_name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              'https://render.albiononline.com/v1/item/T1_BAG.png';
+                          }}
+                        />
+                        <strong>
+                          {getItemDisplayNameWithEnchantment(item.item_name)}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="pill">{item.city || '—'}</span>
+                      </td>
+                      <td>
+                        <strong>{item.price.toLocaleString('pt-BR')}</strong>
+                        <span className="muted"> silver</span>
+                      </td>
+                      <td>{item.quality}</td>
+                      <td>{enchant > 0 ? `@${enchant}` : '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
