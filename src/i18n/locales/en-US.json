@@ -70,7 +70,13 @@
       "confirmDelete": "Are you sure you want to remove this item from your list?",
       "errorAdding": "Error adding item.",
       "searchPlaceholder": "Search item...",
-      "silver": "silver"
+      "silver": "silver",
+      "confirmDeleteOne": "Are you sure you want to remove this item from your list?",
+    "confirmDeleteMultiple": "Are you sure you want to remove {{count}} items from your list?",
+    "deselectAll": "Deselect all",
+    "selectAll": "Select all",
+    "removing": "Removing...",
+    "removeSelected": "Remove {{count}} {{count, plural, one {item} other {items}}}"
     },
     "prices": {
       "title": "My Item Prices",

@@ -37,7 +37,6 @@ function splitItemName(itemName: string): { base: string; enchant?: number } {
   return { base, enchant };
 }
 
-// helper: extrai o tier do nome interno (T4_BAG@2 -> 4, T1_BAG -> 1, etc.)
 function getTierFromItemName(itemName: string): number | null {
   if (!itemName) return null;
 
@@ -51,7 +50,6 @@ function getTierFromItemName(itemName: string): number | null {
   return tier;
 }
 
-// helper: monta a URL da imagem direto da API do Albion
 function buildItemImageUrl(item: MyItemPrice): string {
   const { base } = splitItemName(item.item_name);
 
@@ -76,7 +74,7 @@ function buildItemImageUrlFromName(itemName: string): string {
 }
 
 export function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const { handleSubmit, reset } = useForm<ItemPayload>({
     defaultValues: { item_name: "" },
@@ -89,27 +87,28 @@ export function DashboardPage() {
   );
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  // Itens salvos pelo usuário
+  // Limpa cache quando idioma muda
+  useEffect(() => {
+    setItemNamesCache(new Map());
+  }, [i18n.language]);
+
   const itemsQuery = useQuery<Item[]>({
     queryKey: ["items"],
     queryFn: listItems,
   });
 
-  // Preços dos itens do usuário
   const myPricesQuery = useQuery<MyItemPrice[]>({
     queryKey: ["my-items-prices"],
     queryFn: fetchMyItemsPrices,
     refetchInterval: 5 * 60 * 1000,
   });
 
-  // Histórico do item selecionado
   const historyQuery = useQuery<AlbionHistoryResponse>({
     queryKey: ["albion-history", selectedHistoryItem],
     queryFn: () => fetchAlbionHistory(selectedHistoryItem!, 7, ["Caerleon"], "6h"),
     enabled: !!selectedHistoryItem,
   });
 
-  // Criar item
   const createMutation = useMutation<void, ApiErrorShape, ItemPayload>({
     mutationFn: async (payload) => {
       await createItem(payload);
@@ -122,7 +121,6 @@ export function DashboardPage() {
     },
   });
 
-  // Remover item
   const deleteMutation = useMutation<
     void,
     ApiErrorShape,
@@ -176,39 +174,6 @@ export function DashboardPage() {
     },
   });
 
-  const onSubmit = (payload: ItemPayload) => {
-    const name = payload.item_name?.trim().toUpperCase();
-    if (!name) return;
-    createMutation.mutate({ item_name: name });
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm(t("dashboard.confirmDelete"))) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const handleToggleSelect = (id: number) => {
-    setSelectedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedItems.size === trackedItems.length) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set(trackedItems.map((item) => item.id)));
-    }
-  };
-
-  // Remover múltiplos itens
   const deleteMultipleMutation = useMutation<
     void,
     ApiErrorShape,
@@ -261,13 +226,45 @@ export function DashboardPage() {
     },
   });
 
+  const onSubmit = (payload: ItemPayload) => {
+    const name = payload.item_name?.trim().toUpperCase();
+    if (!name) return;
+    createMutation.mutate({ item_name: name });
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm(t("dashboard.confirmDelete"))) {
+      deleteMutation.mutate(id);
+    }
+  };
+
+  const handleToggleSelect = (id: number) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === trackedItems.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(trackedItems.map((item) => item.id)));
+    }
+  };
+
   const handleDeleteSelected = () => {
     if (selectedItems.size === 0) return;
     
     const count = selectedItems.size;
     const message = count === 1 
-      ? "Tem certeza que quer remover este item da sua lista?"
-      : `Tem certeza que quer remover ${count} itens da sua lista?`;
+      ? t("dashboard.confirmDeleteOne")
+      : t("dashboard.confirmDeleteMultiple", { count });
     
     if (confirm(message)) {
       const idsToDelete = Array.from(selectedItems);
@@ -278,7 +275,6 @@ export function DashboardPage() {
   const trackedItems = itemsQuery.data ?? [];
   const myPricesRaw = myPricesQuery.data ?? [];
 
-  // 1) filtra por preço válido + tier
   const filtered = useMemo(() => {
     return myPricesRaw
       .filter((p) => p && typeof p.price === "number" && p.price > 0)
@@ -291,7 +287,6 @@ export function DashboardPage() {
       });
   }, [myPricesRaw, selectedTier]);
 
-  // 2) agrupa por item_name e pega o MAIS BARATO de cada item
   const myPrices = useMemo(() => {
     const cheapestByItem = new Map<string, MyItemPrice>();
 
@@ -310,7 +305,6 @@ export function DashboardPage() {
     [myPrices],
   );
 
-  // Busca nomes em português para os itens (tanto da lista monitorada quanto dos preços)
   useEffect(() => {
     const fetchItemNames = async () => {
       const uniqueItemNames = Array.from(
@@ -328,10 +322,10 @@ export function DashboardPage() {
             const found = results.find((r) => r.unique_name === baseName);
 
             if (found) {
-              const label =
-                found.name_pt ??
-                found.name_en ??
-                found.unique_name;
+              const currentLanguage = i18n.language;
+              const label = currentLanguage === 'pt-BR'
+                ? (found.name_pt ?? found.name_en ?? found.unique_name)
+                : (found.name_en ?? found.name_pt ?? found.unique_name);
 
               if (label) {
                 return { baseName, name: label };
@@ -363,9 +357,8 @@ export function DashboardPage() {
     if (myPrices.length > 0 || trackedItems.length > 0) {
       fetchItemNames();
     }
-  }, [myPrices, trackedItems]);
+  }, [myPrices, trackedItems, i18n.language, itemNamesCache]);
 
-  // Função helper para obter nome do item (PT ou fallback), preservando encantamento
   const getItemDisplayName = (itemName: string): string => {
     const { base, enchant } = splitItemName(itemName);
     const cachedName = itemNamesCache.get(base);
@@ -374,13 +367,10 @@ export function DashboardPage() {
     return enchant ? `${baseLabel} @${enchant}` : baseLabel;
   };
 
-
-
-  // Dados formatados para o gráfico
   const chartData = useMemo(() => {
     if (!historyQuery.data) return [];
     return historyQuery.data.data.map((point) => ({
-      time: new Date(point.date).toLocaleString("pt-BR", {
+      time: new Date(point.date).toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US", {
         day: "2-digit",
         month: "2-digit",
         hour: "2-digit",
@@ -389,7 +379,7 @@ export function DashboardPage() {
       avg_price: point.avg_price,
       city: point.city,
     }));
-  }, [historyQuery.data]);
+  }, [historyQuery.data, i18n.language]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -419,7 +409,7 @@ export function DashboardPage() {
                 </span>
                 <p className="mt-2 text-lg font-semibold">
                   {lowestPrice !== null
-                    ? `${lowestPrice.toLocaleString("pt-BR")} ${t("dashboard.silver")}`
+                    ? `${lowestPrice.toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")} ${t("dashboard.silver")}`
                     : "—"}
                 </p>
               </div>
@@ -454,114 +444,111 @@ export function DashboardPage() {
 
         {/* Bottom grid: lista + preços em tempo real + gráfico */}
         <section className="grid gap-6 lg:grid-cols-2">
-        <Card
-  title="Itens cadastrados"
-  description="Selecione os itens que deseja remover."
->
-  {itemsQuery.isLoading ? (
-    <p className="text-sm text-muted-foreground">Carregando...</p>
-  ) : itemsQuery.isError ? (
-    <p className="text-sm text-destructive">Erro ao carregar itens.</p>
-  ) : trackedItems.length > 0 ? (
-    <>
-      {/* Controles de seleção */}
-      <div className="mt-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={selectedItems.size === trackedItems.length && trackedItems.length > 0}
-            onChange={handleSelectAll}
-            className="h-4 w-4 rounded border-border cursor-pointer accent-primary"
-            id="select-all"
-          />
-          <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
-            {selectedItems.size === trackedItems.length ? "Desselecionar todos" : "Selecionar todos"}
-          </label>
-        </div>
-        {selectedItems.size > 0 && (
-          <button
-            className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium"
-            onClick={handleDeleteSelected}
-            disabled={deleteMutation.isPending || deleteMultipleMutation.isPending}
+          <Card
+            title={t("dashboard.registeredItems")}
+            description={t("dashboard.registeredItemsDesc")}
           >
-            {deleteMultipleMutation.isPending ? "Removendo..." : `Remover ${selectedItems.size} ${selectedItems.size === 1 ? "item" : "itens"}`}
-          </button>
-        )}
-      </div>
-
-      <ul className="space-y-2">
-        {trackedItems.map((item) => {
-          const { base } = splitItemName(item.item_name);
-          const isSelected = selectedItems.has(item.id);
-
-          return (
-            <li
-              key={item.id}
-              className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${
-                isSelected
-                  ? "border-primary/50 bg-primary/10"
-                  : "border-border/70 bg-card/80"
-              }`}
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => handleToggleSelect(item.id)}
-                  className="h-4 w-4 rounded border-border cursor-pointer accent-primary flex-shrink-0"
-                />
-                <img
-                  src={buildItemImageUrlFromName(item.item_name)}
-                  alt={item.item_name}
-                  className="h-9 w-9 rounded-md bg-black/40 flex-shrink-0"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://render.albiononline.com/v1/item/T1_BAG.png";
-                  }}
-                />
-                <div className="flex flex-col min-w-0 flex-1">
-                  {/* Nome bonito (PT/EN), sem @n */}
-                  <span className="font-medium truncate">
-                    {getItemDisplayNameWithEnchantment(item.item_name)}
-                  </span>
-
-                  {/* Código interno base, sem @n */}
-                  <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                    {base}
-                  </span>
-
-                  {item.created_at && (
-                    <span className="text-[11px] text-muted-foreground mt-0.5">
-                      Adicionado em{" "}
-                      {new Date(item.created_at).toLocaleDateString("pt-BR")}
-                    </span>
+            {itemsQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+            ) : itemsQuery.isError ? (
+              <p className="text-sm text-destructive">{t("dashboard.errorLoadingItems")}</p>
+            ) : trackedItems.length > 0 ? (
+              <>
+                {/* Controles de seleção */}
+                <div className="mt-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.size === trackedItems.length && trackedItems.length > 0}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 rounded border-border cursor-pointer accent-primary"
+                      id="select-all"
+                    />
+                    <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+                      {selectedItems.size === trackedItems.length ? t("dashboard.deselectAll") : t("dashboard.selectAll")}
+                    </label>
+                  </div>
+                  {selectedItems.size > 0 && (
+                    <button
+                      className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium"
+                      onClick={handleDeleteSelected}
+                      disabled={deleteMutation.isPending || deleteMultipleMutation.isPending}
+                    >
+                      {deleteMultipleMutation.isPending ? t("dashboard.removing") : t("dashboard.removeSelected", { count: selectedItems.size })}
+                    </button>
                   )}
                 </div>
+
+                <ul className="space-y-2">
+                  {trackedItems.map((item) => {
+                    const { base } = splitItemName(item.item_name);
+                    const isSelected = selectedItems.has(item.id);
+
+                    return (
+                      <li
+                        key={item.id}
+                        className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${
+                          isSelected
+                            ? "border-primary/50 bg-primary/10"
+                            : "border-border/70 bg-card/80"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelect(item.id)}
+                            className="h-4 w-4 rounded border-border cursor-pointer accent-primary flex-shrink-0"
+                          />
+                          <img
+                            src={buildItemImageUrlFromName(item.item_name)}
+                            alt={item.item_name}
+                            className="h-9 w-9 rounded-md bg-black/40 flex-shrink-0"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "https://render.albiononline.com/v1/item/T1_BAG.png";
+                            }}
+                          />
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="font-medium truncate">
+                              {getItemDisplayNameWithEnchantment(item.item_name)}
+                            </span>
+
+                            <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                              {base}
+                            </span>
+
+                            {item.created_at && (
+                              <span className="text-[11px] text-muted-foreground mt-0.5">
+                                {t("dashboard.addedOn")}{" "}
+                                {new Date(item.created_at).toLocaleDateString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0"
+                          onClick={() => handleDelete(item.id)}
+                          disabled={deleteMutation.isPending}
+                          title={t("common.delete")}
+                        >
+                          {t("common.delete")}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+                {t("dashboard.noItemsAdded")}
+                <br />
+                {t("dashboard.startAdding")}
               </div>
-
-              <button
-                className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0"
-                onClick={() => handleDelete(item.id)}
-                disabled={deleteMutation.isPending}
-                title="Remover item"
-              >
-                Remover
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </>
-  ) : (
-    <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-      Nenhum item adicionado ainda.
-      <br />
-      Comece adicionando um acima!
-    </div>
-  )}
-</Card>
-
+            )}
+          </Card>
 
           <Card
             title={t("dashboard.realtimePrices")}
@@ -664,7 +651,7 @@ export function DashboardPage() {
 
                           <td className="px-3 py-2 align-middle">
                             {typeof item.price === "number"
-                              ? `${item.price.toLocaleString("pt-BR")} ${t("dashboard.silver")}`
+                              ? `${item.price.toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")} ${t("dashboard.silver")}`
                               : "—"}
                           </td>
 
@@ -684,7 +671,7 @@ export function DashboardPage() {
                           </td>
 
                           <td className="px-3 py-2 align-middle">
-                            {item.enchantment > 0 ? `.${item.enchantment}` : "—"}
+                            {item.enchantment > 0 ? `@${item.enchantment}` : "—"}
                           </td>
                         </tr>
                       ))}

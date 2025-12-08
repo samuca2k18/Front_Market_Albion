@@ -1,4 +1,3 @@
-// src/pages/PricesPage.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getItemImageUrl } from '../utils/itemImage';
@@ -11,7 +10,6 @@ import './PricesPage.css';
 
 type SortBy = 'price' | 'city' | 'name';
 
-// Helper para extrair encantamento do nome do item (T4_BAG@2 -> 2)
 function getEnchantmentFromItemName(itemName: string): number {
   const parts = itemName.split('@');
   if (parts.length > 1) {
@@ -21,13 +19,12 @@ function getEnchantmentFromItemName(itemName: string): number {
   return 0;
 }
 
-// Helper para extrair nome base (T4_BAG@2 -> T4_BAG)
 function getBaseItemName(itemName: string): string {
   return itemName.split('@')[0];
 }
 
 export const PricesPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [rawItems, setRawItems] = useState<MyItemPrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +36,6 @@ export const PricesPage = () => {
   const [sortBy, setSortBy] = useState<SortBy>('price');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Carrega preços dos itens do usuário
   useEffect(() => {
     const load = async () => {
       try {
@@ -47,7 +43,6 @@ export const PricesPage = () => {
         setError(null);
         const data = await fetchMyItemsPrices();
         
-        // Enriquece os dados com encantamento extraído do nome
         const enrichedData = (data ?? []).map(item => ({
           ...item,
           enchantment: getEnchantmentFromItemName(item.item_name)
@@ -64,7 +59,6 @@ export const PricesPage = () => {
     load();
   }, [t]);
 
-  // Lista de itens únicos para o select (usando nome base)
   const uniqueItems = useMemo(() => {
     const names = new Set<string>();
     const list: string[] = [];
@@ -79,20 +73,18 @@ export const PricesPage = () => {
 
     return list.sort((a, b) =>
       getItemDisplayNameWithEnchantment(a)
-        .localeCompare(getItemDisplayNameWithEnchantment(b), 'pt-BR'),
+        .localeCompare(getItemDisplayNameWithEnchantment(b), i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US'),
     );
-  }, [rawItems]);
+  }, [rawItems, i18n.language]);
 
-  // Lista de cidades únicas para os checkboxes
   const cities = useMemo(() => {
     const set = new Set<string>();
     for (const item of rawItems) {
       if (item.city) set.add(item.city);
     }
-    return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  }, [rawItems]);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US'));
+  }, [rawItems, i18n.language]);
 
-  // Lista de qualidades únicas para os checkboxes
   const qualities = useMemo(() => {
     const set = new Set<number>();
     for (const item of rawItems) {
@@ -101,7 +93,6 @@ export const PricesPage = () => {
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
 
-  // Lista de encantamentos únicos para os checkboxes
   const enchantments = useMemo(() => {
     const set = new Set<number>();
     for (const item of rawItems) {
@@ -111,16 +102,13 @@ export const PricesPage = () => {
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
 
-  // Aplica filtros e ordenação
   const filteredItems = useMemo(() => {
     let result = [...rawItems];
 
-    // filtro por item selecionado (usando nome base)
     if (selectedItem) {
       result = result.filter((item) => getBaseItemName(item.item_name) === selectedItem);
     }
 
-    // filtro por texto (nome "bonito")
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((item) =>
@@ -130,17 +118,14 @@ export const PricesPage = () => {
       );
     }
 
-    // filtro por cidades selecionadas
     if (selectedCities.size > 0) {
       result = result.filter((item) => item.city && selectedCities.has(item.city));
     }
 
-    // filtro por qualidades selecionadas
     if (selectedQualities.size > 0) {
       result = result.filter((item) => selectedQualities.has(item.quality));
     }
 
-    // filtro por encantamentos selecionados
     if (selectedEnchantments.size > 0) {
       result = result.filter((item) => {
         const enchant = getEnchantmentFromItemName(item.item_name);
@@ -148,7 +133,6 @@ export const PricesPage = () => {
       });
     }
 
-    // ordenação
     result.sort((a, b) => {
       if (sortBy === 'price') {
         const pa = a.price ?? 0;
@@ -157,15 +141,15 @@ export const PricesPage = () => {
       }
       
       if (sortBy === 'city') {
-        return (a.city || '').localeCompare(b.city || '', 'pt-BR');
+        return (a.city || '').localeCompare(b.city || '', i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US');
       }
-      // sortBy === 'name'
+
       return getItemDisplayNameWithEnchantment(a.item_name)
-        .localeCompare(getItemDisplayNameWithEnchantment(b.item_name), 'pt-BR');
+        .localeCompare(getItemDisplayNameWithEnchantment(b.item_name), i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US');
     });
 
     return result;
-  }, [rawItems, selectedItem, selectedCities, selectedQualities, selectedEnchantments, sortBy, searchQuery]);
+  }, [rawItems, selectedItem, selectedCities, selectedQualities, selectedEnchantments, sortBy, searchQuery, i18n.language]);
 
   const handleCityToggle = (city: string) => {
     setSelectedCities((prev) => {
@@ -323,7 +307,7 @@ export const PricesPage = () => {
                     checked={selectedEnchantments.has(enchantment)}
                     onChange={() => handleEnchantmentToggle(enchantment)}
                   />
-                  <span>{enchantment === 0 ? 'Sem encant.' : `.${enchantment}`}</span>
+                  <span>{enchantment === 0 ? t('prices.noEnchantment') : `@${enchantment}`}</span>
                 </label>
               ))
             ) : (
@@ -373,11 +357,11 @@ export const PricesPage = () => {
                         <span className="pill">{item.city || '—'}</span>
                       </td>
                       <td>
-                        <strong>{item.price.toLocaleString('pt-BR')}</strong>
-                        <span className="muted"> silver</span>
+                        <strong>{item.price.toLocaleString(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US')}</strong>
+                        <span className="muted"> {t('dashboard.silver')}</span>
                       </td>
                       <td>{getQualityLabel(item.quality)}</td>
-                      <td>{enchant > 0 ? `.${enchant}` : '—'}</td>
+                      <td>{enchant > 0 ? `@${enchant}` : '—'}</td>
                     </tr>
                   );
                 })}
