@@ -53,6 +53,37 @@
   width: 100%;
 }
 
+.filter-group select {
+  color: var(--color-white) !important;
+  background-color: rgba(20, 28, 43, 0.8) !important;
+}
+
+.filter-group select option {
+  background: #14192b !important;
+  color: var(--color-white) !important;
+  padding: 0.75rem;
+}
+
+.filter-group select option:checked {
+  background: var(--color-primary) !important;
+  color: #04070d !important;
+  font-weight: 600;
+}
+
+.filter-group select option:hover {
+  background: rgba(65, 240, 181, 0.2) !important;
+  color: var(--color-white) !important;
+}
+
+/* Garantir que o select tenha cor visível */
+.prices-filters select {
+  color: var(--color-white) !important;
+}
+
+.prices-filters select:focus {
+  color: var(--color-white) !important;
+}
+
 .cities-filter {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 1.5rem;

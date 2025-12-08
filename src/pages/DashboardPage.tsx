@@ -1,7 +1,7 @@
 // src/pages/DashboardPage.tsx
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '../components/common/Card';
 import '../components/common/common.css';
 import { createItem, listItems, deleteItem } from '../api/items';
@@ -16,6 +16,8 @@ import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
 import { ALBION_TIERS } from '../constants/albion';
 import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
+import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
+import { searchItems } from '../api/albion';
 
 // recharts
 import {
@@ -52,6 +54,7 @@ export function DashboardPage() {
 
   const [selectedTier, setSelectedTier] = useState<TierFilter>('all');
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(null);
+  const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(new Map());
 
   // Itens salvos pelo usuário
   const itemsQuery = useQuery<Item[]>({
@@ -140,6 +143,55 @@ export function DashboardPage() {
   );
 
   const lowestPrice = myPrices.length > 0 ? myPrices[0].price : null;
+
+  // Busca nomes em português para os itens
+  useEffect(() => {
+    const fetchItemNames = async () => {
+      const uniqueItemNames = Array.from(new Set(myPrices.map(p => p.item_name.split('@')[0])));
+      const promises = uniqueItemNames
+        .filter(baseName => !itemNamesCache.has(baseName))
+        .map(async (baseName) => {
+          try {
+            const results = await searchItems(baseName);
+            const found = results.find(r => r.unique_name === baseName);
+            if (found && found.name_pt) {
+              return { baseName, name: found.name_pt };
+            }
+          } catch (error) {
+            // Silenciosamente falha, usa fallback
+          }
+          return null;
+        });
+
+      const results = await Promise.all(promises);
+      const newEntries = results.filter((r): r is { baseName: string; name: string } => r !== null);
+      
+      if (newEntries.length > 0) {
+        setItemNamesCache(prev => {
+          const newMap = new Map(prev);
+          newEntries.forEach(({ baseName, name }) => {
+            newMap.set(baseName, name);
+          });
+          return newMap;
+        });
+      }
+    };
+
+    if (myPrices.length > 0) {
+      fetchItemNames();
+    }
+  }, [myPrices, itemNamesCache]);
+
+  // Função helper para obter nome do item
+  const getItemDisplayName = (itemName: string): string => {
+    const baseName = itemName.split('@')[0];
+    const cachedName = itemNamesCache.get(baseName);
+    if (cachedName) {
+      const enchant = itemName.includes('@') ? ` @${itemName.split('@')[1]}` : '';
+      return `${cachedName}${enchant}`;
+    }
+    return getItemDisplayNameWithEnchantment(itemName);
+  };
 
   // Dados formatados para o gráfico
   const chartData = useMemo(() => {
@@ -312,7 +364,12 @@ export function DashboardPage() {
                                 'https://render.albiononline.com/v1/item/T1_BAG.png';
                             }}
                           />
-                          <strong>{item.item_name}</strong>
+                          <div>
+                            <strong>{getItemDisplayName(item.item_name)}</strong>
+                            <span className="muted" style={{ fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+                              {item.item_name}
+                            </span>
+                          </div>
                         </td>
 
                         <td>
@@ -348,7 +405,7 @@ export function DashboardPage() {
                 <div className="chart-wrapper" style={{ marginTop: 24 }}>
                   <h3>
                     Histórico de preço —{' '}
-                    <span className="muted">{selectedHistoryItem}</span>
+                    <span className="muted">{getItemDisplayName(selectedHistoryItem)}</span>
                   </h3>
 
                   {historyQuery.isLoading && <p className="muted">Carregando gráfico...</p>}

@@ -95,21 +95,31 @@ select {
   background-position: right 0.75rem center;
   background-size: 1.2em 1.2em;
   padding-right: 2.5rem;
+  color: var(--color-white) !important;
+}
+
+select::-ms-expand {
+  display: none;
 }
 
 select option {
-  background: #14192b;
-  color: var(--color-white);
+  background: #14192b !important;
+  color: var(--color-white) !important;
   padding: 0.75rem;
   border: none;
   margin: 0.25rem 0;
 }
 
-select option:checked {
-  background: linear-gradient(#41f0b5, #41f0b5);
-  background-color: var(--color-primary) !important;
-  color: #04070d;
+select option:checked,
+select option:focus {
+  background: var(--color-primary) !important;
+  color: #04070d !important;
   font-weight: 600;
+}
+
+select option:hover {
+  background: rgba(65, 240, 181, 0.2) !important;
+  color: var(--color-white) !important;
 }
 
 /* CHECKBOX */
@@ -621,4 +631,41 @@ table tbody tr.clickable:active {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Otimizações de renderização */
+.item-icon,
+.item-with-image img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: transform;
+}
+
+/* Melhorias de acessibilidade e visibilidade */
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+select:disabled option {
+  opacity: 1;
+}
+
+/* Garantir que todos os selects tenham cor visível */
+select,
+select:focus,
+select:hover {
+  color: var(--color-white) !important;
+}
+
+/* Garantir visibilidade das opções em todos os navegadores */
+select option {
+  background-color: #14192b !important;
+  color: var(--color-white) !important;
+}
+
+select option:hover,
+select option:focus {
+  background-color: rgba(65, 240, 181, 0.2) !important;
+  color: var(--color-white) !important;
 }
