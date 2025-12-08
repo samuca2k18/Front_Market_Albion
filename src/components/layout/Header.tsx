@@ -1,3 +1,4 @@
+// src/components/layout/Header.tsx
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -24,15 +25,21 @@ export function Header() {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  const firstLetter = user?.username?.[0]?.toUpperCase() ?? 'A';
+
   return (
     <header className="app-header">
       <div className="app-container header-content">
         <div className="brand-block">
           <Link to="/" className="brand" onClick={closeMenu}>
-            <span className="brand-mark">Albion Market</span>
-            <span className="brand-dot" />
+            <div className="brand-logo">
+              <span className="brand-logo-icon">₿</span>
+            </div>
+            <div className="brand-text">
+              <span className="brand-mark">Albion Market</span>
+              <span className="brand-tagline">Market Intelligence</span>
+            </div>
           </Link>
-          <span className="brand-tagline">Mercado em tempo real</span>
         </div>
 
         {hasNavigation && (
@@ -55,7 +62,9 @@ export function Header() {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+                  className={({ isActive }) =>
+                    isActive ? 'nav-item active' : 'nav-item'
+                  }
                   onClick={closeMenu}
                 >
                   {item.label}
@@ -67,7 +76,16 @@ export function Header() {
           <div className="header-actions">
             {user ? (
               <>
-                <span className="user-chip">Olá, {user.username}</span>
+                <div className="user-info">
+                  <div className="user-avatar">
+                    <span>{firstLetter}</span>
+                    <span className="user-status-dot" />
+                  </div>
+                  <div className="user-meta">
+                    <span className="user-label">Logado como</span>
+                    <span className="user-name">{user.username}</span>
+                  </div>
+                </div>
                 <button className="ghost-button" onClick={handleLogout}>
                   Sair
                 </button>
@@ -88,4 +106,3 @@ export function Header() {
     </header>
   );
 }
-

@@ -1,75 +1,127 @@
 // src/pages/PricesPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getItemImageUrl } from '../utils/itemImage';
 import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
-import { albionAPI } from '../api/albion';
+import { fetchMyItemsPrices } from '../api/albion';
+import type { MyItemPrice } from '../api/types';
 import { Loader } from '../components/common/LoadingScreen';
 import './PricesPage.css';
 
+type SortBy = 'price' | 'city' | 'name';
 
 export const PricesPage = () => {
-  const [items, setItems] = useState<any[]>([]);
-  const [filteredItems, setFilteredItems] = useState<any[]>([]);
+  const [rawItems, setRawItems] = useState<MyItemPrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [selectedItem, setSelectedItem] = useState<string>('');
-  const [cities, setCities] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<'price' | 'city' | 'time'>('price');
+  const [sortBy, setSortBy] = useState<SortBy>('price');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Carrega preços dos itens do usuário (mesmo endpoint do Dashboard)
   useEffect(() => {
-    const fetchData = async () => {
+    const load = async () => {
       try {
         setLoading(true);
-        const itemsData = await albionAPI.getUniqueItems();
-        const citiesData = await albionAPI.getCities();
-
-        setItems(itemsData);
-        setCities(citiesData);
+        setError(null);
+        const data = await fetchMyItemsPrices();
+        setRawItems(data ?? []);
       } catch (err: any) {
-        setError(err.message || 'Erro ao carregar dados');
+        setError(err?.message || 'Erro ao carregar preços');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    load();
   }, []);
 
-  useEffect(() => {
-    let result = items;
+  // Lista de itens únicos para o select
+  const uniqueItems = useMemo(() => {
+    const names = new Set<string>();
+    const list: string[] = [];
 
-    if (selectedItem) {
-      result = result.filter((item) => item.item_id === selectedItem);
+    for (const item of rawItems) {
+      if (!names.has(item.item_name)) {
+        names.add(item.item_name);
+        list.push(item.item_name);
+      }
     }
 
+    // ordena alfabeticamente pelo nome “bonito”
+    return list.sort((a, b) =>
+      getItemDisplayNameWithEnchantment(a)
+        .localeCompare(getItemDisplayNameWithEnchantment(b), 'pt-BR'),
+    );
+  }, [rawItems]);
+
+  // Lista de cidades únicas para os checkboxes
+  const cities = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of rawItems) {
+      if (item.city) set.add(item.city);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [rawItems]);
+
+  // Aplica filtros e ordenação
+  const filteredItems = useMemo(() => {
+    let result = [...rawItems];
+
+    // filtro por item selecionado
+    if (selectedItem) {
+      result = result.filter((item) => item.item_name === selectedItem);
+    }
+
+    // filtro por texto (nome “bonito”)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((item) =>
-        getItemDisplayNameWithEnchantment(item.item_id)
+        getItemDisplayNameWithEnchantment(item.item_name)
           .toLowerCase()
           .includes(query),
       );
     }
 
-    setFilteredItems(result);
-  }, [selectedItem, items, searchQuery]);
+    // filtro por cidades selecionadas
+    if (selectedCities.size > 0) {
+      result = result.filter((item) => item.city && selectedCities.has(item.city));
+    }
+
+    // ordenação
+    result.sort((a, b) => {
+      if (sortBy === 'price') {
+        return a.price - b.price;
+      }
+      if (sortBy === 'city') {
+        return (a.city || '').localeCompare(b.city || '', 'pt-BR');
+      }
+      // sortBy === 'name'
+      return getItemDisplayNameWithEnchantment(a.item_name)
+        .localeCompare(getItemDisplayNameWithEnchantment(b.item_name), 'pt-BR');
+    });
+
+    return result;
+  }, [rawItems, selectedItem, selectedCities, sortBy, searchQuery]);
 
   const handleCityToggle = (city: string) => {
-    const newCities = new Set(selectedCities);
-    if (newCities.has(city)) {
-      newCities.delete(city);
-    } else {
-      newCities.add(city);
-    }
-    setSelectedCities(newCities);
+    setSelectedCities((prev) => {
+      const next = new Set(prev);
+      if (next.has(city)) {
+        next.delete(city);
+      } else {
+        next.add(city);
+      }
+      return next;
+    });
   };
 
   const handleClearFilters = () => {
     setSelectedItem('');
     setSelectedCities(new Set());
     setSearchQuery('');
+    setSortBy('price');
   };
 
   if (loading) return <Loader />;
@@ -86,9 +138,9 @@ export const PricesPage = () => {
   return (
     <div className="prices-page">
       <div className="prices-header">
-        <h1>Preços do Mercado</h1>
+        <h1>Preços dos meus itens</h1>
         <p className="subtitle">
-          Acompanhe os preços de itens em tempo real
+          Visualize, filtre e ordene os preços atuais dos itens que você está monitorando.
         </p>
       </div>
 
@@ -101,9 +153,9 @@ export const PricesPage = () => {
               onChange={(e) => setSelectedItem(e.target.value)}
             >
               <option value="">-- Todos os itens --</option>
-              {items.map((item) => (
-                <option key={item.item_id} value={item.item_id}>
-                  {getItemDisplayNameWithEnchantment(item.item_id)}
+              {uniqueItems.map((itemName) => (
+                <option key={itemName} value={itemName}>
+                  {getItemDisplayNameWithEnchantment(itemName)}
                 </option>
               ))}
             </select>
@@ -123,11 +175,11 @@ export const PricesPage = () => {
             <span>Ordenar por</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as SortBy)}
             >
-              <option value="price">Preço (menor)</option>
+              <option value="price">Preço (menor primeiro)</option>
               <option value="city">Cidade</option>
-              <option value="time">Mais recente</option>
+              <option value="name">Nome do item</option>
             </select>
           </label>
 
@@ -136,7 +188,7 @@ export const PricesPage = () => {
             onClick={handleClearFilters}
             style={{ marginTop: 'auto' }}
           >
-            Limpar Filtros
+            Limpar filtros
           </button>
         </div>
 
@@ -160,7 +212,7 @@ export const PricesPage = () => {
       <div className="prices-content">
         {filteredItems.length === 0 ? (
           <div className="empty-state">
-            <p>Nenhum item encontrado</p>
+            <p>Nenhum item encontrado com os filtros atuais.</p>
           </div>
         ) : (
           <div className="prices-table">
@@ -170,17 +222,17 @@ export const PricesPage = () => {
                   <th>Item</th>
                   <th>Cidade</th>
                   <th>Preço</th>
-                  <th>Quantidade</th>
-                  <th>Atualizado em</th>
+                  <th>Qualidade</th>
+                  <th>Encant.</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredItems.map((item, idx) => (
-                  <tr key={idx} className="clickable">
+                  <tr key={`${item.item_name}-${item.city}-${idx}`} className="clickable">
                     <td className="item-with-image">
                       <img
-                        src={getItemImageUrl(item.item_id)}
-                        alt={item.item_id}
+                        src={getItemImageUrl(item.item_name)}
+                        alt={item.item_name}
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.src =
@@ -188,20 +240,18 @@ export const PricesPage = () => {
                         }}
                       />
                       <strong>
-                        {getItemDisplayNameWithEnchantment(item.item_id)}
+                        {getItemDisplayNameWithEnchantment(item.item_name)}
                       </strong>
                     </td>
                     <td>
-                      <span className="pill">{item.city}</span>
+                      <span className="pill">{item.city || '—'}</span>
                     </td>
                     <td>
                       <strong>{item.price.toLocaleString('pt-BR')}</strong>
                       <span className="muted"> silver</span>
                     </td>
-                    <td>{item.quantity}</td>
-                    <td className="muted text-sm">
-                      {new Date(item.updated_at).toLocaleString('pt-BR')}
-                    </td>
+                    <td>{item.quality}</td>
+                    <td>{item.enchantment > 0 ? `@${item.enchantment}` : '—'}</td>
                   </tr>
                 ))}
               </tbody>
