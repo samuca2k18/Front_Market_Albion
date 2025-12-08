@@ -76,13 +76,11 @@ export const PricesPage = () => {
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
 
-  // Lista de encantamentos únicos para os checkboxes
+  // Lista de encantamentos únicos para os checkboxes (incluindo 0)
   const enchantments = useMemo(() => {
     const set = new Set<number>();
     for (const item of rawItems) {
-      if (item.enchantment > 0) {
-        set.add(item.enchantment);
-      }
+      set.add(item.enchantment);
     }
     return Array.from(set).sort((a, b) => a - b);
   }, [rawItems]);
@@ -279,7 +277,7 @@ export const PricesPage = () => {
                   checked={selectedQualities.has(quality)}
                   onChange={() => handleQualityToggle(quality)}
                 />
-                <span>Qualidade {quality}</span>
+                <span>Q{quality}</span>
               </label>
             ))}
           </div>
@@ -296,7 +294,7 @@ export const PricesPage = () => {
                     checked={selectedEnchantments.has(enchantment)}
                     onChange={() => handleEnchantmentToggle(enchantment)}
                   />
-                  <span>@{enchantment}</span>
+                  <span>{enchantment === 0 ? 'Sem encant.' : `@${enchantment}`}</span>
                 </label>
               ))
             ) : (
