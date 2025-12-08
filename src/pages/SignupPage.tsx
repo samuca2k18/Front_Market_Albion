@@ -1,11 +1,14 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ArrowRight, CheckCircle2, User, Mail, Lock } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import type { ApiErrorShape } from "../api/client";
 
 const signupSchema = z
   .object({
@@ -28,16 +31,28 @@ const benefits = [
 ];
 
 export function SignupPage() {
+  const navigate = useNavigate();
+  const { signup } = useAuth();
+
+  const mutation = useMutation<void, ApiErrorShape, SignupFormData>({
+    mutationFn: async (formData) => {
+      await signup(formData);
+    },
+    onSuccess: () => {
+      navigate("/dashboard", { replace: true });
+    },
+  });
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
 
   const onSubmit = (values: SignupFormData) => {
-    console.log("Signup:", values);
+    mutation.mutate(values);
   };
 
   return (
@@ -107,7 +122,7 @@ export function SignupPage() {
                     Usuário
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       id="username"
                       type="text"
@@ -127,7 +142,7 @@ export function SignupPage() {
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       id="email"
                       type="email"
@@ -147,7 +162,7 @@ export function SignupPage() {
                     Senha
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       id="password"
                       type="password"
@@ -167,7 +182,7 @@ export function SignupPage() {
                     Confirmar senha
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       id="confirmPassword"
                       type="password"
@@ -182,14 +197,20 @@ export function SignupPage() {
                   )}
                 </div>
 
+                {mutation.error && (
+                  <p className="text-xs text-destructive mt-1">
+                    {mutation.error.message || "Erro ao criar conta."}
+                  </p>
+                )}
+
                 <Button
                   type="submit"
                   variant="hero"
                   size="lg"
                   className="w-full mt-2"
-                  disabled={isSubmitting}
+                  disabled={mutation.isPending}
                 >
-                  {isSubmitting ? "Criando..." : "Criar conta"}
+                  {mutation.isPending ? "Criando..." : "Criar conta"}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </form>
