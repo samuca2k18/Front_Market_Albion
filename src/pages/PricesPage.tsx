@@ -1,9 +1,11 @@
+// src/pages/PricesPage.tsx
 import { useEffect, useState } from 'react';
 import { getItemImageUrl } from '../utils/itemImage';
 import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
 import { albionAPI } from '../api/albion';
 import { Loader } from '../components/common/LoadingScreen';
 import './PricesPage.css';
+
 
 export const PricesPage = () => {
   const [items, setItems] = useState<any[]>([]);

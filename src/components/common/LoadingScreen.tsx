@@ -1,3 +1,4 @@
+// src/components/common/LoadingScreen.tsx
 import './common.css';
 
 export function LoadingScreen({ label = 'Carregando...' }: { label?: string }) {
@@ -9,3 +10,10 @@ export function LoadingScreen({ label = 'Carregando...' }: { label?: string }) {
   );
 }
 
+// alias para manter o import { Loader } funcionando
+export function Loader(props: { label?: string }) {
+  return <LoadingScreen {...props} />;
+}
+
+// opcional: default export
+export default LoadingScreen;

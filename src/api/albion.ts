@@ -20,8 +20,6 @@ export async function searchItems(query: string): Promise<AlbionSearchItem[]> {
 }
 
 // Preços para múltiplos itens (/albion/prices)
-// Exemplo de uso:
-// fetchAlbionPrices(['T4_BAG', 'T5_CAPE'], ['Caerleon'], [1, 2, 3, 4, 5])
 export async function fetchAlbionPrices(
   items: string[],
   cities?: string[],
@@ -114,3 +112,35 @@ export async function fetchAlbionHistory(
     throw parseApiError(error);
   }
 }
+
+/**
+ * NOVO: endpoints usados pela PricesPage
+ * Ajuste as rotas ('/albion/unique-items' e '/albion/cities')
+ * se no seu backend o path for diferente.
+ */
+
+// Lista de itens únicos disponíveis para consulta
+export async function getUniqueItems(): Promise<any[]> {
+  try {
+    const { data } = await api.get<any[]>('/albion/unique-items');
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// Lista de cidades disponíveis
+export async function getCities(): Promise<string[]> {
+  try {
+    const { data } = await api.get<string[]>('/albion/cities');
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// Objeto usado na PricesPage
+export const albionAPI = {
+  getUniqueItems,
+  getCities,
+};
