@@ -1,3 +1,4 @@
+// src/pages/LoginPage.tsx
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,57 +43,74 @@ export function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="card auth-card">
-        <h2>Entrar</h2>
-        <p className="muted">
-          Acesse o painel completo e acompanhe seus itens em tempo real.
-        </p>
+      <div className="auth-shell">
+        <div className="auth-hero">
+          <span className="auth-chip">Albion Market • Login</span>
+          <h1 className="auth-title">Bem-vindo de volta</h1>
+          <p className="auth-subtitle">
+            Acesse o painel inteligente e acompanhe seus itens, cidades e oportunidades
+            de mercado em tempo real.
+          </p>
 
-        <form className="form" onSubmit={handleSubmit(onSubmit)}>
-          <label>
-            Usuário
-            <input
-              type="text"
-              placeholder="nome.albion"
-              autoComplete="username"
-              {...register('username')}
-            />
-            {errors.username && (
-              <span className="form-error">{errors.username.message}</span>
+          <ul className="auth-benefits">
+            <li>• Visual profissional para leitura rápida dos preços</li>
+            <li>• Itens favoritos sincronizados na nuvem</li>
+            <li>• Histórico para entender o comportamento do mercado</li>
+          </ul>
+        </div>
+
+        <div className="card auth-card">
+          <h2 className="auth-card-title">Entrar na sua conta</h2>
+          <p className="muted auth-card-subtitle">
+            Use seu usuário configurado no Albion Market.  
+          </p>
+
+          <form className="form auth-form" onSubmit={handleSubmit(onSubmit)}>
+            <label className="form-field">
+              <span className="form-label">Usuário</span>
+              <input
+                type="text"
+                placeholder="nome.albion"
+                autoComplete="username"
+                {...register('username')}
+              />
+              {errors.username && (
+                <span className="form-error">{errors.username.message}</span>
+              )}
+            </label>
+
+            <label className="form-field">
+              <span className="form-label">Senha</span>
+              <input
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                {...register('password')}
+              />
+              {errors.password && (
+                <span className="form-error">{errors.password.message}</span>
+              )}
+            </label>
+
+            {mutation.error && (
+              <p className="form-error auth-error">
+                {mutation.error.message || 'Não foi possível fazer login.'}
+              </p>
             )}
-          </label>
 
-          <label>
-            Senha
-            <input
-              type="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              {...register('password')}
-            />
-            {errors.password && (
-              <span className="form-error">{errors.password.message}</span>
-            )}
-          </label>
+            <button
+              type="submit"
+              className="primary-button auth-submit"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
 
-          {mutation.error && (
-            <p className="form-error">
-              {mutation.error.message || 'Não foi possível fazer login.'}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className="primary-button"
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
-
-        <p className="muted">
-          Ainda não tem conta? <Link to="/signup">Crie uma agora</Link>
-        </p>
+          <p className="muted auth-footer-text">
+            Ainda não tem conta? <Link to="/signup">Crie uma agora</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
