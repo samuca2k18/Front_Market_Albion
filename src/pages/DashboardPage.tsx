@@ -177,11 +177,14 @@ export function DashboardPage() {
 
   const lowestPrice = myPrices.length > 0 ? myPrices[0].price : null;
 
-  // Busca nomes em português para os itens
+  // Busca nomes em português para os itens (tanto da lista monitorada quanto dos preços)
   useEffect(() => {
     const fetchItemNames = async () => {
       const uniqueItemNames = Array.from(
-        new Set(myPrices.map((p) => p.item_name.split("@")[0])),
+        new Set([
+          ...myPrices.map((p) => p.item_name.split("@")[0]),
+          ...trackedItems.map((t) => t.item_name.split("@")[0]),
+        ]),
       );
 
       const promises = uniqueItemNames
@@ -226,27 +229,19 @@ export function DashboardPage() {
       }
     };
 
-    if (myPrices.length > 0) {
+    if (myPrices.length > 0 || trackedItems.length > 0) {
       fetchItemNames();
     }
-  }, [myPrices, itemNamesCache]);
+  }, [myPrices, trackedItems, itemNamesCache]);
 
-  // Função helper para obter nome do item (PT ou fallback)
-  // helper pra pegar só o código base (sem @n)
+  // Função helper para obter nome do item (PT ou fallback), preservando encantamento
+  const getItemDisplayName = (itemName: string): string => {
+    const { base, enchant } = splitItemName(itemName);
+    const cachedName = itemNamesCache.get(base);
 
-
-// Função helper para obter nome do item (PT ou fallback) SEM o @n
-const getItemDisplayName = (itemName: string): string => {
-  const { base } = splitItemName(itemName);
-  const cachedName = itemNamesCache.get(base);
-
-  if (cachedName) {
-    return cachedName; // sem @n
-  }
-
-  // usa o fallback com o base (sem @)
-  return getItemDisplayNameWithEnchantment(base);
-};
+    const baseLabel = cachedName ?? getItemDisplayNameWithEnchantment(base);
+    return enchant ? `${baseLabel} @${enchant}` : baseLabel;
+  };
 
 
 
@@ -361,7 +356,7 @@ const getItemDisplayName = (itemName: string): string => {
               <div className="flex flex-col">
                 {/* Nome bonito (PT/EN), sem @n */}
                 <span className="font-medium">
-                  {getItemDisplayName(item.item_name)}
+                  {getItemDisplayNameWithEnchantment(item.item_name)}
                 </span>
 
                 {/* Código interno base, sem @n */}
@@ -521,7 +516,7 @@ const getItemDisplayName = (itemName: string): string => {
                           </td>
 
                           <td className="px-3 py-2 align-middle">
-                            {item.enchantment > 0 ? `@${item.enchantment}` : "—"}
+                            {item.enchantment > 0 ? `.${item.enchantment}` : "—"}
                           </td>
                         </tr>
                       ))}
