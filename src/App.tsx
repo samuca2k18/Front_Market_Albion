@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AppLayout } from './components/layout/AppLayout';
@@ -14,7 +15,7 @@ function App() {
   return (
     <Routes>
       {/* Layout principal (navbar, etc) */}
-      <Route element={<AppLayout />}>
+      <Route path="/" element={<AppLayout />}>
         {/* Rotas para visitantes (não logados) */}
         <Route element={<GuestRoute />}>
           <Route index element={<LandingPage />} />
