@@ -175,8 +175,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                   <span className="search-item-label">{label}</span>
                   <span className="search-item-internal">{internal}</span>
                 </div>
-              </button>
-              
+              </button>  
               );
               
             })}

@@ -1,3 +1,23 @@
+/* Garante que ESTE CSS está mandando em qualquer img dentro do card */
+.search-result-card img,
+.search-item-image {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+
+  object-fit: contain;
+  border-radius: 6px;
+  padding: 2px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(65, 240, 181, 0.15);
+
+  flex-shrink: 0;
+}
+
 /* CARD do resultado */
 .search-result-card {
   display: flex;
@@ -5,7 +25,8 @@
   gap: 12px;
 
   width: 100%;
-  min-height: 56px; /* altura fixa como dashboard */
+  min-height: 56px;
+  max-height: 56px;
   padding: 8px 12px;
 
   background: rgba(20, 28, 43, 0.85);
@@ -16,6 +37,7 @@
   text-align: left;
   font-family: inherit;
 
+  overflow: hidden;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
 
@@ -28,15 +50,12 @@
   transform: scale(0.99);
 }
 
-/* garante que a imagem NÃO estique */
-.search-result-card img {
-  flex-shrink: 0;
+.search-dropdown {
+  padding: 6px;
 }
 
-
-.search-item:hover .search-item-image {
-  border-color: rgba(65, 240, 181, 0.4);
-  background: rgba(65, 240, 181, 0.08);
+.search-result-card + .search-result-card {
+  margin-top: 6px;
 }
 
 /* container do texto */
@@ -48,7 +67,6 @@
   min-width: 0;
 }
 
-/* linha principal (nome PT/EN) */
 .search-item-label {
   font-size: 0.9rem;
   color: var(--color-white, #f4f8ff);
@@ -62,16 +80,7 @@
   -webkit-box-orient: vertical;
 }
 
-/* linha com o código interno */
 .search-item-internal {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
 }
-.search-dropdown {
-  padding: 6px;
-}
-
-.search-result-card + .search-result-card {
-  margin-top: 6px;
-}
-
