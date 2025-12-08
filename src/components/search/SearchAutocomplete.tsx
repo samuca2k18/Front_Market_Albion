@@ -156,27 +156,27 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
               return (
                 <button
-                  key={internal}
-                  className="search-item"
-                  type="button"
-                  onClick={() => handleSelect(product)}
-                >
-                  <img
-                    src={imgUrl}
-                    alt={label}
-                    className="search-item-image"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://render.albiononline.com/v1/item/T1_BAG.png";
-                    }}
-                  />
-              
-                  <div className="search-item-content">
-                    <span className="search-item-label">{label}</span>
-                    <span className="search-item-internal">{internal}</span>
-                  </div>
-                </button>
+  key={internal}
+  className="search-item"
+  type="button"
+  onClick={() => handleSelect(product)}
+>
+  <img
+    src={imgUrl}
+    alt={label}
+    className="search-item-image"
+    onError={(e) => {
+      e.currentTarget.src =
+        "https://render.albiononline.com/v1/item/T1_BAG.png";
+    }}
+  />
+
+  <div className="search-item-content">
+    <span className="search-item-label">{label}</span>
+    <span className="search-item-internal">{internal}</span>
+  </div>
+</button>
+
               );
               
             })}

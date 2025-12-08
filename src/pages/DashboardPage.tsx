@@ -31,6 +31,12 @@ import {
 
 type TierFilter = "all" | "no-tier" | number;
 
+function splitItemName(itemName: string): { base: string; enchant?: number } {
+  const [base, enchantStr] = itemName.split("@");
+  const enchant = enchantStr ? Number(enchantStr) : undefined;
+  return { base, enchant };
+}
+
 // helper: extrai o tier do nome interno (T4_BAG@2 -> 4, T1_BAG -> 1, etc.)
 function getTierFromItemName(itemName: string): number | null {
   if (!itemName) return null;
@@ -47,15 +53,19 @@ function getTierFromItemName(itemName: string): number | null {
 
 // helper: monta a URL da imagem direto da API do Albion
 function buildItemImageUrl(item: MyItemPrice): string {
-  // Garantimos baseName e encantamento
-  const [baseName] = item.item_name.split("@");
-  const enchantSuffix =
-    item.enchantment && item.enchantment > 0 ? `@${item.enchantment}` : "";
-  const fullName = `${baseName}${enchantSuffix}`;
+  const { base } = splitItemName(item.item_name);
+
+  const enchant =
+    item.enchantment && item.enchantment > 0 ? item.enchantment : undefined;
+
+  const enchantSuffix = enchant ? `@${enchant}` : "";
+  const fullName = `${base}${enchantSuffix}`;
+
   return `https://render.albiononline.com/v1/item/${encodeURIComponent(
     fullName,
   )}.png`;
 }
+
 
 function buildItemImageUrlFromName(itemName: string): string {
   const [baseName, enchant] = itemName.split("@");
@@ -229,17 +239,17 @@ function getBaseName(itemName: string): string {
 
 // Função helper para obter nome do item (PT ou fallback) SEM o @n
 const getItemDisplayName = (itemName: string): string => {
-  const baseName = getBaseName(itemName);
-  const cachedName = itemNamesCache.get(baseName);
+  const { base } = splitItemName(itemName);
+  const cachedName = itemNamesCache.get(base);
 
   if (cachedName) {
-    // apenas o nome PT, sem @n
-    return cachedName;
+    return cachedName; // sem @n
   }
 
-  // fallback: usa o baseName na função helper
-  return getItemDisplayNameWithEnchantment(baseName);
+  // usa o fallback com o base (sem @)
+  return getItemDisplayNameWithEnchantment(base);
 };
+
 
 
   // Dados formatados para o gráfico
@@ -321,78 +331,76 @@ const getItemDisplayName = (itemName: string): string => {
 
         {/* Bottom grid: lista + preços em tempo real + gráfico */}
         <section className="grid gap-6 lg:grid-cols-2">
-          <Card
-            title="Itens cadastrados"
-            description="Clique em Remover para excluir da lista."
+        <Card
+  title="Itens cadastrados"
+  description="Clique em Remover para excluir da lista."
+>
+  {itemsQuery.isLoading ? (
+    <p className="text-sm text-muted-foreground">Carregando...</p>
+  ) : itemsQuery.isError ? (
+    <p className="text-sm text-destructive">Erro ao carregar itens.</p>
+  ) : trackedItems.length > 0 ? (
+    <ul className="mt-3 space-y-2">
+      {trackedItems.map((item) => {
+        const { base } = splitItemName(item.item_name);
+
+        return (
+          <li
+            key={item.id}
+            className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
           >
-            {itemsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Carregando...</p>
-            ) : itemsQuery.isError ? (
-              <p className="text-sm text-destructive">Erro ao carregar itens.</p>
-            ) : trackedItems.length > 0 ? (
-              <ul className="mt-3 space-y-2">
-                {trackedItems.length > 0 ? (
-  <ul className="mt-3 space-y-2">
-    {trackedItems.map((item) => (
-      <li
-        key={item.id}
-        className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
-      >
-        <div className="flex items-center gap-3">
-          <img
-            src={buildItemImageUrlFromName(item.item_name)}
-            alt={item.item_name}
-            className="h-9 w-9 rounded-md bg-black/40"
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src =
-                "https://render.albiononline.com/v1/item/T1_BAG.png";
-            }}
-          />
-          <div className="flex flex-col">
-            <span className="font-medium">
-              {getItemDisplayName(item.item_name)}
-            </span>
-            <span className="text-[11px] text-muted-foreground mt-0.5">
-              {item.item_name}
-            </span>
-            {item.created_at && (
-              <span className="text-[11px] text-muted-foreground mt-0.5">
-                Adicionado em{" "}
-                {new Date(item.created_at).toLocaleDateString("pt-BR")}
-              </span>
-            )}
-          </div>
-        </div>
+            <div className="flex items-center gap-3">
+              <img
+                src={buildItemImageUrlFromName(item.item_name)}
+                alt={item.item_name}
+                className="h-9 w-9 rounded-md bg-black/40"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://render.albiononline.com/v1/item/T1_BAG.png";
+                }}
+              />
+              <div className="flex flex-col">
+                {/* Nome bonito (PT/EN), sem @n */}
+                <span className="font-medium">
+                  {getItemDisplayName(item.item_name)}
+                </span>
 
-        <button
-          className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
-          onClick={() => handleDelete(item.id)}
-          disabled={deleteMutation.isPending}
-          title="Remover item"
-        >
-          Remover
-        </button>
-      </li>
-    ))}
-  </ul>
-) : (
-  <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-    Nenhum item adicionado ainda.
-    <br />
-    Comece adicionando um acima!
-  </div>
-)}
+                {/* Código interno base, sem @n */}
+                <span className="text-[11px] text-muted-foreground mt-0.5">
+                  {base}
+                </span>
 
-              </ul>
-            ) : (
-              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-                Nenhum item adicionado ainda.
-                <br />
-                Comece adicionando um acima!
+                {item.created_at && (
+                  <span className="text-[11px] text-muted-foreground mt-0.5">
+                    Adicionado em{" "}
+                    {new Date(item.created_at).toLocaleDateString("pt-BR")}
+                  </span>
+                )}
               </div>
-            )}
-          </Card>
+            </div>
+
+            <button
+              className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+              onClick={() => handleDelete(item.id)}
+              disabled={deleteMutation.isPending}
+              title="Remover item"
+            >
+              Remover
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  ) : (
+    <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+      Nenhum item adicionado ainda.
+      <br />
+      Comece adicionando um acima!
+    </div>
+  )}
+</Card>
+
 
           <Card
             title="Preços em tempo real"
@@ -481,8 +489,8 @@ const getItemDisplayName = (itemName: string): string => {
                                   {getItemDisplayName(item.item_name)}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground mt-0.5">
-                                  {item.item_name}
-                                </span>
+  {splitItemName(item.item_name).base}
+</span>
                               </div>
                             </div>
                           </td>
