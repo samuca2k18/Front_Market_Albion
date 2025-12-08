@@ -1,24 +1,84 @@
-/* Garante que ESTE CSS está mandando em qualquer img dentro do card */
-.search-result-card img,
-.search-item-image {
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px;
-  min-height: 36px;
-  max-width: 36px;
-  max-height: 36px;
-
-  object-fit: contain;
-  border-radius: 6px;
-  padding: 2px;
-
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(65, 240, 181, 0.15);
-
-  flex-shrink: 0;
+/* CONTAINER DO INPUT */
+.search-wrapper {
+  position: relative;
+  width: 100%;
 }
 
-/* CARD do resultado */
+.search-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-input-container input {
+  width: 100%;
+  padding: 10px 12px 10px 12px;
+  border: 1px solid rgba(65, 240, 181, 0.2);
+  border-radius: 8px;
+  background: rgba(20, 28, 43, 0.6);
+  color: #f4f8ff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.search-input-container input:focus {
+  border-color: rgba(65, 240, 181, 0.4);
+  background: rgba(20, 28, 43, 0.8);
+}
+
+.search-input-container input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* BOTÃO LIMPAR */
+.clear-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 4px 8px;
+  transition: color 0.15s ease;
+}
+
+.clear-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* DROPDOWN DE RESULTADOS */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(20, 28, 43, 0.95);
+  border: 1px solid rgba(65, 240, 181, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.search-loading,
+.search-error,
+.search-empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-error {
+  color: #ef4444;
+}
+
+/* CARD DO RESULTADO */
 .search-result-card {
   display: flex;
   align-items: center;
@@ -50,15 +110,31 @@
   transform: scale(0.99);
 }
 
-.search-dropdown {
-  padding: 6px;
-}
-
 .search-result-card + .search-result-card {
   margin-top: 6px;
 }
 
-/* container do texto */
+/* IMAGEM DO RESULTADO - FIXO EM 36x36 */
+.search-result-card img,
+.search-item-image {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+
+  object-fit: contain;
+  border-radius: 6px;
+  padding: 2px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(65, 240, 181, 0.15);
+
+  flex-shrink: 0;
+}
+
+/* CONTAINER DO TEXTO */
 .search-item-content {
   display: flex;
   flex-direction: column;

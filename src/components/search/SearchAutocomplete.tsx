@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Product } from "../../api/productService";
 import { searchProducts } from "../../api/productService";
 import { useDebounce } from "../../hooks/useDebounce";
-
+import "./SearchAutocomplete.css";
 interface SearchAutocompleteProps {
   onSelectProduct?: (product: Product | any) => void;
 }
