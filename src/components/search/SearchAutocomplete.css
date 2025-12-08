@@ -1,142 +1,9 @@
-.search-wrapper {
-  position: relative;
-  max-width: 520px;
-  width: 100%;
-  font-family: inherit;
-  z-index: 50;
-}
-
-.search-input-container {
-  position: relative;
-  width: 100%;
-}
-
-.search-input-container input {
-  width: 100%;
-  padding: 0.75rem 36px 0.75rem 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(20, 28, 43, 0.8);
-  color: var(--color-white, #f4f8ff);
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.search-input-container input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.search-input-container input:focus {
-  border-color: var(--color-primary, #41f0b5);
-  background: rgba(20, 28, 43, 0.95);
-  box-shadow: 0 0 0 3px rgba(65, 240, 181, 0.15);
-}
-
-.search-input-container input:hover:not(:focus) {
-  border-color: rgba(65, 240, 181, 0.3);
-}
-
-.clear-btn {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 18px;
-  opacity: 0.5;
-  padding: 4px 8px;
-  color: var(--color-white, #f4f8ff);
-  transition: opacity 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.clear-btn:hover {
-  opacity: 0.9;
-}
-
-.search-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  width: 100%;
-  background: rgba(14, 20, 31, 0.98);
-  border-radius: 12px;
-  border: 1px solid rgba(65, 240, 181, 0.2);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  max-height: 420px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  backdrop-filter: blur(10px);
-  will-change: contents;
-}
-
-.search-dropdown::-webkit-scrollbar {
-  width: 6px;
-}
-
-.search-dropdown::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
-}
-
-.search-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(65, 240, 181, 0.2);
-  border-radius: 3px;
-}
-
-.search-dropdown::-webkit-scrollbar-thumb:hover {
-  background: rgba(65, 240, 181, 0.4);
-}
-
-.search-loading,
-.search-error,
-.search-empty {
-  padding: 1rem;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-}
-
-.search-error {
-  color: #ff8b8b;
-}
-
-.search-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 10px 12px;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.15s ease;
-  gap: 10px;
-  font-family: inherit;
-  font-size: 0.9rem;
-}
-
-.search-item:hover {
-  background: rgba(65, 240, 181, 0.08);
-}
-
-.search-item:active {
-  background: rgba(65, 240, 181, 0.12);
-}
-
-.search-item img {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+/* imagem com o mesmo tamanho do dashboard (36px ~ h-9 w-9) */
+.search-item-image {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   object-fit: contain;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.05);
@@ -146,20 +13,22 @@
   transition: all 0.2s ease;
 }
 
-.search-item:hover img {
+.search-item:hover .search-item-image {
   border-color: rgba(65, 240, 181, 0.4);
   background: rgba(65, 240, 181, 0.08);
 }
 
+/* container do texto */
 .search-item-content {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
   flex: 1;
   min-width: 0;
 }
 
-.search-item span {
+/* linha principal (nome PT/EN) */
+.search-item-label {
   font-size: 0.9rem;
   color: var(--color-white, #f4f8ff);
   font-weight: 500;
@@ -172,32 +41,8 @@
   -webkit-box-orient: vertical;
 }
 
-.search-item .muted {
+/* linha com o código interno */
+.search-item-internal {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-@media (max-width: 640px) {
-  .search-wrapper {
-    max-width: 100%;
-  }
-
-  .search-dropdown {
-    max-height: 300px;
-  }
-
-  .search-item {
-    padding: 8px 10px;
-  }
-
-  .search-item img {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    min-height: 28px;
-  }
-
-  .search-item span {
-    font-size: 0.85rem;
-  }
+  color: rgba(255, 255, 255, 0.45);
 }

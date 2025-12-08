@@ -164,17 +164,21 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                   <img
                     src={imgUrl}
                     alt={label}
+                    className="search-item-image"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src =
                         "https://render.albiononline.com/v1/item/T1_BAG.png";
                     }}
                   />
-                  <span>{label}</span>
-                  <span className="search-item-internal">
-                    {internal}
-                  </span>
+              
+                  <div className="search-item-content">
+                    <span className="search-item-label">{label}</span>
+                    <span className="search-item-internal">{internal}</span>
+                  </div>
                 </button>
               );
+              
             })}
         </div>
       )}

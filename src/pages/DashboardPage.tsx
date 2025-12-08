@@ -222,15 +222,25 @@ export function DashboardPage() {
   }, [myPrices, itemNamesCache]);
 
   // Função helper para obter nome do item (PT ou fallback)
-  const getItemDisplayName = (itemName: string): string => {
-    const baseName = itemName.split("@")[0];
-    const cachedName = itemNamesCache.get(baseName);
-    if (cachedName) {
-      const enchant = itemName.includes("@") ? ` @${itemName.split("@")[1]}` : "";
-      return `${cachedName}${enchant}`;
-    }
-    return getItemDisplayNameWithEnchantment(itemName);
-  };
+  // helper pra pegar só o código base (sem @n)
+function getBaseName(itemName: string): string {
+  return itemName.split("@")[0];
+}
+
+// Função helper para obter nome do item (PT ou fallback) SEM o @n
+const getItemDisplayName = (itemName: string): string => {
+  const baseName = getBaseName(itemName);
+  const cachedName = itemNamesCache.get(baseName);
+
+  if (cachedName) {
+    // apenas o nome PT, sem @n
+    return cachedName;
+  }
+
+  // fallback: usa o baseName na função helper
+  return getItemDisplayNameWithEnchantment(baseName);
+};
+
 
   // Dados formatados para o gráfico
   const chartData = useMemo(() => {
