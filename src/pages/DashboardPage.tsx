@@ -413,10 +413,6 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Botão de idioma no canto superior direito */}
-      <div className="absolute top-4 right-4 z-10">
-        <LanguageSwitcher />
-      </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Top: Resumo + Adicionar item */}
