@@ -13,7 +13,7 @@ import { useDebounce } from "../../hooks/useDebounce";
 import "./SearchAutocomplete.css";
 
 interface SearchAutocompleteProps {
-  onSelectProduct?: (product: Product | any) => void;
+  onSelectProduct?: (product: Product) => void;
 }
 
 export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps) {
@@ -24,7 +24,6 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   const debouncedQuery = useDebounce(query, 400);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // Quando o idioma muda, refetch os resultados com o novo idioma
   const { data, isLoading, isError } = useQuery({
     queryKey: ["product-search", debouncedQuery, i18n.language],
     queryFn: () => searchProducts(debouncedQuery),
@@ -34,34 +33,14 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
   const results = Array.isArray(data) ? data : [];
 
-  // helper pra extrair o "nome interno" independente do formato
-  const getInternalName = (product: any): string | undefined =>
-    product.unique_name ?? product.UniqueName;
-
-  // helper pra extrair nome bonitinho no idioma atual
-  // PT: name_pt > name_en > internal
-  // EN: name_en > name_pt > internal
-  const getLabel = (product: any): string => {
-    const internal = getInternalName(product) ?? "";
+  // Helper para obter o nome no idioma atual
+  const getLabel = (product: Product): string => {
     const isPortuguese = i18n.language === "pt-BR";
-
+    
     if (isPortuguese) {
-      return (
-        product.name_pt ??
-        product["PT-BR"] ??
-        product.name_en ??
-        product["EN-US"] ??
-        internal
-      );
+      return product.name_pt || product.name_en || product.unique_name;
     } else {
-      // English
-      return (
-        product.name_en ??
-        product["EN-US"] ??
-        product.name_pt ??
-        product["PT-BR"] ??
-        internal
-      );
+      return product.name_en || product.name_pt || product.unique_name;
     }
   };
 
@@ -85,24 +64,15 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
     }
   }, [results.length]);
 
-  const handleSelect = (product: any) => {
-    const internal = getInternalName(product);
+  const handleSelect = (product: Product) => {
     const label = getLabel(product);
 
     // Mostra no input o nome amigável
     setQuery(label);
     setIsOpen(false);
 
-    // devolve o objeto bruto pro pai (Dashboard)
-    onSelectProduct?.(
-      {
-        ...product,
-        // garante que quem usar receba esses campos normalizados também
-        unique_name: internal,
-        name_pt: product.name_pt ?? product["PT-BR"],
-        name_en: product.name_en ?? product["EN-US"],
-      } as Product,
-    );
+    // Passa o produto normalizado para o pai
+    onSelectProduct?.(product);
   };
 
   const handleClear = (e?: ReactMouseEvent) => {
@@ -121,12 +91,10 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
       e.preventDefault();
   
       if (results.length > 0) {
-        // seleciona o primeiro resultado da lista
-        handleSelect(results[0] as any);
+        handleSelect(results[0]);
       }
     }
   };
-  
 
   return (
     <div className="search-wrapper" ref={wrapperRef}>
@@ -166,18 +134,17 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
           {!isLoading &&
             !isError &&
-            results.map((product: any) => {
-              const internal = getInternalName(product);
+            results.map((product: Product) => {
               const label = getLabel(product);
-              if (!internal) return null;
+              if (!product.unique_name) return null;
 
               const imgUrl = `https://render.albiononline.com/v1/item/${encodeURIComponent(
-                internal,
+                product.unique_name,
               )}.png`;
 
               return (
                 <button
-                  key={internal}
+                  key={product.unique_name}
                   type="button"
                   className="search-result-card"
                   onClick={() => handleSelect(product)}
@@ -194,7 +161,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                 
                   <div className="search-item-content">
                     <span className="search-item-label">{label}</span>
-                    <span className="search-item-internal">{internal}</span>
+                    <span className="search-item-internal">{product.unique_name}</span>
                   </div>
                 </button>  
               );

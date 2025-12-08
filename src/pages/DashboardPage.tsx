@@ -28,6 +28,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import type { Product } from "@/api/productService";
 
 type TierFilter = "all" | "no-tier" | number;
 
@@ -416,30 +417,40 @@ export function DashboardPage() {
             </div>
           </Card>
 
-          <Card
-            title={t("dashboard.addItem")}
-            description={t("dashboard.addItemDesc")}
-          >
-            <form
-              className="mt-3 space-y-3"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              <SearchAutocomplete
-                onSelectProduct={(product: any) => {
-                  const internal = product.unique_name ?? product.UniqueName;
-                  if (!internal) return;
-                  createMutation.mutate({ item_name: internal });
-                  reset({ item_name: "" });
-                }}
-              />
+          // No DashboardPage.tsx, na seção do Card "adicionar item":
 
-              {createMutation.error && (
-                <p className="text-xs text-destructive mt-1">
-                  {createMutation.error.message || t("dashboard.errorAdding")}
-                </p>
-              )}
-            </form>
-          </Card>
+<Card
+  title={t("dashboard.addItem")}
+  description={t("dashboard.addItemDesc")}
+>
+  <form
+    className="mt-3 space-y-3"
+    onSubmit={handleSubmit(onSubmit)}
+  >
+    <SearchAutocomplete
+      onSelectProduct={(product: Product) => {
+        // Product agora vem normalizado da SearchAutocomplete
+        // Contém: unique_name, name_pt, name_en normalizados
+        const itemName = product.unique_name;
+        
+        if (!itemName) {
+          console.error("Produto sem unique_name");
+          return;
+        }
+
+        // Cria o item com o nome interno normalizado
+        createMutation.mutate({ item_name: itemName });
+        reset({ item_name: "" });
+      }}
+    />
+
+    {createMutation.error && (
+      <p className="text-xs text-destructive mt-1">
+        {createMutation.error.message || t("dashboard.errorAdding")}
+      </p>
+    )}
+  </form>
+</Card>
         </section>
 
         {/* Bottom grid: lista + preços em tempo real + gráfico */}
