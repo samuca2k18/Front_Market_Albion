@@ -1,0 +1,32 @@
+/* Hide icons and placeholder text when input has value */
+input:not(:placeholder-shown) ~ svg,
+input:not(:placeholder-shown)::placeholder {
+  display: none;
+}
+
+/* Melhor visual do placeholder */
+input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.9rem;
+}
+
+/* Icon positioning */
+.relative svg {
+  z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+/* When input is focused, keep icon visible */
+input:focus ~ svg {
+  opacity: 0.8;
+}
+
+/* Hide placeholder when typing */
+input:not(:placeholder-shown) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Smooth transition */
+input {
+  transition: all 0.2s ease;
+}

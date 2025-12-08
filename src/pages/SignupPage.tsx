@@ -9,6 +9,7 @@ import { Label } from "../components/ui/label";
 import { ArrowRight, CheckCircle2, User, Mail, Lock } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import type { ApiErrorShape } from "../api/client";
+import { useState } from "react";
 
 const signupSchema = z
   .object({
@@ -33,6 +34,7 @@ const benefits = [
 export function SignupPage() {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  const [filledFields, setFilledFields] = useState<Set<string>>(new Set());
 
   const mutation = useMutation<void, ApiErrorShape, SignupFormData>({
     mutationFn: async (formData) => {
@@ -46,10 +48,23 @@ export function SignupPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
+
+  const formValues = watch();
+
+  const handleFieldChange = (fieldName: string) => {
+    const newSet = new Set(filledFields);
+    if (formValues[fieldName as keyof SignupFormData]) {
+      newSet.add(fieldName);
+    } else {
+      newSet.delete(fieldName);
+    }
+    setFilledFields(newSet);
+  };
 
   const onSubmit = (values: SignupFormData) => {
     mutation.mutate(values);
@@ -117,19 +132,24 @@ export function SignupPage() {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+                {/* USERNAME */}
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-sm font-medium text-foreground">
                     Usuário
                   </Label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative group">
+                    <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
+                      filledFields.has("username") ? "opacity-0" : "opacity-60 group-focus-within:opacity-80"
+                    }`} />
                     <Input
                       id="username"
                       type="text"
                       placeholder="nome.albion"
                       autoComplete="username"
                       className="pl-10"
-                      {...register("username")}
+                      {...register("username", {
+                        onChange: () => handleFieldChange("username"),
+                      })}
                     />
                   </div>
                   {errors.username && (
@@ -137,19 +157,24 @@ export function SignupPage() {
                   )}
                 </div>
 
+                {/* EMAIL */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-foreground">
                     Email
                   </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative group">
+                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
+                      filledFields.has("email") ? "opacity-0" : "opacity-60 group-focus-within:opacity-80"
+                    }`} />
                     <Input
                       id="email"
                       type="email"
                       placeholder="voce@exemplo.com"
                       autoComplete="email"
                       className="pl-10"
-                      {...register("email")}
+                      {...register("email", {
+                        onChange: () => handleFieldChange("email"),
+                      })}
                     />
                   </div>
                   {errors.email && (
@@ -157,19 +182,24 @@ export function SignupPage() {
                   )}
                 </div>
 
+                {/* PASSWORD */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">
                     Senha
                   </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative group">
+                    <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
+                      filledFields.has("password") ? "opacity-0" : "opacity-60 group-focus-within:opacity-80"
+                    }`} />
                     <Input
                       id="password"
                       type="password"
                       placeholder="••••••••"
                       autoComplete="new-password"
                       className="pl-10"
-                      {...register("password")}
+                      {...register("password", {
+                        onChange: () => handleFieldChange("password"),
+                      })}
                     />
                   </div>
                   {errors.password && (
@@ -177,19 +207,24 @@ export function SignupPage() {
                   )}
                 </div>
 
+                {/* CONFIRM PASSWORD */}
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                     Confirmar senha
                   </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative group">
+                    <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
+                      filledFields.has("confirmPassword") ? "opacity-0" : "opacity-60 group-focus-within:opacity-80"
+                    }`} />
                     <Input
                       id="confirmPassword"
                       type="password"
                       placeholder="Repita a senha"
                       autoComplete="new-password"
                       className="pl-10"
-                      {...register("confirmPassword")}
+                      {...register("confirmPassword", {
+                        onChange: () => handleFieldChange("confirmPassword"),
+                      })}
                     />
                   </div>
                   {errors.confirmPassword && (
