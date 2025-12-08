@@ -1,3 +1,27 @@
+/* ITEM + IMAGEM (mesmo padrão do Dashboard) */
+.item-with-image {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prices-table img {
+  max-width: 36px;
+  max-height: 36px;
+}
+
+.item-with-image img {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  object-fit: contain;
+
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
 .prices-page {
   padding: 2rem 1rem;
   min-height: calc(100vh - 200px);

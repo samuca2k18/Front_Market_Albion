@@ -92,8 +92,11 @@ export const PricesPage = () => {
     // ordenação
     result.sort((a, b) => {
       if (sortBy === 'price') {
-        return a.price - b.price;
+        const pa = a.price ?? 0;
+        const pb = b.price ?? 0;
+        return pa - pb;
       }
+      
       if (sortBy === 'city') {
         return (a.city || '').localeCompare(b.city || '', 'pt-BR');
       }

@@ -1,6 +1,20 @@
-// src/utils/itemImage.ts
-export const getItemImageUrl = (itemName: string): string => {
-  // NÃO remove o @ mais! Mantém exatamente como está
-  // Ex: T8_BAG@3 → https://render.albiononline.com/v1/item/T8_BAG@3.png
-  return `https://render.albiononline.com/v1/item/${itemName}.png`;
-};
+// utils/itemImage.ts
+
+export function splitItemName(itemName: string): {
+  base: string;
+  enchant?: number;
+} {
+  const [base, enchantStr] = itemName.split("@");
+  const enchant = enchantStr ? Number(enchantStr) : undefined;
+  return { base, enchant };
+}
+
+export function getItemImageUrl(itemName: string): string {
+  const { base, enchant } = splitItemName(itemName);
+  const suffix = enchant && enchant > 0 ? `@${enchant}` : "";
+  const fullName = `${base}${suffix}`;
+
+  return `https://render.albiononline.com/v1/item/${encodeURIComponent(
+    fullName,
+  )}.png`;
+}
