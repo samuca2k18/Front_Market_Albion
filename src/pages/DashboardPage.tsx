@@ -87,6 +87,7 @@ export function DashboardPage() {
   const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(
     () => new Map(),
   );
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   // Itens salvos pelo usuário
   const itemsQuery = useQuery<Item[]>({
@@ -122,11 +123,53 @@ export function DashboardPage() {
   });
 
   // Remover item
-  const deleteMutation = useMutation<void, ApiErrorShape, number>({
+  const deleteMutation = useMutation<
+    void,
+    ApiErrorShape,
+    number,
+    { previousItems: Item[]; previousPrices: MyItemPrice[] }
+  >({
     mutationFn: async (id) => {
       await deleteItem(id);
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["items"] });
+      await queryClient.cancelQueries({ queryKey: ["my-items-prices"] });
+
+      const previousItems = queryClient.getQueryData<Item[]>(["items"]) ?? [];
+      const previousPrices =
+        queryClient.getQueryData<MyItemPrice[]>(["my-items-prices"]) ?? [];
+
+      const removedItem = previousItems.find((it) => it.id === id);
+      const removedBase = removedItem ? splitItemName(removedItem.item_name).base : null;
+
+      queryClient.setQueryData<Item[]>(["items"], (old) =>
+        (old ?? []).filter((it) => it.id !== id),
+      );
+
+      if (removedBase) {
+        queryClient.setQueryData<MyItemPrice[]>(["my-items-prices"], (old) =>
+          (old ?? []).filter((p) => splitItemName(p.item_name).base !== removedBase),
+        );
+      }
+
+      setSelectedItems((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+
+      return { previousItems, previousPrices };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousItems) {
+        queryClient.setQueryData(["items"], context.previousItems);
+      }
+      if (context?.previousPrices) {
+        queryClient.setQueryData(["my-items-prices"], context.previousPrices);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["my-items-prices"] });
       myPricesQuery.refetch();
@@ -145,42 +188,136 @@ export function DashboardPage() {
     }
   };
 
+  const handleToggleSelect = (id: number) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === trackedItems.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(trackedItems.map((item) => item.id)));
+    }
+  };
+
+  // Remover múltiplos itens
+  const deleteMultipleMutation = useMutation<
+    void,
+    ApiErrorShape,
+    number[],
+    { previousItems: Item[]; previousPrices: MyItemPrice[] }
+  >({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map((id) => deleteItem(id)));
+    },
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: ["items"] });
+      await queryClient.cancelQueries({ queryKey: ["my-items-prices"] });
+
+      const previousItems = queryClient.getQueryData<Item[]>(["items"]) ?? [];
+      const previousPrices =
+        queryClient.getQueryData<MyItemPrice[]>(["my-items-prices"]) ?? [];
+
+      const removedBases = previousItems
+        .filter((it) => ids.includes(it.id))
+        .map((it) => splitItemName(it.item_name).base);
+
+      queryClient.setQueryData<Item[]>(["items"], (old) =>
+        (old ?? []).filter((it) => !ids.includes(it.id)),
+      );
+
+      if (removedBases.length > 0) {
+        queryClient.setQueryData<MyItemPrice[]>(["my-items-prices"], (old) =>
+          (old ?? []).filter(
+            (p) => !removedBases.includes(splitItemName(p.item_name).base),
+          ),
+        );
+      }
+
+      setSelectedItems(new Set());
+
+      return { previousItems, previousPrices };
+    },
+    onError: (_err, _ids, context) => {
+      if (context?.previousItems) {
+        queryClient.setQueryData(["items"], context.previousItems);
+      }
+      if (context?.previousPrices) {
+        queryClient.setQueryData(["my-items-prices"], context.previousPrices);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["my-items-prices"] });
+      myPricesQuery.refetch();
+    },
+  });
+
+  const handleDeleteSelected = () => {
+    if (selectedItems.size === 0) return;
+    
+    const count = selectedItems.size;
+    const message = count === 1 
+      ? "Tem certeza que quer remover este item da sua lista?"
+      : `Tem certeza que quer remover ${count} itens da sua lista?`;
+    
+    if (confirm(message)) {
+      const idsToDelete = Array.from(selectedItems);
+      deleteMultipleMutation.mutate(idsToDelete);
+    }
+  };
+
   const trackedItems = itemsQuery.data ?? [];
   const myPricesRaw = myPricesQuery.data ?? [];
 
   // 1) filtra por preço válido + tier
-  const filtered = myPricesRaw
-    .filter((p) => p && typeof p.price === "number" && p.price > 0)
-    .filter((p) => {
-      const tier = getTierFromItemName(p.item_name);
+  const filtered = useMemo(() => {
+    return myPricesRaw
+      .filter((p) => p && typeof p.price === "number" && p.price > 0)
+      .filter((p) => {
+        const tier = getTierFromItemName(p.item_name);
 
-      if (selectedTier === "all") return true;
-      if (selectedTier === "no-tier") return tier === null;
-      return tier === selectedTier;
-    });
+        if (selectedTier === "all") return true;
+        if (selectedTier === "no-tier") return tier === null;
+        return tier === selectedTier;
+      });
+  }, [myPricesRaw, selectedTier]);
 
   // 2) agrupa por item_name e pega o MAIS BARATO de cada item
-  const cheapestByItem = new Map<string, MyItemPrice>();
+  const myPrices = useMemo(() => {
+    const cheapestByItem = new Map<string, MyItemPrice>();
 
-  for (const p of filtered) {
-    const existing = cheapestByItem.get(p.item_name);
-    if (!existing || p.price < existing.price) {
-      cheapestByItem.set(p.item_name, p);
+    for (const p of filtered) {
+      const existing = cheapestByItem.get(p.item_name);
+      if (!existing || p.price < existing.price) {
+        cheapestByItem.set(p.item_name, p);
+      }
     }
-  }
 
-  // 3) vira array e ordena por preço
-  const myPrices = Array.from(cheapestByItem.values()).sort(
-    (a, b) => a.price - b.price,
+    return Array.from(cheapestByItem.values()).sort((a, b) => a.price - b.price);
+  }, [filtered]);
+
+  const lowestPrice = useMemo(
+    () => (myPrices.length > 0 ? myPrices[0].price : null),
+    [myPrices],
   );
 
-  const lowestPrice = myPrices.length > 0 ? myPrices[0].price : null;
-
-  // Busca nomes em português para os itens
+  // Busca nomes em português para os itens (tanto da lista monitorada quanto dos preços)
   useEffect(() => {
     const fetchItemNames = async () => {
       const uniqueItemNames = Array.from(
-        new Set(myPrices.map((p) => p.item_name.split("@")[0])),
+        new Set([
+          ...myPrices.map((p) => p.item_name.split("@")[0]),
+          ...trackedItems.map((t) => t.item_name.split("@")[0]),
+        ]),
       );
 
       const promises = uniqueItemNames
@@ -223,22 +360,21 @@ export function DashboardPage() {
       }
     };
 
-    if (myPrices.length > 0) {
+    if (myPrices.length > 0 || trackedItems.length > 0) {
       fetchItemNames();
     }
-  }, [myPrices, itemNamesCache]);
+  }, [myPrices, trackedItems]);
 
-  // Função helper para obter nome do item (PT ou fallback) SEM o @n
+  // Função helper para obter nome do item (PT ou fallback), preservando encantamento
   const getItemDisplayName = (itemName: string): string => {
-    const { base } = splitItemName(itemName);
+    const { base, enchant } = splitItemName(itemName);
     const cachedName = itemNamesCache.get(base);
 
-    if (cachedName) {
-      return cachedName;
-    }
-
-    return getItemDisplayNameWithEnchantment(base);
+    const baseLabel = cachedName ?? getItemDisplayNameWithEnchantment(base);
+    return enchant ? `${baseLabel} @${enchant}` : baseLabel;
   };
+
+
 
   // Dados formatados para o gráfico
   const chartData = useMemo(() => {
@@ -318,73 +454,114 @@ export function DashboardPage() {
 
         {/* Bottom grid: lista + preços em tempo real + gráfico */}
         <section className="grid gap-6 lg:grid-cols-2">
-          <Card
-            title={t("dashboard.registeredItems")}
-            description={t("dashboard.registeredItemsDesc")}
+        <Card
+  title="Itens cadastrados"
+  description="Selecione os itens que deseja remover."
+>
+  {itemsQuery.isLoading ? (
+    <p className="text-sm text-muted-foreground">Carregando...</p>
+  ) : itemsQuery.isError ? (
+    <p className="text-sm text-destructive">Erro ao carregar itens.</p>
+  ) : trackedItems.length > 0 ? (
+    <>
+      {/* Controles de seleção */}
+      <div className="mt-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={selectedItems.size === trackedItems.length && trackedItems.length > 0}
+            onChange={handleSelectAll}
+            className="h-4 w-4 rounded border-border cursor-pointer accent-primary"
+            id="select-all"
+          />
+          <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+            {selectedItems.size === trackedItems.length ? "Desselecionar todos" : "Selecionar todos"}
+          </label>
+        </div>
+        {selectedItems.size > 0 && (
+          <button
+            className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium"
+            onClick={handleDeleteSelected}
+            disabled={deleteMutation.isPending || deleteMultipleMutation.isPending}
           >
-            {itemsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-            ) : itemsQuery.isError ? (
-              <p className="text-sm text-destructive">{t("dashboard.errorLoadingItems")}</p>
-            ) : trackedItems.length > 0 ? (
-              <ul className="mt-3 space-y-2">
-                {trackedItems.map((item) => {
-                  const { base } = splitItemName(item.item_name);
+            {deleteMultipleMutation.isPending ? "Removendo..." : `Remover ${selectedItems.size} ${selectedItems.size === 1 ? "item" : "itens"}`}
+          </button>
+        )}
+      </div>
 
-                  return (
-                    <li
-                      key={item.id}
-                      className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
-                    >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={buildItemImageUrlFromName(item.item_name)}
-                          alt={item.item_name}
-                          className="h-9 w-9 rounded-md bg-black/40"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://render.albiononline.com/v1/item/T1_BAG.png";
-                          }}
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {getItemDisplayName(item.item_name)}
-                          </span>
+      <ul className="space-y-2">
+        {trackedItems.map((item) => {
+          const { base } = splitItemName(item.item_name);
+          const isSelected = selectedItems.has(item.id);
 
-                          <span className="text-[11px] text-muted-foreground mt-0.5">
-                            {base}
-                          </span>
+          return (
+            <li
+              key={item.id}
+              className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${
+                isSelected
+                  ? "border-primary/50 bg-primary/10"
+                  : "border-border/70 bg-card/80"
+              }`}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => handleToggleSelect(item.id)}
+                  className="h-4 w-4 rounded border-border cursor-pointer accent-primary flex-shrink-0"
+                />
+                <img
+                  src={buildItemImageUrlFromName(item.item_name)}
+                  alt={item.item_name}
+                  className="h-9 w-9 rounded-md bg-black/40 flex-shrink-0"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://render.albiononline.com/v1/item/T1_BAG.png";
+                  }}
+                />
+                <div className="flex flex-col min-w-0 flex-1">
+                  {/* Nome bonito (PT/EN), sem @n */}
+                  <span className="font-medium truncate">
+                    {getItemDisplayNameWithEnchantment(item.item_name)}
+                  </span>
 
-                          {item.created_at && (
-                            <span className="text-[11px] text-muted-foreground mt-0.5">
-                              {t("dashboard.addedOn")}{" "}
-                              {new Date(item.created_at).toLocaleDateString("pt-BR")}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                  {/* Código interno base, sem @n */}
+                  <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                    {base}
+                  </span>
 
-                      <button
-                        className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
-                        onClick={() => handleDelete(item.id)}
-                        disabled={deleteMutation.isPending}
-                        title={t("common.delete")}
-                      >
-                        {t("common.delete")}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-                {t("dashboard.noItemsAdded")}
-                <br />
-                {t("dashboard.startAdding")}
+                  {item.created_at && (
+                    <span className="text-[11px] text-muted-foreground mt-0.5">
+                      Adicionado em{" "}
+                      {new Date(item.created_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-          </Card>
+
+              <button
+                className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0"
+                onClick={() => handleDelete(item.id)}
+                disabled={deleteMutation.isPending}
+                title="Remover item"
+              >
+                Remover
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  ) : (
+    <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+      Nenhum item adicionado ainda.
+      <br />
+      Comece adicionando um acima!
+    </div>
+  )}
+</Card>
+
 
           <Card
             title={t("dashboard.realtimePrices")}
@@ -507,7 +684,7 @@ export function DashboardPage() {
                           </td>
 
                           <td className="px-3 py-2 align-middle">
-                            {item.enchantment > 0 ? `@${item.enchantment}` : "—"}
+                            {item.enchantment > 0 ? `.${item.enchantment}` : "—"}
                           </td>
                         </tr>
                       ))}

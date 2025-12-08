@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getItemImageUrl } from '../utils/itemImage';
 import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
+import { getQualityLabel } from '../constants/qualities';
 import { fetchMyItemsPrices } from '../api/albion';
 import type { MyItemPrice } from '../api/types';
 import { Loader } from '../components/common/LoadingScreen';
@@ -305,7 +306,7 @@ export const PricesPage = () => {
                   checked={selectedQualities.has(quality)}
                   onChange={() => handleQualityToggle(quality)}
                 />
-                <span>Q{quality}</span>
+                <span>{getQualityLabel(quality)}</span>
               </label>
             ))}
           </div>
@@ -322,7 +323,7 @@ export const PricesPage = () => {
                     checked={selectedEnchantments.has(enchantment)}
                     onChange={() => handleEnchantmentToggle(enchantment)}
                   />
-                  <span>{enchantment === 0 ? t('prices.noEnchantmentFilter') : `@${enchantment}`}</span>
+                  <span>{enchantment === 0 ? 'Sem encant.' : `.${enchantment}`}</span>
                 </label>
               ))
             ) : (
@@ -375,8 +376,8 @@ export const PricesPage = () => {
                         <strong>{item.price.toLocaleString('pt-BR')}</strong>
                         <span className="muted"> silver</span>
                       </td>
-                      <td>{item.quality}</td>
-                      <td>{enchant > 0 ? `@${enchant}` : '—'}</td>
+                      <td>{getQualityLabel(item.quality)}</td>
+                      <td>{enchant > 0 ? `.${enchant}` : '—'}</td>
                     </tr>
                   );
                 })}
