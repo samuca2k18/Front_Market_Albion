@@ -15,7 +15,7 @@ import type { ApiErrorShape } from '../api/client';
 import { getQualityLabel, getQualityColor } from '../constants/qualities';
 import { getItemImageUrl } from '../utils/itemImage';
 import { ALBION_TIERS } from '../constants/albion';
-import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
+import { SearchAutocomplete } from '../components/search/SearchAutocomplete';
 import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
 import { searchItems } from '../api/albion';
 
