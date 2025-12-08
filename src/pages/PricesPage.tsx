@@ -16,6 +16,8 @@ export const PricesPage = () => {
 
   const [selectedItem, setSelectedItem] = useState<string>('');
   const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set());
+  const [selectedQualities, setSelectedQualities] = useState<Set<number>>(new Set());
+  const [selectedEnchantments, setSelectedEnchantments] = useState<Set<number>>(new Set());
   const [sortBy, setSortBy] = useState<SortBy>('price');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -49,7 +51,7 @@ export const PricesPage = () => {
       }
     }
 
-    // ordena alfabeticamente pelo nome “bonito”
+    // ordena alfabeticamente pelo nome "bonito"
     return list.sort((a, b) =>
       getItemDisplayNameWithEnchantment(a)
         .localeCompare(getItemDisplayNameWithEnchantment(b), 'pt-BR'),
@@ -65,6 +67,26 @@ export const PricesPage = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }, [rawItems]);
 
+  // Lista de qualidades únicas para os checkboxes
+  const qualities = useMemo(() => {
+    const set = new Set<number>();
+    for (const item of rawItems) {
+      set.add(item.quality);
+    }
+    return Array.from(set).sort((a, b) => a - b);
+  }, [rawItems]);
+
+  // Lista de encantamentos únicos para os checkboxes
+  const enchantments = useMemo(() => {
+    const set = new Set<number>();
+    for (const item of rawItems) {
+      if (item.enchantment > 0) {
+        set.add(item.enchantment);
+      }
+    }
+    return Array.from(set).sort((a, b) => a - b);
+  }, [rawItems]);
+
   // Aplica filtros e ordenação
   const filteredItems = useMemo(() => {
     let result = [...rawItems];
@@ -74,7 +96,7 @@ export const PricesPage = () => {
       result = result.filter((item) => item.item_name === selectedItem);
     }
 
-    // filtro por texto (nome “bonito”)
+    // filtro por texto (nome "bonito")
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter((item) =>
@@ -87,6 +109,16 @@ export const PricesPage = () => {
     // filtro por cidades selecionadas
     if (selectedCities.size > 0) {
       result = result.filter((item) => item.city && selectedCities.has(item.city));
+    }
+
+    // filtro por qualidades selecionadas
+    if (selectedQualities.size > 0) {
+      result = result.filter((item) => selectedQualities.has(item.quality));
+    }
+
+    // filtro por encantamentos selecionados
+    if (selectedEnchantments.size > 0) {
+      result = result.filter((item) => selectedEnchantments.has(item.enchantment));
     }
 
     // ordenação
@@ -106,7 +138,7 @@ export const PricesPage = () => {
     });
 
     return result;
-  }, [rawItems, selectedItem, selectedCities, sortBy, searchQuery]);
+  }, [rawItems, selectedItem, selectedCities, selectedQualities, selectedEnchantments, sortBy, searchQuery]);
 
   const handleCityToggle = (city: string) => {
     setSelectedCities((prev) => {
@@ -120,9 +152,35 @@ export const PricesPage = () => {
     });
   };
 
+  const handleQualityToggle = (quality: number) => {
+    setSelectedQualities((prev) => {
+      const next = new Set(prev);
+      if (next.has(quality)) {
+        next.delete(quality);
+      } else {
+        next.add(quality);
+      }
+      return next;
+    });
+  };
+
+  const handleEnchantmentToggle = (enchantment: number) => {
+    setSelectedEnchantments((prev) => {
+      const next = new Set(prev);
+      if (next.has(enchantment)) {
+        next.delete(enchantment);
+      } else {
+        next.add(enchantment);
+      }
+      return next;
+    });
+  };
+
   const handleClearFilters = () => {
     setSelectedItem('');
     setSelectedCities(new Set());
+    setSelectedQualities(new Set());
+    setSelectedEnchantments(new Set());
     setSearchQuery('');
     setSortBy('price');
   };
@@ -208,6 +266,42 @@ export const PricesPage = () => {
                 <span>{city}</span>
               </label>
             ))}
+          </div>
+        </div>
+
+        <div className="qualities-filter">
+          <h3>Filtrar por qualidade</h3>
+          <div className="qualities-grid">
+            {qualities.map((quality) => (
+              <label key={quality} className="quality-checkbox">
+                <input
+                  type="checkbox"
+                  checked={selectedQualities.has(quality)}
+                  onChange={() => handleQualityToggle(quality)}
+                />
+                <span>Qualidade {quality}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="enchantments-filter">
+          <h3>Filtrar por encantamento</h3>
+          <div className="enchantments-grid">
+            {enchantments.length > 0 ? (
+              enchantments.map((enchantment) => (
+                <label key={enchantment} className="enchantment-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={selectedEnchantments.has(enchantment)}
+                    onChange={() => handleEnchantmentToggle(enchantment)}
+                  />
+                  <span>@{enchantment}</span>
+                </label>
+              ))
+            ) : (
+              <p className="no-data">Nenhum encantamento encontrado</p>
+            )}
           </div>
         </div>
       </div>
