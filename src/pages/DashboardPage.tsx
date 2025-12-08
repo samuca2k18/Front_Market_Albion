@@ -233,9 +233,7 @@ export function DashboardPage() {
 
   // Função helper para obter nome do item (PT ou fallback)
   // helper pra pegar só o código base (sem @n)
-function getBaseName(itemName: string): string {
-  return itemName.split("@")[0];
-}
+
 
 // Função helper para obter nome do item (PT ou fallback) SEM o @n
 const getItemDisplayName = (itemName: string): string => {
