@@ -1,23 +1,22 @@
 // src/pages/DashboardPage.tsx
-import { useForm } from 'react-hook-form';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo, useEffect } from 'react';
-import { Card } from '../components/common/Card';
-import '../components/common/common.css';
-import { createItem, listItems, deleteItem } from '../api/items';
+import { useForm } from "react-hook-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo, useEffect } from "react";
+import { Card } from "../components/common/Card";
+import "../components/common/common.css";
+import { createItem, listItems, deleteItem } from "../api/items";
 import {
   fetchMyItemsPrices,
   fetchAlbionHistory,
   type AlbionHistoryResponse,
-} from '../api/albion';
-import type { ItemPayload, Item, MyItemPrice } from '../api/types';
-import type { ApiErrorShape } from '../api/client';
-import { getQualityLabel, getQualityColor } from '../constants/qualities';
-import { getItemImageUrl } from '../utils/itemImage';
-import { ALBION_TIERS } from '../constants/albion';
-import { SearchAutocomplete } from '../components/search/SearchAutocomplete';
-import { getItemDisplayNameWithEnchantment } from '../utils/itemNameMapper';
-import { searchItems } from '../api/albion';
+  searchItems,
+} from "../api/albion";
+import type { ItemPayload, Item, MyItemPrice } from "../api/types";
+import type { ApiErrorShape } from "../api/client";
+import { getQualityLabel, getQualityColor } from "../constants/qualities";
+import { ALBION_TIERS } from "../constants/albion";
+import { SearchAutocomplete } from "../components/search/SearchAutocomplete";
+import { getItemDisplayNameWithEnchantment } from "../utils/itemNameMapper";
 
 // recharts
 import {
@@ -28,9 +27,9 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-} from 'recharts';
+} from "recharts";
 
-type TierFilter = 'all' | 'no-tier' | number;
+type TierFilter = "all" | "no-tier" | number;
 
 // helper: extrai o tier do nome interno (T4_BAG@2 -> 4, T1_BAG -> 1, etc.)
 function getTierFromItemName(itemName: string): number | null {
@@ -46,33 +45,47 @@ function getTierFromItemName(itemName: string): number | null {
   return tier;
 }
 
+// helper: monta a URL da imagem direto da API do Albion
+function buildItemImageUrl(item: MyItemPrice): string {
+  // Garantimos baseName e encantamento
+  const [baseName] = item.item_name.split("@");
+  const enchantSuffix =
+    item.enchantment && item.enchantment > 0 ? `@${item.enchantment}` : "";
+  const fullName = `${baseName}${enchantSuffix}`;
+  return `https://render.albiononline.com/v1/item/${encodeURIComponent(
+    fullName,
+  )}.png`;
+}
+
 export function DashboardPage() {
   const queryClient = useQueryClient();
   const { handleSubmit, reset } = useForm<ItemPayload>({
-    defaultValues: { item_name: '' },
+    defaultValues: { item_name: "" },
   });
 
-  const [selectedTier, setSelectedTier] = useState<TierFilter>('all');
+  const [selectedTier, setSelectedTier] = useState<TierFilter>("all");
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(null);
-  const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(new Map());
+  const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(
+    () => new Map(),
+  );
 
   // Itens salvos pelo usuário
   const itemsQuery = useQuery<Item[]>({
-    queryKey: ['items'],
+    queryKey: ["items"],
     queryFn: listItems,
   });
 
   // Preços dos itens do usuário
   const myPricesQuery = useQuery<MyItemPrice[]>({
-    queryKey: ['my-items-prices'],
+    queryKey: ["my-items-prices"],
     queryFn: fetchMyItemsPrices,
     refetchInterval: 5 * 60 * 1000,
   });
 
   // Histórico do item selecionado
   const historyQuery = useQuery<AlbionHistoryResponse>({
-    queryKey: ['albion-history', selectedHistoryItem],
-    queryFn: () => fetchAlbionHistory(selectedHistoryItem!, 7, ['Caerleon'], '6h'),
+    queryKey: ["albion-history", selectedHistoryItem],
+    queryFn: () => fetchAlbionHistory(selectedHistoryItem!, 7, ["Caerleon"], "6h"),
     enabled: !!selectedHistoryItem,
   });
 
@@ -82,8 +95,8 @@ export function DashboardPage() {
       await createItem(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
-      queryClient.invalidateQueries({ queryKey: ['my-items-prices'] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["my-items-prices"] });
       myPricesQuery.refetch();
       reset();
     },
@@ -95,8 +108,8 @@ export function DashboardPage() {
       await deleteItem(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
-      queryClient.invalidateQueries({ queryKey: ['my-items-prices'] });
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+      queryClient.invalidateQueries({ queryKey: ["my-items-prices"] });
       myPricesQuery.refetch();
     },
   });
@@ -108,7 +121,7 @@ export function DashboardPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Tem certeza que quer remover este item da sua lista?')) {
+    if (confirm("Tem certeza que quer remover este item da sua lista?")) {
       deleteMutation.mutate(id);
     }
   };
@@ -118,12 +131,12 @@ export function DashboardPage() {
 
   // 1) filtra por preço válido + tier
   const filtered = myPricesRaw
-    .filter((p) => p && typeof p.price === 'number' && p.price > 0)
+    .filter((p) => p && typeof p.price === "number" && p.price > 0)
     .filter((p) => {
       const tier = getTierFromItemName(p.item_name);
 
-      if (selectedTier === 'all') return true;
-      if (selectedTier === 'no-tier') return tier === null;
+      if (selectedTier === "all") return true;
+      if (selectedTier === "no-tier") return tier === null;
       return tier === selectedTier;
     });
 
@@ -147,27 +160,43 @@ export function DashboardPage() {
   // Busca nomes em português para os itens
   useEffect(() => {
     const fetchItemNames = async () => {
-      const uniqueItemNames = Array.from(new Set(myPrices.map(p => p.item_name.split('@')[0])));
+      const uniqueItemNames = Array.from(
+        new Set(myPrices.map((p) => p.item_name.split("@")[0])),
+      );
+
       const promises = uniqueItemNames
-        .filter(baseName => !itemNamesCache.has(baseName))
+        .filter((baseName) => !itemNamesCache.has(baseName))
         .map(async (baseName) => {
           try {
             const results = await searchItems(baseName);
-            const found = results.find(r => r.unique_name === baseName);
-            if (found && found.name_pt) {
-              return { baseName, name: found.name_pt };
+            // results: AlbionSearchItem[] (unique_name, name_pt, name_en)
+            const found = results.find((r) => r.unique_name === baseName);
+
+            if (found) {
+              const label =
+                found.name_pt ??
+                found.name_en ??
+                found.unique_name;
+
+              if (label) {
+                return { baseName, name: label };
+              }
             }
-          } catch (error) {
-            // Silenciosamente falha, usa fallback
+            return null;
+
+          } catch {
+            // silenciosamente falha, usa fallback
           }
           return null;
         });
 
       const results = await Promise.all(promises);
-      const newEntries = results.filter((r): r is { baseName: string; name: string } => r !== null);
-      
+      const newEntries = results.filter(
+        (r): r is { baseName: string; name: string } => r !== null,
+      );
+
       if (newEntries.length > 0) {
-        setItemNamesCache(prev => {
+        setItemNamesCache((prev) => {
           const newMap = new Map(prev);
           newEntries.forEach(({ baseName, name }) => {
             newMap.set(baseName, name);
@@ -182,12 +211,12 @@ export function DashboardPage() {
     }
   }, [myPrices, itemNamesCache]);
 
-  // Função helper para obter nome do item
+  // Função helper para obter nome do item (PT ou fallback)
   const getItemDisplayName = (itemName: string): string => {
-    const baseName = itemName.split('@')[0];
+    const baseName = itemName.split("@")[0];
     const cachedName = itemNamesCache.get(baseName);
     if (cachedName) {
-      const enchant = itemName.includes('@') ? ` @${itemName.split('@')[1]}` : '';
+      const enchant = itemName.includes("@") ? ` @${itemName.split("@")[1]}` : "";
       return `${cachedName}${enchant}`;
     }
     return getItemDisplayNameWithEnchantment(itemName);
@@ -197,12 +226,11 @@ export function DashboardPage() {
   const chartData = useMemo(() => {
     if (!historyQuery.data) return [];
     return historyQuery.data.data.map((point) => ({
-      // pega só a data/hora curta pra eixo X
-      time: new Date(point.date).toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+      time: new Date(point.date).toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       }),
       avg_price: point.avg_price,
       city: point.city,
@@ -210,250 +238,304 @@ export function DashboardPage() {
   }, [historyQuery.data]);
 
   return (
-    <div className="dashboard-page">
-      <section className="dashboard-grid">
-        <Card
-          title="Resumo rápido"
-          description="Seus itens monitorados em tempo real."
-        >
-          <div className="stat-grid">
-            <div className="stat-card">
-              <span>Itens rastreados</span>
-              <strong>{trackedItems.length}</strong>
-            </div>
-            <div className="stat-card">
-              <span>Com preço ativo</span>
-              <strong>{myPrices.length}</strong>
-            </div>
-            <div className="stat-card">
-              <span>Melhor oportunidade</span>
-              <strong>
-                {lowestPrice !== null
-                  ? `${lowestPrice.toLocaleString('pt-BR')} silver`
-                  : '—'}
-              </strong>
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          title="Adicionar item"
-          description="Digite o nome interno do item (ex: T8_BAG@3) ou nome PT/EN"
-        >
-          <form className="form inline" onSubmit={handleSubmit(onSubmit)}>
-            <SearchAutocomplete onSelectProduct={(product) => {
-              createMutation.mutate({ item_name: product.unique_name });
-              reset({ item_name: "" });
-            }} />
-          </form>
-
-          {createMutation.error && (
-            <p className="form-error">
-              {createMutation.error.message || 'Erro ao adicionar item.'}
-            </p>
-          )}
-        </Card>
-      </section>
-
-      <section className="dashboard-grid two-columns">
-        <Card
-          title="Itens cadastrados"
-          description="Clique em Remover para excluir."
-        >
-          {itemsQuery.isLoading ? (
-            <p className="muted">Carregando...</p>
-          ) : itemsQuery.isError ? (
-            <p className="form-error">Erro ao carregar itens.</p>
-          ) : trackedItems.length > 0 ? (
-            <ul className="item-list">
-              {trackedItems.map((item) => (
-                <li key={item.id} className="item-row">
-                  <div>
-                    <strong>{item.item_name}</strong>
-                    <span className="muted">
-                      {item.created_at
-                        ? new Date(item.created_at).toLocaleDateString('pt-BR')
-                        : ''}
-                    </span>
-                  </div>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(item.id)}
-                    disabled={deleteMutation.isPending}
-                    title="Remover item"
-                  >
-                    Remover
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="empty-state">
-              Nenhum item adicionado ainda.
-              <br />
-              Comece adicionando um acima!
-            </div>
-          )}
-        </Card>
-
-        <Card
-          title="Preços em tempo real"
-          description="Clique em um item para ver o histórico de preço."
-        >
-          {/* FILTRO DE TIER */}
-          <div className="filters-row">
-            <label>
-              Tier
-              <select
-                value={String(selectedTier)}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === 'all') {
-                    setSelectedTier('all');
-                  } else if (value === 'no-tier') {
-                    setSelectedTier('no-tier');
-                  } else {
-                    setSelectedTier(Number(value) as number);
-                  }
-                }}
-              >
-                <option value="all">Todos</option>
-                <option value="no-tier">Sem tier</option>
-                {ALBION_TIERS.map((tier) => (
-                  <option key={tier} value={tier}>
-                    T{tier}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {myPricesQuery.isLoading ? (
-            <p className="muted">Buscando preços nas cidades...</p>
-          ) : myPricesQuery.isError ? (
-            <p className="form-error">Erro ao carregar preços.</p>
-          ) : myPrices.length > 0 ? (
-            <>
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Cidade</th>
-                      <th>Preço</th>
-                      <th>Qualidade</th>
-                      <th>Encant.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {myPrices.map((item) => (
-                      <tr
-                        key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
-                        className="clickable-row"
-                        onClick={() => setSelectedHistoryItem(item.item_name)}
-                        title="Clique para ver o histórico deste item"
-                      >
-                        <td className="item-with-image">
-                          <img
-                            src={getItemImageUrl(item.item_name)}
-                            alt={item.item_name}
-                            className="item-icon"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.src =
-                                'https://render.albiononline.com/v1/item/T1_BAG.png';
-                            }}
-                          />
-                          <div>
-                            <strong>{getItemDisplayName(item.item_name)}</strong>
-                            <span className="muted" style={{ fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
-                              {item.item_name}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td>
-                          <span className="pill">{item.city || '—'}</span>
-                        </td>
-
-                        <td>
-                          {typeof item.price === 'number'
-                            ? `${item.price.toLocaleString('pt-BR')} silver`
-                            : '—'}
-                        </td>
-
-                        <td
-                          style={{
-                            color: getQualityColor(item.quality),
-                            fontWeight: 700,
-                            textShadow:
-                              item.quality === 5 ? '0 0 10px #FF9800' : 'none',
-                          }}
-                        >
-                          {getQualityLabel(item.quality)}
-                        </td>
-
-                        <td>{item.enchantment > 0 ? `@${item.enchantment}` : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Top cards: resumo + adicionar item */}
+        <section className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
+          <Card
+            title="Resumo rápido"
+            description="Seus itens monitorados em tempo real."
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  Itens rastreados
+                </span>
+                <p className="mt-2 text-2xl font-semibold">{trackedItems.length}</p>
               </div>
+              <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  Com preço ativo
+                </span>
+                <p className="mt-2 text-2xl font-semibold">{myPrices.length}</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
+                <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  Melhor oportunidade
+                </span>
+                <p className="mt-2 text-lg font-semibold">
+                  {lowestPrice !== null
+                    ? `${lowestPrice.toLocaleString("pt-BR")} silver`
+                    : "—"}
+                </p>
+              </div>
+            </div>
+          </Card>
 
-              {/* GRÁFICO DE HISTÓRICO */}
-              {selectedHistoryItem && (
-                <div className="chart-wrapper" style={{ marginTop: 24 }}>
-                  <h3>
-                    Histórico de preço —{' '}
-                    <span className="muted">{getItemDisplayName(selectedHistoryItem)}</span>
-                  </h3>
+          <Card
+            title="Adicionar item"
+            description="Busque pelo nome PT/EN ou código interno (ex: T8_BAG@3)."
+          >
+            <form
+              className="mt-3 space-y-3"
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <SearchAutocomplete
+                onSelectProduct={(product: any) => {
+                  // SearchAutocomplete já normaliza unique_name
+                  const internal =
+                    product.unique_name ?? product.UniqueName;
+                  if (!internal) return;
+                  createMutation.mutate({ item_name: internal });
+                  reset({ item_name: "" });
+                }}
+              />
 
-                  {historyQuery.isLoading && <p className="muted">Carregando gráfico...</p>}
+              {createMutation.error && (
+                <p className="text-xs text-destructive mt-1">
+                  {createMutation.error.message || "Erro ao adicionar item."}
+                </p>
+              )}
+            </form>
+          </Card>
+        </section>
 
-                  {historyQuery.isError && (
-                    <p className="form-error">
-                      Não foi possível carregar o histórico deste item.
-                    </p>
-                  )}
+        {/* Bottom grid: lista + preços em tempo real + gráfico */}
+        <section className="grid gap-6 lg:grid-cols-2">
+          <Card
+            title="Itens cadastrados"
+            description="Clique em Remover para excluir da lista."
+          >
+            {itemsQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Carregando...</p>
+            ) : itemsQuery.isError ? (
+              <p className="text-sm text-destructive">Erro ao carregar itens.</p>
+            ) : trackedItems.length > 0 ? (
+              <ul className="mt-3 space-y-2">
+                {trackedItems.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-sm"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{item.item_name}</span>
+                      {item.created_at && (
+                        <span className="text-[11px] text-muted-foreground">
+                          Adicionado em{" "}
+                          {new Date(item.created_at).toLocaleDateString("pt-BR")}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors"
+                      onClick={() => handleDelete(item.id)}
+                      disabled={deleteMutation.isPending}
+                      title="Remover item"
+                    >
+                      Remover
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+                Nenhum item adicionado ainda.
+                <br />
+                Comece adicionando um acima!
+              </div>
+            )}
+          </Card>
 
-                  {!historyQuery.isLoading &&
-                    !historyQuery.isError &&
-                    chartData.length === 0 && (
-                      <p className="muted">
-                        Sem dados suficientes de histórico para este item.
+          <Card
+            title="Preços em tempo real"
+            description="Clique em um item para ver o histórico de preço."
+          >
+            {/* FILTRO DE TIER */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                <span>Tier</span>
+                <select
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  value={String(selectedTier)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "all") {
+                      setSelectedTier("all");
+                    } else if (value === "no-tier") {
+                      setSelectedTier("no-tier");
+                    } else {
+                      setSelectedTier(Number(value) as number);
+                    }
+                  }}
+                >
+                  <option value="all">Todos</option>
+                  <option value="no-tier">Sem tier</option>
+                  {ALBION_TIERS.map((tier) => (
+                    <option key={tier} value={tier}>
+                      T{tier}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {myPricesQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Buscando preços nas cidades...
+              </p>
+            ) : myPricesQuery.isError ? (
+              <p className="text-sm text-destructive">Erro ao carregar preços.</p>
+            ) : myPrices.length > 0 ? (
+              <>
+                <div className="overflow-x-auto rounded-xl border border-border/70">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-muted/60">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                          Item
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                          Cidade
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                          Preço
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                          Qualidade
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                          Encant.
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {myPrices.map((item) => (
+                        <tr
+                          key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
+                          className="cursor-pointer hover:bg-muted/60 transition-colors"
+                          onClick={() => setSelectedHistoryItem(item.item_name)}
+                          title="Clique para ver o histórico deste item"
+                        >
+                          <td className="px-3 py-2 align-middle">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={buildItemImageUrl(item)}
+                                alt={item.item_name}
+                                className="h-9 w-9 rounded-md bg-black/40"
+                                loading="lazy"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    "https://render.albiononline.com/v1/item/T1_BAG.png";
+                                }}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">
+                                  {getItemDisplayName(item.item_name)}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground mt-0.5">
+                                  {item.item_name}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-3 py-2 align-middle">
+                            <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-xs">
+                              {item.city || "—"}
+                            </span>
+                          </td>
+
+                          <td className="px-3 py-2 align-middle">
+                            {typeof item.price === "number"
+                              ? `${item.price.toLocaleString("pt-BR")} silver`
+                              : "—"}
+                          </td>
+
+                          <td className="px-3 py-2 align-middle">
+                            <span
+                              style={{
+                                color: getQualityColor(item.quality),
+                                fontWeight: 700,
+                                textShadow:
+                                  item.quality === 5
+                                    ? "0 0 10px #FF9800"
+                                    : "none",
+                              }}
+                            >
+                              {getQualityLabel(item.quality)}
+                            </span>
+                          </td>
+
+                          <td className="px-3 py-2 align-middle">
+                            {item.enchantment > 0 ? `@${item.enchantment}` : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* GRÁFICO DE HISTÓRICO */}
+                {selectedHistoryItem && (
+                  <div className="mt-6">
+                    <h3 className="text-sm font-semibold mb-2">
+                      Histórico de preço —{" "}
+                      <span className="text-muted-foreground">
+                        {getItemDisplayName(selectedHistoryItem)}
+                      </span>
+                    </h3>
+
+                    {historyQuery.isLoading && (
+                      <p className="text-sm text-muted-foreground">
+                        Carregando gráfico...
                       </p>
                     )}
 
-                  {!historyQuery.isLoading &&
-                    !historyQuery.isError &&
-                    chartData.length > 0 && (
-                      <div style={{ width: '100%', height: 260 }}>
-                        <ResponsiveContainer>
-                          <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="time" tick={{ fontSize: 10 }} />
-                            <YAxis tick={{ fontSize: 10 }} />
-                            <Tooltip />
-                            <Line
-                              type="monotone"
-                              dataKey="avg_price"
-                              dot={false}
-                              strokeWidth={2}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
+                    {historyQuery.isError && (
+                      <p className="text-sm text-destructive">
+                        Não foi possível carregar o histórico deste item.
+                      </p>
                     )}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="empty-state">
-              Adicione itens para começar a monitorar os preços!
-            </div>
-          )}
-        </Card>
-      </section>
+
+                    {!historyQuery.isLoading &&
+                      !historyQuery.isError &&
+                      chartData.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          Sem dados suficientes de histórico para este item.
+                        </p>
+                      )}
+
+                    {!historyQuery.isLoading &&
+                      !historyQuery.isError &&
+                      chartData.length > 0 && (
+                        <div style={{ width: "100%", height: 260 }}>
+                          <ResponsiveContainer>
+                            <LineChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                              <YAxis tick={{ fontSize: 10 }} />
+                              <Tooltip />
+                              <Line
+                                type="monotone"
+                                dataKey="avg_price"
+                                dot={false}
+                                strokeWidth={2}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
+                Adicione itens para começar a monitorar os preços!
+              </div>
+            )}
+          </Card>
+        </section>
+      </div>
     </div>
   );
 }
