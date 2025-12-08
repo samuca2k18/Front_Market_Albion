@@ -70,6 +70,12 @@
       "confirmDelete": "Tem certeza que quer remover este item da sua lista?",
       "errorAdding": "Erro ao adicionar item.",
       "searchPlaceholder": "Buscar item...",
+      "confirmDeleteOne": "Tem certeza que quer remover este item da sua lista?",
+    "confirmDeleteMultiple": "Tem certeza que quer remover {{count}} itens da sua lista?",
+    "deselectAll": "Desselecionar todos",
+        "selectAll": "Selecionar todos",
+        "removing": "Removendo...",
+        "removeSelected": "Remover {{count}} {{count, plural, one {item} other {itens}}}",
       "silver": "silver"
     },
     "prices": {

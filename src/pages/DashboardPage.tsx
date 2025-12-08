@@ -1,9 +1,10 @@
-import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+
 import { Card } from "../components/common/Card";
 import "../components/common/common.css";
+
 import { createItem, listItems, deleteItem } from "../api/items";
 import {
   fetchMyItemsPrices,
@@ -11,14 +12,17 @@ import {
   type AlbionHistoryResponse,
   searchItems,
 } from "../api/albion";
+
 import type { ItemPayload, Item, MyItemPrice } from "../api/types";
 import type { ApiErrorShape } from "../api/client";
 import { getQualityLabel, getQualityColor } from "../constants/qualities";
 import { ALBION_TIERS } from "../constants/albion";
 import { SearchAutocomplete } from "../components/search/SearchAutocomplete";
 import { getItemDisplayNameWithEnchantment } from "../utils/itemNameMapper";
+import { LanguageSwitcher } from "../components/common/LanguageSwitcher";
+import type { Product } from "@/api/productService";
 
-// recharts
+// Recharts
 import {
   ResponsiveContainer,
   LineChart,
@@ -28,7 +32,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import type { Product } from "@/api/productService";
 
 type TierFilter = "all" | "no-tier" | number;
 
@@ -40,23 +43,19 @@ function splitItemName(itemName: string): { base: string; enchant?: number } {
 
 function getTierFromItemName(itemName: string): number | null {
   if (!itemName) return null;
-
   const match = itemName.match(/^T(\d+)_/);
   if (!match) return null;
-
   const tier = parseInt(match[1], 10);
   if (Number.isNaN(tier)) return null;
-
   if (tier < 1 || tier > 8) return null;
   return tier;
 }
 
+// Imagem a partir do objeto de preço
 function buildItemImageUrl(item: MyItemPrice): string {
   const { base } = splitItemName(item.item_name);
-
   const enchant =
     item.enchantment && item.enchantment > 0 ? item.enchantment : undefined;
-
   const enchantSuffix = enchant ? `@${enchant}` : "";
   const fullName = `${base}${enchantSuffix}`;
 
@@ -65,10 +64,12 @@ function buildItemImageUrl(item: MyItemPrice): string {
   )}.png`;
 }
 
+// Imagem a partir do nome interno
 function buildItemImageUrlFromName(itemName: string): string {
   const [baseName, enchant] = itemName.split("@");
   const enchantSuffix = enchant ? `@${enchant}` : "";
   const fullName = `${baseName}${enchantSuffix}`;
+
   return `https://render.albiononline.com/v1/item/${encodeURIComponent(
     fullName,
   )}.png`;
@@ -77,39 +78,52 @@ function buildItemImageUrlFromName(itemName: string): string {
 export function DashboardPage() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
-  const { handleSubmit, reset } = useForm<ItemPayload>({
-    defaultValues: { item_name: "" },
-  });
 
   const [selectedTier, setSelectedTier] = useState<TierFilter>("all");
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(null);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(
+    null,
+  );
   const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(
     () => new Map(),
   );
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
-  // Limpa cache quando idioma muda
+  // Locale amigável pro toLocaleString
+  const locale =
+    i18n.language === "pt"
+      ? "pt-BR"
+      : i18n.language === "en"
+        ? "en-US"
+        : i18n.language || "en-US";
+
+  // Quando muda idioma, limpa cache para recarregar nomes
   useEffect(() => {
     setItemNamesCache(new Map());
   }, [i18n.language]);
 
+  // Itens cadastrados pelo usuário
   const itemsQuery = useQuery<Item[]>({
     queryKey: ["items"],
     queryFn: listItems,
   });
 
+  // Preços de itens do usuário
   const myPricesQuery = useQuery<MyItemPrice[]>({
     queryKey: ["my-items-prices"],
     queryFn: fetchMyItemsPrices,
     refetchInterval: 5 * 60 * 1000,
   });
 
+  // Histórico do item selecionado
   const historyQuery = useQuery<AlbionHistoryResponse>({
     queryKey: ["albion-history", selectedHistoryItem],
     queryFn: () => fetchAlbionHistory(selectedHistoryItem!, 7, ["Caerleon"], "6h"),
     enabled: !!selectedHistoryItem,
   });
 
+  // === MUTATIONS ===
+
+  // Criar item
   const createMutation = useMutation<void, ApiErrorShape, ItemPayload>({
     mutationFn: async (payload) => {
       await createItem(payload);
@@ -118,10 +132,10 @@ export function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["my-items-prices"] });
       myPricesQuery.refetch();
-      reset();
     },
   });
 
+  // Remover item único (com update otimista)
   const deleteMutation = useMutation<
     void,
     ApiErrorShape,
@@ -140,15 +154,21 @@ export function DashboardPage() {
         queryClient.getQueryData<MyItemPrice[]>(["my-items-prices"]) ?? [];
 
       const removedItem = previousItems.find((it) => it.id === id);
-      const removedBase = removedItem ? splitItemName(removedItem.item_name).base : null;
+      const removedBase = removedItem
+        ? splitItemName(removedItem.item_name).base
+        : null;
 
+      // tira item da lista
       queryClient.setQueryData<Item[]>(["items"], (old) =>
         (old ?? []).filter((it) => it.id !== id),
       );
 
+      // tira preços relacionados
       if (removedBase) {
         queryClient.setQueryData<MyItemPrice[]>(["my-items-prices"], (old) =>
-          (old ?? []).filter((p) => splitItemName(p.item_name).base !== removedBase),
+          (old ?? []).filter(
+            (p) => splitItemName(p.item_name).base !== removedBase,
+          ),
         );
       }
 
@@ -175,6 +195,7 @@ export function DashboardPage() {
     },
   });
 
+  // Remover vários itens
   const deleteMultipleMutation = useMutation<
     void,
     ApiErrorShape,
@@ -227,13 +248,11 @@ export function DashboardPage() {
     },
   });
 
-  const onSubmit = (payload: ItemPayload) => {
-    const name = payload.item_name?.trim().toUpperCase();
-    if (!name) return;
-    createMutation.mutate({ item_name: name });
-  };
+  // === HANDLERS ===
 
   const handleDelete = (id: number) => {
+    if (deleteMutation.isPending || deleteMultipleMutation.isPending) return;
+
     if (confirm(t("dashboard.confirmDelete"))) {
       deleteMutation.mutate(id);
     }
@@ -252,6 +271,9 @@ export function DashboardPage() {
   };
 
   const handleSelectAll = () => {
+    const trackedItems = itemsQuery.data ?? [];
+    if (trackedItems.length === 0) return;
+
     if (selectedItems.size === trackedItems.length) {
       setSelectedItems(new Set());
     } else {
@@ -260,34 +282,43 @@ export function DashboardPage() {
   };
 
   const handleDeleteSelected = () => {
-    if (selectedItems.size === 0) return;
-    
+    if (
+      selectedItems.size === 0 ||
+      deleteMutation.isPending ||
+      deleteMultipleMutation.isPending
+    )
+      return;
+
     const count = selectedItems.size;
-    const message = count === 1 
-      ? t("dashboard.confirmDeleteOne")
-      : t("dashboard.confirmDeleteMultiple", { count });
-    
+    const message =
+      count === 1
+        ? t("dashboard.confirmDeleteOne")
+        : t("dashboard.confirmDeleteMultiple", { count });
+
     if (confirm(message)) {
       const idsToDelete = Array.from(selectedItems);
       deleteMultipleMutation.mutate(idsToDelete);
     }
   };
 
+  // === DERIVADOS ===
+
   const trackedItems = itemsQuery.data ?? [];
   const myPricesRaw = myPricesQuery.data ?? [];
 
+  // Filtrar por preço > 0 e tier selecionado
   const filtered = useMemo(() => {
     return myPricesRaw
       .filter((p) => p && typeof p.price === "number" && p.price > 0)
       .filter((p) => {
         const tier = getTierFromItemName(p.item_name);
-
         if (selectedTier === "all") return true;
         if (selectedTier === "no-tier") return tier === null;
         return tier === selectedTier;
       });
   }, [myPricesRaw, selectedTier]);
 
+  // Agrupa por item_name e pega o mais barato
   const myPrices = useMemo(() => {
     const cheapestByItem = new Map<string, MyItemPrice>();
 
@@ -301,77 +332,72 @@ export function DashboardPage() {
     return Array.from(cheapestByItem.values()).sort((a, b) => a.price - b.price);
   }, [filtered]);
 
-  const lowestPrice = useMemo(
-    () => (myPrices.length > 0 ? myPrices[0].price : null),
-    [myPrices],
-  );
+  const lowestPrice = myPrices.length > 0 ? myPrices[0].price : null;
 
+  // Cache de nomes traduzidos
   useEffect(() => {
-    const fetchItemNames = async () => {
-      const uniqueItemNames = Array.from(
+    const fetchNames = async () => {
+      const bases = Array.from(
         new Set([
           ...myPrices.map((p) => p.item_name.split("@")[0]),
           ...trackedItems.map((t) => t.item_name.split("@")[0]),
         ]),
       );
 
-      const promises = uniqueItemNames
-        .filter((baseName) => !itemNamesCache.has(baseName))
-        .map(async (baseName) => {
+      const missing = bases.filter((b) => !itemNamesCache.has(b));
+      if (missing.length === 0) return;
+
+      const results = await Promise.all(
+        missing.map(async (base) => {
           try {
-            const results = await searchItems(baseName);
-            const found = results.find((r) => r.unique_name === baseName);
+            const items = await searchItems(base);
+            const item = items.find((i) => i.unique_name === base);
 
-            if (found) {
-              const currentLanguage = i18n.language;
-              const label = currentLanguage === 'pt-BR'
-                ? (found.name_pt ?? found.name_en ?? found.unique_name)
-                : (found.name_en ?? found.name_pt ?? found.unique_name);
+            if (item) {
+              const name =
+                i18n.language.startsWith("pt") // pt ou pt-BR
+                  ? item.name_pt || item.name_en || base
+                  : item.name_en || item.name_pt || base;
 
-              if (label) {
-                return { baseName, name: label };
-              }
+              return { base, name };
             }
-            return null;
           } catch {
-            // silenciosamente falha, usa fallback
+            // ignora erro, usa fallback
           }
           return null;
-        });
-
-      const results = await Promise.all(promises);
-      const newEntries = results.filter(
-        (r): r is { baseName: string; name: string } => r !== null,
+        }),
       );
 
-      if (newEntries.length > 0) {
+      const valid = results.filter(
+        (r): r is { base: string; name: string } => r !== null,
+      );
+
+      if (valid.length > 0) {
         setItemNamesCache((prev) => {
-          const newMap = new Map(prev);
-          newEntries.forEach(({ baseName, name }) => {
-            newMap.set(baseName, name);
-          });
-          return newMap;
+          const next = new Map(prev);
+          valid.forEach(({ base, name }) => next.set(base, name));
+          return next;
         });
       }
     };
 
     if (myPrices.length > 0 || trackedItems.length > 0) {
-      fetchItemNames();
+      fetchNames();
     }
   }, [myPrices, trackedItems, i18n.language, itemNamesCache]);
 
-  const getItemDisplayName = (itemName: string): string => {
-    const { base, enchant } = splitItemName(itemName);
-    const cachedName = itemNamesCache.get(base);
-
-    const baseLabel = cachedName ?? getItemDisplayNameWithEnchantment(base);
-    return enchant ? `${baseLabel} @${enchant}` : baseLabel;
+  const getItemDisplayName = (name: string): string => {
+    const { base, enchant } = splitItemName(name);
+    const cached = itemNamesCache.get(base);
+    const display = cached ?? getItemDisplayNameWithEnchantment(base);
+    return enchant ? `${display} @${enchant}` : display;
   };
 
+  // Dados para o gráfico
   const chartData = useMemo(() => {
     if (!historyQuery.data) return [];
     return historyQuery.data.data.map((point) => ({
-      time: new Date(point.date).toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US", {
+      time: new Date(point.date).toLocaleString(locale, {
         day: "2-digit",
         month: "2-digit",
         hour: "2-digit",
@@ -380,12 +406,20 @@ export function DashboardPage() {
       avg_price: point.avg_price,
       city: point.city,
     }));
-  }, [historyQuery.data, i18n.language]);
+  }, [historyQuery.data, locale]);
+
+  const isDeleting =
+    deleteMutation.isPending || deleteMultipleMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Botão de idioma no canto superior direito */}
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top cards: resumo + adicionar item */}
+        {/* Top: Resumo + Adicionar item */}
         <section className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
           <Card
             title={t("dashboard.quickSummary")}
@@ -396,73 +430,73 @@ export function DashboardPage() {
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   {t("dashboard.trackedItems")}
                 </span>
-                <p className="mt-2 text-2xl font-semibold">{trackedItems.length}</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {trackedItems.length}
+                </p>
               </div>
+
               <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   {t("dashboard.activePrices")}
                 </span>
                 <p className="mt-2 text-2xl font-semibold">{myPrices.length}</p>
               </div>
+
               <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm">
                 <span className="text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   {t("dashboard.bestOpportunity")}
                 </span>
                 <p className="mt-2 text-lg font-semibold">
                   {lowestPrice !== null
-                    ? `${lowestPrice.toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")} ${t("dashboard.silver")}`
+                    ? `${lowestPrice.toLocaleString(locale)} ${t(
+                        "dashboard.silver",
+                      )}`
                     : "—"}
                 </p>
               </div>
             </div>
           </Card>
 
-          // No DashboardPage.tsx, na seção do Card "adicionar item":
+          <Card
+            title={t("dashboard.addItem")}
+            description={t("dashboard.addItemDesc")}
+          >
+            <div className="mt-3 space-y-3">
+              <SearchAutocomplete
+                onSelectProduct={(product: Product) => {
+                  const internal =
+                    product.unique_name ?? (product as any).UniqueName;
+                  if (!internal || createMutation.isPending) return;
 
-<Card
-  title={t("dashboard.addItem")}
-  description={t("dashboard.addItemDesc")}
->
-  <form
-    className="mt-3 space-y-3"
-    onSubmit={handleSubmit(onSubmit)}
-  >
-    <SearchAutocomplete
-      onSelectProduct={(product: Product) => {
-        // Product agora vem normalizado da SearchAutocomplete
-        // Contém: unique_name, name_pt, name_en normalizados
-        const itemName = product.unique_name;
-        
-        if (!itemName) {
-          console.error("Produto sem unique_name");
-          return;
-        }
+                  createMutation.mutate({ item_name: internal });
+                }}
+              />
 
-        // Cria o item com o nome interno normalizado
-        createMutation.mutate({ item_name: itemName });
-        reset({ item_name: "" });
-      }}
-    />
-
-    {createMutation.error && (
-      <p className="text-xs text-destructive mt-1">
-        {createMutation.error.message || t("dashboard.errorAdding")}
-      </p>
-    )}
-  </form>
-</Card>
+              {createMutation.isError && (
+                <p className="text-xs text-destructive mt-1">
+                  {createMutation.error?.message ||
+                    t("dashboard.errorAdding")}
+                </p>
+              )}
+            </div>
+          </Card>
         </section>
 
-        {/* Bottom grid: lista + preços em tempo real + gráfico */}
+        {/* Bottom: lista + preços / gráfico */}
         <section className="grid gap-6 lg:grid-cols-2">
+          {/* Lista de itens cadastrados */}
           <Card
             title={t("dashboard.registeredItems")}
             description={t("dashboard.registeredItemsDesc")}
           >
             {itemsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("common.loading")}
+              </p>
             ) : itemsQuery.isError ? (
-              <p className="text-sm text-destructive">{t("dashboard.errorLoadingItems")}</p>
+              <p className="text-sm text-destructive">
+                {t("dashboard.errorLoadingItems")}
+              </p>
             ) : trackedItems.length > 0 ? (
               <>
                 {/* Controles de seleção */}
@@ -470,22 +504,36 @@ export function DashboardPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={selectedItems.size === trackedItems.length && trackedItems.length > 0}
+                      id="select-all"
+                      checked={
+                        trackedItems.length > 0 &&
+                        selectedItems.size === trackedItems.length
+                      }
                       onChange={handleSelectAll}
                       className="h-4 w-4 rounded border-border cursor-pointer accent-primary"
-                      id="select-all"
                     />
-                    <label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
-                      {selectedItems.size === trackedItems.length ? t("dashboard.deselectAll") : t("dashboard.selectAll")}
+                    <label
+                      htmlFor="select-all"
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      {selectedItems.size === trackedItems.length
+                        ? t("dashboard.deselectAll")
+                        : t("dashboard.selectAll")}
                     </label>
                   </div>
+
                   {selectedItems.size > 0 && (
                     <button
-                      className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium"
+                      type="button"
                       onClick={handleDeleteSelected}
-                      disabled={deleteMutation.isPending || deleteMultipleMutation.isPending}
+                      disabled={isDeleting}
+                      className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {deleteMultipleMutation.isPending ? t("dashboard.removing") : t("dashboard.removeSelected", { count: selectedItems.size })}
+                      {isDeleting
+                        ? t("dashboard.removing")
+                        : t("dashboard.removeSelected", {
+                            count: selectedItems.size,
+                          })}
                     </button>
                   )}
                 </div>
@@ -511,6 +559,7 @@ export function DashboardPage() {
                             onChange={() => handleToggleSelect(item.id)}
                             className="h-4 w-4 rounded border-border cursor-pointer accent-primary flex-shrink-0"
                           />
+
                           <img
                             src={buildItemImageUrlFromName(item.item_name)}
                             alt={item.item_name}
@@ -521,9 +570,12 @@ export function DashboardPage() {
                                 "https://render.albiononline.com/v1/item/T1_BAG.png";
                             }}
                           />
+
                           <div className="flex flex-col min-w-0 flex-1">
                             <span className="font-medium truncate">
-                              {getItemDisplayNameWithEnchantment(item.item_name)}
+                              {getItemDisplayNameWithEnchantment(
+                                item.item_name,
+                              )}
                             </span>
 
                             <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
@@ -532,20 +584,23 @@ export function DashboardPage() {
 
                             {item.created_at && (
                               <span className="text-[11px] text-muted-foreground mt-0.5">
-                                {t("dashboard.addedOn")}{" "}
-                                {new Date(item.created_at).toLocaleDateString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")}
+                                {t("dashboard.addedAt")}{" "}
+                                {new Date(
+                                  item.created_at,
+                                ).toLocaleDateString(locale)}
                               </span>
                             )}
                           </div>
                         </div>
 
                         <button
-                          className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0"
+                          type="button"
                           onClick={() => handleDelete(item.id)}
-                          disabled={deleteMutation.isPending}
-                          title={t("common.delete")}
+                          disabled={isDeleting}
+                          className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={t("dashboard.removeItemButtonTooltip")}
                         >
-                          {t("common.delete")}
+                          {t("dashboard.removeItem")}
                         </button>
                       </li>
                     );
@@ -554,18 +609,19 @@ export function DashboardPage() {
               </>
             ) : (
               <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-                {t("dashboard.noItemsAdded")}
+                {t("dashboard.noItemsYet")}
                 <br />
-                {t("dashboard.startAdding")}
+                {t("dashboard.addFirstItemHint")}
               </div>
             )}
           </Card>
 
+          {/* Preços em tempo real + gráfico */}
           <Card
             title={t("dashboard.realtimePrices")}
             description={t("dashboard.realtimePricesDesc")}
           >
-            {/* FILTRO DE TIER */}
+            {/* Filtro de Tier */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <span>{t("dashboard.tier")}</span>
@@ -599,9 +655,12 @@ export function DashboardPage() {
                 {t("dashboard.fetchingPrices")}
               </p>
             ) : myPricesQuery.isError ? (
-              <p className="text-sm text-destructive">{t("dashboard.errorLoadingPrices")}</p>
+              <p className="text-sm text-destructive">
+                {t("dashboard.errorLoadingPrices")}
+              </p>
             ) : myPrices.length > 0 ? (
               <>
+                {/* Tabela de preços */}
                 <div className="overflow-x-auto rounded-xl border border-border/70">
                   <table className="min-w-full text-sm">
                     <thead className="bg-muted/60">
@@ -662,7 +721,9 @@ export function DashboardPage() {
 
                           <td className="px-3 py-2 align-middle">
                             {typeof item.price === "number"
-                              ? `${item.price.toLocaleString(i18n.language === 'pt-BR' ? "pt-BR" : "en-US")} ${t("dashboard.silver")}`
+                              ? `${item.price.toLocaleString(locale)} ${t(
+                                  "dashboard.silver",
+                                )}`
                               : "—"}
                           </td>
 
@@ -682,7 +743,9 @@ export function DashboardPage() {
                           </td>
 
                           <td className="px-3 py-2 align-middle">
-                            {item.enchantment > 0 ? `@${item.enchantment}` : "—"}
+                            {item.enchantment > 0
+                              ? `.${item.enchantment}`
+                              : "—"}
                           </td>
                         </tr>
                       ))}
@@ -690,7 +753,7 @@ export function DashboardPage() {
                   </table>
                 </div>
 
-                {/* GRÁFICO DE HISTÓRICO */}
+                {/* Gráfico de histórico */}
                 {selectedHistoryItem && (
                   <div className="mt-6">
                     <h3 className="text-sm font-semibold mb-2">
