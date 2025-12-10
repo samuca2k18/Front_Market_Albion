@@ -1,0 +1,354 @@
+/* ============================================
+   INPUTS / SELECTS / TEXTAREA
+   ============================================ */
+
+   input[type="text"],
+   input[type="email"],
+   input[type="password"],
+   input[type="number"],
+   input[type="search"],
+   select,
+   textarea {
+     width: 100%;
+     padding: 0.75rem 1rem;
+     border-radius: 12px;
+     border: 1px solid rgba(255, 255, 255, 0.12);
+     background: rgba(20, 28, 43, 0.8);
+     color: var(--color-white);
+     font-size: 0.95rem;
+     font-family: inherit;
+     transition: all 0.2s ease;
+     -webkit-appearance: none;
+     appearance: none;
+   }
+   
+   input[type="text"]::placeholder,
+   input[type="email"]::placeholder,
+   input[type="password"]::placeholder,
+   input[type="number"]::placeholder,
+   input[type="search"]::placeholder,
+   textarea::placeholder {
+     color: rgba(255, 255, 255, 0.4);
+   }
+   
+   input[type="text"]:focus,
+   input[type="email"]:focus,
+   input[type="password"]:focus,
+   input[type="number"]:focus,
+   input[type="search"]:focus,
+   select:focus,
+   textarea:focus {
+     outline: none;
+     border-color: var(--color-primary);
+     background-color: rgba(20, 28, 43, 0.95);
+     box-shadow: 0 0 0 3px rgba(65, 240, 181, 0.15);
+   }
+   
+   input[type="text"]:hover,
+   input[type="email"]:hover,
+   input[type="password"]:hover,
+   input[type="number"]:hover,
+   input[type="search"]:hover,
+   select:hover,
+   textarea:hover {
+     border-color: rgba(65, 240, 181, 0.5);
+     background-color: rgba(20, 28, 43, 0.9);
+   }
+   
+   /* SELECT customizado com ícone de dropdown */
+   select {
+     cursor: pointer;
+     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2341f0b5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+     background-repeat: no-repeat;
+     background-position: right 0.75rem center;
+     background-size: 1.2em 1.2em;
+     padding-right: 2.5rem;
+     color: var(--color-white) !important;
+   }
+   
+   select::-ms-expand {
+     display: none;
+   }
+   
+   select option {
+     background: #14192b !important;
+     color: var(--color-white) !important;
+     padding: 0.75rem;
+     border: none;
+     margin: 0.25rem 0;
+   }
+   
+   select option:checked,
+   select option:focus {
+     background: var(--color-primary) !important;
+     color: #04070d !important;
+     font-weight: 600;
+   }
+   
+   select option:hover {
+     background: rgba(65, 240, 181, 0.2) !important;
+     color: var(--color-white) !important;
+   }
+   
+   /* Melhorias de acessibilidade e visibilidade do select */
+   select:disabled {
+     opacity: 0.6;
+     cursor: not-allowed;
+   }
+   
+   select:disabled option {
+     opacity: 1;
+   }
+   
+   select,
+   select:focus,
+   select:hover {
+     color: var(--color-white) !important;
+   }
+   
+   /* ============================================
+      CHECKBOX / RADIO / LABEL
+      ============================================ */
+   
+   input[type="checkbox"] {
+     width: 18px;
+     height: 18px;
+     cursor: pointer;
+     accent-color: var(--color-primary);
+   }
+   
+   input[type="radio"] {
+     width: 18px;
+     height: 18px;
+     cursor: pointer;
+     accent-color: var(--color-primary);
+   }
+   
+   label {
+     display: flex;
+     flex-direction: column;
+     gap: 0.5rem;
+     font-weight: 500;
+     font-size: 0.95rem;
+     color: var(--color-white);
+   }
+   
+   label input,
+   label select,
+   label textarea {
+     width: 100%;
+   }
+   
+   /* ============================================
+      BOTÕES
+      ============================================ */
+   
+   button,
+   .btn {
+     min-height: 38px;
+     padding: 0.65rem 1.25rem;
+     border-radius: 10px;
+     border: 1px solid transparent;
+     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+     color: var(--color-dark);
+     font-weight: 600;
+     font-size: 0.95rem;
+     cursor: pointer;
+     transition: all 0.2s ease;
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+     gap: 0.5rem;
+     text-decoration: none;
+     white-space: nowrap;
+     font-family: inherit;
+   }
+   
+   button:hover:not(:disabled),
+   .btn:hover:not(:disabled) {
+     transform: translateY(-2px);
+     box-shadow: 0 8px 20px rgba(65, 240, 181, 0.25);
+   }
+   
+   button:active:not(:disabled),
+   .btn:active:not(:disabled) {
+     transform: translateY(0);
+   }
+   
+   button:disabled,
+   .btn:disabled {
+     opacity: 0.5;
+     cursor: not-allowed;
+   }
+   
+   /* Botão secundário */
+   .btn-secondary,
+   button.secondary {
+     background: rgba(65, 240, 181, 0.1);
+     color: var(--color-primary);
+     border: 1px solid rgba(65, 240, 181, 0.3);
+   }
+   
+   .btn-secondary:hover:not(:disabled),
+   button.secondary:hover:not(:disabled) {
+     background: rgba(65, 240, 181, 0.15);
+     border-color: rgba(65, 240, 181, 0.5);
+   }
+   
+   /* Botão de perigo */
+   .btn-danger,
+   button.danger {
+     background: rgba(255, 107, 107, 0.1);
+     color: #ff8b8b;
+     border: 1px solid rgba(255, 107, 107, 0.3);
+   }
+   
+   .btn-danger:hover:not(:disabled),
+   button.danger:hover:not(:disabled) {
+     background: rgba(255, 107, 107, 0.15);
+     border-color: rgba(255, 107, 107, 0.6);
+   }
+   
+   /* Botão pequeno */
+   .btn-sm,
+   button.small {
+     padding: 0.4rem 0.8rem;
+     font-size: 0.85rem;
+     min-height: 32px;
+   }
+   
+   /* ============================================
+      TABELAS
+      ============================================ */
+   
+   table {
+     width: 100%;
+     border-collapse: collapse;
+     font-size: 0.95rem;
+   }
+   
+   table thead {
+     background: rgba(65, 240, 181, 0.06);
+     border-bottom: 2px solid rgba(65, 240, 181, 0.2);
+   }
+   
+   table thead th {
+     padding: 0.9rem 0.75rem;
+     text-align: left;
+     font-weight: 600;
+     color: var(--color-white);
+     white-space: nowrap;
+   }
+   
+   table tbody tr {
+     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+     transition: background-color 0.15s ease;
+   }
+   
+   table tbody tr:hover {
+     background: rgba(65, 240, 181, 0.04);
+   }
+   
+   table tbody td {
+     padding: 0.9rem 0.75rem;
+     color: rgba(255, 255, 255, 0.9);
+   }
+   
+   table tbody tr.clickable {
+     cursor: pointer;
+   }
+   
+   table tbody tr.clickable:active {
+     background: rgba(65, 240, 181, 0.08);
+   }
+   
+   /* ============================================
+      COMPONENTES CUSTOMIZADOS
+      ============================================ */
+   
+   /* Item com imagem */
+   .item-with-image {
+     display: flex;
+     align-items: center;
+     gap: 0.75rem;
+     font-size: 0.95rem;
+   }
+   
+   .item-with-image img {
+     flex-shrink: 0;
+     width: 32px;
+     height: 32px;
+     object-fit: contain;
+     border-radius: 6px;
+     background: rgba(255, 255, 255, 0.05);
+     border: 1px solid rgba(65, 240, 181, 0.2);
+     padding: 2px;
+     transition: all 0.2s ease;
+   }
+   
+   .item-with-image:hover img {
+     border-color: rgba(65, 240, 181, 0.5);
+     background: rgba(65, 240, 181, 0.08);
+   }
+   
+   .item-with-image strong {
+     word-break: break-word;
+     max-width: 250px;
+     font-weight: 600;
+   }
+   
+   .item-with-image .muted {
+     font-size: 0.8rem;
+     color: rgba(255, 255, 255, 0.5);
+   }
+   
+   /* Pill (badge) */
+   .pill,
+   .badge {
+     display: inline-block;
+     padding: 0.35rem 0.85rem;
+     border-radius: 12px;
+     border: 1px solid rgba(65, 240, 181, 0.3);
+     background: rgba(65, 240, 181, 0.08);
+     font-size: 0.85rem;
+     font-weight: 500;
+     color: var(--color-primary);
+     white-space: nowrap;
+   }
+   
+   .pill.danger {
+     border-color: rgba(255, 107, 107, 0.3);
+     background: rgba(255, 107, 107, 0.08);
+     color: #ff8b8b;
+   }
+   
+   .pill.success {
+     border-color: rgba(81, 207, 102, 0.3);
+     background: rgba(81, 207, 102, 0.08);
+     color: var(--color-success);
+   }
+   
+   .pill.warning {
+     border-color: rgba(255, 217, 61, 0.3);
+     background: rgba(255, 217, 61, 0.08);
+     color: var(--color-warning);
+   }
+   
+   /* Spinner (animação em animations.css) */
+   .spinner {
+     width: 28px;
+     height: 28px;
+     border-radius: 50%;
+     border: 2.5px solid rgba(65, 240, 181, 0.2);
+     border-top-color: var(--color-primary);
+     animation: spin 0.8s linear infinite;
+   }
+   
+   /* Otimizações de renderização em imagens de itens */
+   .item-icon,
+   .item-with-image img {
+     image-rendering: -webkit-optimize-contrast;
+     image-rendering: crisp-edges;
+     will-change: transform;
+   }
+   

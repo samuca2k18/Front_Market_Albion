@@ -1,0 +1,214 @@
+/* Adicionar estilos para novos componentes */
+
+.prices-results-info {
+  margin-top: 1.5rem;
+}
+
+.results-count {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+/* Filter Section Header */
+.filter-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 2rem;
+  margin-top: 2rem;
+}
+
+.filter-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.filter-section-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-section-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-action-btn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(65, 240, 181, 0.3);
+  border-radius: 6px;
+  background: rgba(65, 240, 181, 0.05);
+  color: rgba(65, 240, 181, 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-action-btn:hover:not(:disabled) {
+  background: rgba(65, 240, 181, 0.12);
+  border-color: rgba(65, 240, 181, 0.5);
+}
+
+.filter-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Filter Items Grid */
+.filter-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(65, 240, 181, 0.2);
+  background: rgba(65, 240, 181, 0.03);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  user-select: none;
+}
+
+.filter-checkbox:hover {
+  border-color: rgba(65, 240, 181, 0.5);
+  background: rgba(65, 240, 181, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(65, 240, 181, 0.15);
+}
+
+.filter-checkbox-input {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: rgba(65, 240, 181, 0.8);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.filter-checkbox-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-empty-message {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+}
+
+/* Item Info em Tabela */
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.item-internal {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+  margin: 0;
+}
+
+.empty-state-title {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-weight: 600;
+}
+
+.empty-state-description {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  max-width: 400px;
+}
+
+/* Table Loading */
+.prices-table-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .filter-items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+
+  .filter-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .filter-section-actions {
+    width: 100%;
+  }
+
+  .filter-action-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-checkbox {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .prices-table {
+    font-size: 0.8rem;
+  }
+
+  .prices-table thead th,
+  .prices-table tbody td {
+    padding: 0.6rem 0.4rem;
+  }
+}

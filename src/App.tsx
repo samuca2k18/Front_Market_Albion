@@ -1,12 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/i18n';
-import './App.css';
+import './styles/global.css';
+import './styles/components.css';
+import './styles/layout.css';
+import './styles/utilities.css';
+import './styles/animations.css';
 import { AppLayout } from './components/layout/AppLayout';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
-import { DashboardPage } from './pages/DashboardPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { PricesPage } from './pages/PricesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';

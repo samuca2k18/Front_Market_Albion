@@ -9,7 +9,42 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.35);
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.7),
-    0 1px 0 rgba(15, 23, 42, 0.9) inset;
+    0 1px 0 rgba(15, 23, 42, 0.9) inset;/* ===== HEADER ===== */
+
+    header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+    }
+    
+    /* Navigation Links */
+    nav a {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+    
+    nav a:hover {
+      color: var(--foreground);
+    }
+    
+    /* Mobile Menu Animation */
+    @media (max-width: 768px) {
+      button[aria-expanded="true"] span {
+        transform-origin: center;
+        transition: all 0.3s ease;
+      }
+    }
+    
+    /* Responsive Spacing */
+    @media (max-width: 640px) {
+      header {
+        padding: 0.5rem 0;
+      }
+    }
   z-index: 100;
 }
 
