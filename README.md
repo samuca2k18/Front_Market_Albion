@@ -1,69 +1,400 @@
-# Front Market Albion
+# 🛒 Front Market Albion
 
-Interface web profissional para consumir a API do projeto [Market_Albion_Online](https://github.com/samuca2k18/Market_Albion_Online) com autenticação, dashboard completo e consultas avançadas de preços.
+Interface web profissional para monitoramento inteligente de preços e inteligência de mercado para **Albion Online**.
 
-## ✨ Principais recursos
-
-- Fluxo de autenticação (signup, login, logout) com armazenamento seguro do token JWT.
-- Dashboard com métricas, cadastro de itens e tabela de preços consolidados das cidades monitoradas.
-- Página de busca com filtros por cidade, qualidade e nível de encantamento, além de pós-filtragem por preço mínimo.
-- Layout moderno, responsivo e otimizado para desktop e mobile.
-- Integração automática com os endpoints `/signup`, `/login`, `/me`, `/items`, `/albion/price` e `/albion/my-items-prices`.
-
-## 🛠️ Stack
-
-- [React](https://react.dev/) + [Vite](https://vite.dev/)
-- TypeScript
-- React Router
-- React Query para cache/estado de requisições
-- React Hook Form + Zod para formulários e validação
-- Axios
-
-## ⚙️ Configuração
-
-1. Crie o arquivo `env.local` (ou configure variáveis no ambiente) baseado em `env.example`:
-
-   ```bash
-   cp env.example .env.local
-   ```
-
-   Ajuste `VITE_API_BASE_URL` para apontar para sua instância FastAPI. Caso não altere nada, o frontend utilizará automaticamente a API pública hospedada em [`https://market-albion-online.onrender.com`](https://market-albion-online.onrender.com).
-
-2. Instale as dependências:
-
-   ```bash
-   npm install
-   ```
-
-3. Execute em desenvolvimento:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Compile para produção:
-
-   ```bash
-   npm run build
-   npm run preview
-   ```
-
-## 📁 Estrutura resumida
-
-```
-src/
- ├─ api/........ chamadas HTTP tipadas
- ├─ components/. componentes de layout e UI reutilizáveis
- ├─ context/.... contexto de autenticação
- ├─ pages/...... telas (Landing, Login, Dashboard, Prices etc.)
- ├─ constants/.. filtros e listas do Albion
- └─ hooks/...... hooks customizados
-```
-
-## 🔗 Backend esperado
-
-O frontend foi construído para trabalhar diretamente com o backend em FastAPI publicado em [`samuca2k18/Market_Albion_Online`](https://github.com/samuca2k18/Market_Albion_Online). Certifique-se de iniciar a API (`uvicorn main:app --reload`) e manter o mesmo contrato descrito no README do backend para que todas as chamadas funcionem corretamente.
+> Consulte preços em tempo real, monitore itens favoritos e descubra em qual cidade está a melhor oportunidade antes de se mover pelo mapa.
 
 ---
 
-Feito com foco na comunidade brasileira de Albion Online. Aplique seu tema preferido e contribua! 🎯
+## ✨ Principais Recursos
+
+- **🔐 Autenticação Segura**: Fluxo completo de signup, login e logout com tokens JWT
+- **📊 Dashboard Inteligente**: Resumo rápido de itens monitorados, preços ativos e melhor oportunidade
+- **💰 Monitoramento de Preços**: Preços em tempo real consolidados das principais cidades
+- **🔍 Busca Avançada**: Autocomplete com sugestões de itens e filtros por cidade, qualidade e encantamento
+- **📈 Histórico de Preços**: Gráficos interativos com 7 dias de histórico e variação de preço
+- **🌍 Suporte Multilíngue**: Português (PT-BR) e Inglês (EN-US)
+- **📱 Design Responsivo**: Otimizado para desktop e mobile
+- **⚡ Performance**: Construído com React, Vite e TanStack Query para máxima eficiência
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Ferramenta | Descrição |
+|-----------|-----------|
+| **React 19** | Framework UI moderno |
+| **Vite 7** | Bundler e dev server rápido |
+| **TypeScript** | Type safety em todo o código |
+| **TanStack Query v5** | Gerenciamento de estado e cache de requisições |
+| **React Router v7** | Roteamento client-side |
+| **React Hook Form** | Gerenciamento eficiente de formulários |
+| **Zod** | Validação de schemas |
+| **Axios** | Cliente HTTP |
+| **Tailwind CSS** | Utility-first CSS framework |
+| **Recharts** | Visualização de dados e gráficos |
+| **Lucide React** | Ícones SVG modernos |
+| **i18next** | Internacionalização (i18n) |
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├─ api/                    # Chamadas HTTP tipadas
+│  ├─ albion.ts           # Endpoints de preços e histórico
+│  ├─ auth.ts             # Autenticação (login, signup, me)
+│  ├─ items.ts            # Gerenciamento de itens do usuário
+│  ├─ client.ts           # Instância Axios configurada
+│  └─ types.ts            # Tipos compartilhados
+│
+├─ components/            # Componentes reutilizáveis
+│  ├─ common/             # Card, Loading, LanguageSwitcher
+│  ├─ layout/             # Header, Footer, AppLayout
+│  ├─ routing/            # ProtectedRoute, GuestRoute
+│  ├─ search/             # SearchAutocomplete
+│  ├─ prices/             # Tabela e filtros de preços
+│  ├─ ui/                 # Button, Input, Label (shadcn/ui)
+│  └─ albion/             # HistoryChart
+│
+├─ context/               # Context API
+│  └─ AuthContext.tsx     # Estado de autenticação global
+│
+├─ pages/                 # Páginas (rotas)
+│  ├─ LandingPage.tsx     # Página inicial
+│  ├─ LoginPage.tsx       # Login
+│  ├─ SignupPage.tsx      # Cadastro
+│  ├─ dashboard/          # Dashboard com componentes
+│  │  ├─ DashboardPage.tsx
+│  │  ├─ components/      # QuickSummary, AddItemForm, etc
+│  │  └─ hooks/           # useDashboardItems, useDashboardPrices
+│  ├─ PricesPage.tsx      # Página de preços consolidados
+│  └─ NotFoundPage.tsx    # 404
+│
+├─ hooks/                 # Hooks customizados
+│  ├─ useAuth.ts          # Autenticação
+│  ├─ useLanguage.ts      # Idioma
+│  ├─ useDebounce.ts      # Debounce
+│  ├─ usePricesFilter.ts  # Filtros avançados
+│  └─ useToggleSet.ts     # Gerenciar Sets
+│
+├─ i18n/                  # Internacionalização
+│  └─ locales/
+│     ├─ pt-BR.json       # Textos em português
+│     └─ en-US.json       # Textos em inglês
+│
+├─ constants/             # Constantes do app
+│  ├─ albion.ts          # Cidades, qualidades, tiers
+│  └─ qualities.ts       # Cores e rótulos de qualidade
+│
+├─ styles/               # CSS global
+│  ├─ global.css
+│  ├─ components.css
+│  ├─ layout.css
+│  ├─ animations.css
+│  └─ utilities.css
+│
+├─ utils/                # Funções utilitárias
+│  ├─ items.ts           # Nome e imagem de itens
+│  ├─ filters.ts         # Filtros e ordenação
+│  └─ prices.ts          # Cálculos de preço
+│
+└─ App.tsx               # Componente raiz com rotas
+```
+
+---
+
+## 🚀 Como Começar
+
+### Pré-requisitos
+
+- **Node.js** 18+ 
+- **npm** ou **yarn**
+- Backend [Market_Albion_Online](https://github.com/samuca2k18/Market_Albion_Online) rodando
+
+### Instalação
+
+1. **Clone o repositório**:
+```bash
+git clone https://github.com/seu-usuario/front-market-albion.git
+cd front-market-albion
+```
+
+2. **Instale as dependências**:
+```bash
+npm install
+```
+
+3. **Configure as variáveis de ambiente**:
+```bash
+cp .env.example .env.local
+```
+
+Edite `.env.local`:
+```env
+VITE_API_URL=https://seu-backend.com
+```
+
+Se não configurar, usa automaticamente: `https://market-albion-online.onrender.com`
+
+4. **Inicie o servidor de desenvolvimento**:
+```bash
+npm run dev
+```
+
+O app estará disponível em `http://localhost:5173`
+
+### Build para Produção
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## 📖 Funcionalidades Detalhadas
+
+### 🔐 Autenticação
+
+- **Signup**: Criar conta com username, email e senha
+- **Login**: Autenticação com JWT
+- **Logout**: Limpar token e sessão
+- **Persistência**: Token armazenado seguramente em localStorage
+- **Sincronização**: Múltiplas abas do navegador sincronizadas
+
+### 📊 Dashboard
+
+Seu hub central com:
+
+- **Resumo Rápido**: Total de itens monitorados, preços ativos, melhor oportunidade
+- **Adicionar Itens**: Busca inteligente com autocomplete
+- **Lista de Itens**: Gerenciar seus itens monitorados
+- **Tabela de Preços**: Preços em tempo real com atualização a cada 5 minutos
+- **Histórico**: Gráfico interativo com últimos 7 dias de preços
+- **Filtros por Tier**: Visualizar apenas itens específicos (T1-T8)
+
+### 💰 Página de Preços
+
+Consulte e analise todos os preços com filtros avançados:
+
+- **Filtro por Item**: Buscar item específico
+- **Filtro por Cidade**: Caerleon, Bridgewatch, Martlock, Lymhurst, Fort Sterling, Thetford, Brecilien
+- **Filtro por Qualidade**: Normal, Bom, Excepcional, Excelente, Obra-Prima
+- **Filtro por Encantamento**: @0 até @4
+- **Filtro por Tier**: T1 até T8 ou sem tier
+- **Busca por Texto**: Procure por nome do item
+- **Ordenação**: Por preço, cidade, qualidade, encantamento ou nome
+- **Pós-filtros**: Combine múltiplos filtros para resultados precisos
+
+### 🌍 Internacionalização
+
+- Alterne entre **Português (BR)** e **Inglês (US)** com um clique
+- Preferência salva no localStorage
+- Todos os textos, datas e preços adaptados ao idioma
+
+---
+
+## 🔄 Fluxo de Dados
+
+```
+┌─────────────────────────────────────────┐
+│     Usuário                             │
+└──────────────────┬──────────────────────┘
+                   │
+        ┌──────────▼──────────┐
+        │  Frontend (React)   │
+        │  - Pages            │
+        │  - Components       │
+        │  - Context Auth     │
+        └──────────┬──────────┘
+                   │
+        ┌──────────▼──────────┐
+        │  API Client         │
+        │  (Axios)            │
+        │  - /login           │
+        │  - /items           │
+        │  - /albion/prices   │
+        └──────────┬──────────┘
+                   │
+        ┌──────────▼──────────┐
+        │  Backend FastAPI    │
+        │  (Remote)           │
+        └─────────────────────┘
+```
+
+---
+
+## 🎨 Design & UX
+
+- **Tema Dark**: Otimizado para longas sessões de trading
+- **Glassmorphism**: Cards com efeito vidro moderno
+- **Animações**: Transições suaves e feedback visual
+- **Acessibilidade**: Suporte a preferência de movimento reduzido
+- **Cores Significativas**:
+  - 🟢 **#41f0b5** (Primário) - Destaque e CTAs
+  - 🔵 **#22c55e** (Accent) - Sucesso
+  - 🔴 **#ff6b6b** (Danger) - Alertas
+
+---
+
+## 📝 Exemplos de Uso
+
+### Adicionar Item ao Dashboard
+
+1. Vá para o **Dashboard**
+2. Na seção "Adicionar item", busque o item desejado
+3. Selecione na autocomplete
+4. O item aparece na tabela de preços em tempo real
+
+### Encontrar o Melhor Preço
+
+1. Vá para a página **Preços**
+2. Use os filtros para refinar (cidade, qualidade, encantamento)
+3. Ordene por "Preço (menor primeiro)"
+4. Identifique a melhor oportunidade
+
+### Ver Histórico de Preço
+
+1. No **Dashboard**, clique em um item na tabela de preços
+2. Abaixo aparece o gráfico com 7 dias de histórico
+3. Analise tendências e variações
+
+---
+
+## 🔌 Integração com Backend
+
+O frontend espera que o backend FastAPI exponha estes endpoints:
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/signup` | Criar conta |
+| POST | `/login` | Fazer login (form-data) |
+| GET | `/me` | Dados do usuário autenticado |
+| GET | `/items` | Listar itens do usuário |
+| POST | `/items` | Criar item |
+| DELETE | `/items/{id}` | Deletar item |
+| GET | `/albion/search` | Buscar item por nome |
+| GET | `/albion/prices` | Preços de múltiplos itens |
+| GET | `/albion/price-by-name` | Preço por nome amigável |
+| GET | `/albion/my-items-prices` | Preços dos itens do usuário |
+| GET | `/albion/history/{item_id}` | Histórico de 7 dias |
+| GET | `/albion/unique-items` | Lista de itens únicos |
+| GET | `/albion/cities` | Lista de cidades |
+
+Veja a [documentação do backend](https://github.com/samuca2k18/Market_Albion_Online) para detalhes.
+
+---
+
+## 📦 Scripts Disponíveis
+
+```bash
+npm run dev       # Inicia servidor de desenvolvimento
+npm run build     # Compila para produção
+npm run preview   # Visualiza build de produção localmente
+npm run lint      # Verifica código com ESLint
+```
+
+---
+
+## 🧪 Boas Práticas
+
+### Tipagem
+- Todo o código TypeScript com `strict: true`
+- Types compartilhados em `src/api/types.ts`
+- Interfaces bem documentadas
+
+### Estado
+- **Autenticação**: AuthContext (global)
+- **Requisições**: TanStack Query (cache + sincronização)
+- **Formulários**: React Hook Form + Zod
+- **UI Local**: useState (mínimo)
+
+### Performance
+- Code splitting automático via Vite
+- Lazy loading de rotas
+- Debounce em buscas
+- Cache com TanStack Query
+- Imagens otimizadas
+
+### Acessibilidade
+- Semântica HTML correta
+- Contraste de cores suficiente
+- Labels em formulários
+- ARIA attributes onde necessário
+
+---
+
+## 🐛 Troubleshooting
+
+### "API_BASE_URL não configurada"
+Verifique `.env.local` ou deixe em branco para usar a API pública.
+
+### "Erro ao fazer login"
+1. Verifique se o backend está rodando
+2. Confirme credenciais corretas
+3. Verifique CORS no backend
+
+### "Preços não aparecem"
+1. Confirme que o usuário tem itens cadastrados
+2. Verifique limite de requisições da API
+3. Tente fazer logout e login novamente
+
+---
+
+## 📚 Recursos Adicionais
+
+- [React Documentation](https://react.dev/)
+- [Vite Guide](https://vite.dev/)
+- [TanStack Query](https://tanstack.com/query/latest)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [i18next](https://www.i18next.com/)
+
+---
+
+## 🤝 Contribuindo
+
+1. Fork o repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja [LICENSE](LICENSE) para detalhes.
+
+---
+
+## ⚠️ Disclaimer
+
+Este projeto **não é afiliado oficialmente** à Sandbox Interactive. Albion Online é marca registrada de seus respectivos proprietários. Use este projeto respeitando os termos de serviço de Albion Online.
+
+---
+
+## 💬 Suporte
+
+Encontrou um bug ou tem uma sugestão?
+
+- Abra uma [Issue](https://github.com/seu-usuario/front-market-albion/issues)
+- Discuta melhorias em [Discussions](https://github.com/seu-usuario/front-market-albion/discussions)
+
+---
+
+## 🎯 Roadmap
+
+- [ ] Gráficos de tendência (últimos 30 dias)
+- [ ] Notificações de alerta de preço
+- [ ] Exportar dados em CSV/Excel
+- [ ] Comparador de preços entre cidades
+- [ ] Modo dark/light automático
+- [ ] PWA (instalável como app)
+- [ ] Histórico de vendas do usuário
+- [ ] Previsões com IA
+
+---
+
+**Feito com ❤️ para a comunidade brasileira de Albion Online.**
