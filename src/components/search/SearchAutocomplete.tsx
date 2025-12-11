@@ -26,7 +26,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["product-search", debouncedQuery, i18n.language],
-    queryFn: () => searchProducts(debouncedQuery),
+    queryFn: () => searchProducts(debouncedQuery, i18n.language as "pt-BR" | "en-US"),
     enabled: debouncedQuery.length >= 2,
     staleTime: 60_000,
   });

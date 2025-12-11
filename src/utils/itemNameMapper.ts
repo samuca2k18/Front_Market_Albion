@@ -24,7 +24,8 @@ export async function getItemDisplayNameWithEnchantmentAsync(
     // Tenta buscar na API
     const { searchItems } = await import('../api/albion');
     const baseName = internalName.split('@')[0];
-    const results = await searchItems(baseName);
+    const currentLanguage = localStorage.getItem('i18nextLng') || 'pt-BR';
+    const results = await searchItems(baseName, currentLanguage as 'pt-BR' | 'en-US');
     
     const found = results.find(r => r.unique_name === baseName);
     if (found) {

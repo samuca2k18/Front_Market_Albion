@@ -243,7 +243,7 @@ export async function getItemDisplayNameWithEnchantmentAsync(
   try {
     const { searchItems } = await import('../api/albion');
     const baseName = getBaseItemName(internalName);
-    const results = await searchItems(baseName);
+    const results = await searchItems(baseName, language);
 
     const found = results.find(r => r.unique_name === baseName);
     if (found) {

@@ -83,7 +83,7 @@ export function DashboardPage() {
       const results = await Promise.all(
         missing.map(async (base) => {
           try {
-            const items = await searchItems(base);
+            const items = await searchItems(base, i18n.language as "pt-BR" | "en-US");
             const item = items.find((i) => i.unique_name === base);
 
             if (item) {

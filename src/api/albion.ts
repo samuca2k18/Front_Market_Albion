@@ -7,10 +7,21 @@ import type {
   MyItemPrice,
 } from './types';
 
-// Busca de itens por nome (/albion/search)
-export async function searchItems(query: string): Promise<AlbionSearchItem[]> {
+function resolveSearchPath(language?: string): string {
+  const lang = (language || '').toLowerCase();
+  if (lang.startsWith('en')) return '/albion/search/en-us';
+  if (lang.startsWith('pt')) return '/albion/search/pt-br';
+  return '/albion/search/pt-br';
+}
+
+// Busca de itens por nome (/albion/search/{lang})
+export async function searchItems(
+  query: string,
+  language?: 'pt-BR' | 'en-US',
+): Promise<AlbionSearchItem[]> {
   try {
-    const { data } = await api.get<AlbionSearchItem[]>('/albion/search', {
+    const searchPath = resolveSearchPath(language);
+    const { data } = await api.get<AlbionSearchItem[]>(searchPath, {
       params: { q: query },
     });
     return data;

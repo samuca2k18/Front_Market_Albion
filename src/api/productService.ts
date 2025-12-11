@@ -58,9 +58,17 @@ function normalizeProduct(rawProduct: any): Product {
  * Busca produtos pela query
  * Normaliza todos os resultados antes de retornar
  */
-export async function searchProducts(query: string): Promise<Product[]> {
+export async function searchProducts(
+  query: string,
+  language?: 'pt-BR' | 'en-US',
+): Promise<Product[]> {
   try {
-    const { data } = await api.get("/albion/search", {
+    const lang = (language || '').toLowerCase();
+    const searchPath = lang.startsWith('en')
+      ? '/albion/search/en-us'
+      : '/albion/search/pt-br';
+
+    const { data } = await api.get(searchPath, {
       params: { q: query },
     });
 
