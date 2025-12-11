@@ -61,10 +61,12 @@ export function PricesTable({
           </thead>
           <tbody>
             {items.map((item, idx) => {
-              const displayName = getItemDisplayNameWithEnchantment(
-                item.item_name,
-                normalizedLocale
-              );
+              const displayName =
+                item.display_name ||
+                getItemDisplayNameWithEnchantment(
+                  item.item_name,
+                  normalizedLocale
+                );
               const quality = getQualityLabel(item.quality);
               const qualityColor = getQualityColor(item.quality);
               const enchant = item.enchantment > 0 ? `@${item.enchantment}` : '—';

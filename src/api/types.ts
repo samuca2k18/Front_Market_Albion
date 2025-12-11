@@ -86,6 +86,7 @@ export interface AlbionSearchItem {
 // === /albion/my-items-prices ===
 export interface MyItemPrice {
   item_name: string;
+  display_name?: string;
   city: string;
   price: number;
   quality: number;

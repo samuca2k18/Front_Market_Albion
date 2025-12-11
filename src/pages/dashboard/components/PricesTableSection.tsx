@@ -74,7 +74,12 @@ export function PricesTableSection({
             <tbody>
               {myPrices.map((item) => {
                 const { base, enchant } = splitItemName(item.item_name);
-                const displayName = getItemDisplayNameWithEnchantment(base);
+                const displayName =
+                  item.display_name ??
+                  getItemDisplayNameWithEnchantment(
+                    base,
+                    (typeof navigator !== "undefined" && navigator.language) || "pt-BR",
+                  );
                 const enchantDisplay = enchant ? `@${enchant}` : "—";
 
                 return (
