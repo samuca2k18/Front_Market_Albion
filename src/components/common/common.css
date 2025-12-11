@@ -343,6 +343,62 @@
   }
 }
 
+/* ===== Cards ===== */
+.card {
+  position: relative;
+  background: var(--gradient-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  padding: 1.25rem 1.35rem;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(148, 163, 184, 0.08);
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 60% at 20% 0%, rgba(56, 189, 248, 0.08), transparent);
+  pointer-events: none;
+}
+
+.card-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #e9edf7;
+  letter-spacing: -0.01em;
+}
+
+.card-header p {
+  margin: 0.25rem 0 0;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.92rem;
+}
+
+.card-actions {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.card-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* Responsivo: em telas bem pequenas, card mais compacto */
 @media (max-width: 480px) {
   .loading-card {

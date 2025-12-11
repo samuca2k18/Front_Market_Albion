@@ -78,7 +78,7 @@
     "deselectAll": "Deselect all",
     "selectAll": "Select all",
     "removing": "Removing...",
-    "removeSelected": "Remove {{count}} {{count, plural, one {item} other {items}}}"
+    "removeSelected": "Remove {{count}} items"
     },
     "prices": {
       "title": "My Item Prices",

@@ -1,13 +1,13 @@
 :root {
-    --color-primary: #41f0b5;
-    --color-secondary: #00d4ff;
-    --color-white: #f4f8ff;
-    --color-dark: #04070d;
-    --color-dark-bg: #0e141f;
-    --color-dark-card: #14192b;
-    --color-danger: #ff6b6b;
-    --color-success: #51cf66;
-    --color-warning: #ffd93d;
+  --color-primary: #2ee89a;
+  --color-secondary: #1fb2ff;
+  --color-white: #e8efff;
+  --color-dark: #050910;
+  --color-dark-bg: #07111e;
+  --color-dark-card: #0d1524;
+  --color-danger: #ff6b6b;
+  --color-success: #38ef7d;
+  --color-warning: #ffd93d;
   }
   
   /* Reset básico */
@@ -25,7 +25,7 @@
   
   body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #04070d 0%, #0a0e1a 50%, #04070d 100%);
+  background: radial-gradient(120% 90% at 50% 0%, rgba(47, 232, 154, 0.06), transparent 45%), linear-gradient(135deg, #050910 0%, #0b1322 50%, #050910 100%);
     color: var(--color-white);
     line-height: 1.5;
     min-height: 100vh;

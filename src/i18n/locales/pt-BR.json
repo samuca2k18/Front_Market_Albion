@@ -77,7 +77,7 @@
     "deselectAll": "Desselecionar todos",
         "selectAll": "Selecionar todos",
         "removing": "Removendo...",
-        "removeSelected": "Remover {{count}} {{count, plural, one {item} other {itens}}}",
+        "removeSelected": "Remover {{count}} itens",
       "silver": "silver"
     },
     "prices": {

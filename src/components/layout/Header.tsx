@@ -24,8 +24,8 @@ export function Header() {
   const hasNavigation = availableItems.length > 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="app-header sticky top-0 z-40">
+      <div className="app-header-inner flex items-center justify-between">
         {/* Brand */}
         <HeaderBrand onMobileMenuClick={() => setIsMenuOpen(false)} />
 

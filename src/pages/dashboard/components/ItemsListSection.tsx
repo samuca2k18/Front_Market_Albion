@@ -84,6 +84,7 @@ export function ItemsListSection({
           <ul className="space-y-2">
             {trackedItems.map((item) => {
               const { base } = splitItemName(item.item_name);
+              const displayName = getItemDisplayNameWithEnchantment(base);
               const isSelected = selectedItems.has(item.id);
 
               return (
@@ -116,11 +117,11 @@ export function ItemsListSection({
 
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="font-medium truncate">
-                        {getItemDisplayNameWithEnchantment(item.item_name)}
+                        {displayName}
                       </span>
 
                       <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                        {base}
+                        {item.item_name}
                       </span>
 
                       {item.created_at && (

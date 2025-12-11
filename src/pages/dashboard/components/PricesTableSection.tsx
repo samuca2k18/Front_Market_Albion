@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { MyItemPrice } from "@/api/types";
 import { Card } from "@/components/common/Card";
 import { getQualityColor, getQualityLabel } from "@/constants/qualities";
+import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { buildItemImageUrl, splitItemName, type TierFilter } from "../utils/itemFilters";
 import { TierFilter as TierFilterComponent } from "./TierFilter";
 
@@ -71,7 +72,12 @@ export function PricesTableSection({
               </tr>
             </thead>
             <tbody>
-              {myPrices.map((item) => (
+              {myPrices.map((item) => {
+                const { base, enchant } = splitItemName(item.item_name);
+                const displayName = getItemDisplayNameWithEnchantment(base);
+                const enchantDisplay = enchant ? `@${enchant}` : "—";
+
+                return (
                 <tr
                   key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
                   className="cursor-pointer hover:bg-muted/60 transition-colors"
@@ -92,10 +98,10 @@ export function PricesTableSection({
                       />
                       <div className="flex flex-col">
                         <span className="font-medium">
-                          {item.item_name}
+                          {displayName}
                         </span>
                         <span className="text-[11px] text-muted-foreground mt-0.5">
-                          {splitItemName(item.item_name).base}
+                          {item.item_name}
                         </span>
                       </div>
                     </div>
@@ -129,10 +135,11 @@ export function PricesTableSection({
                   </td>
 
                   <td className="px-3 py-2 align-middle">
-                    {item.enchantment > 0 ? `.${item.enchantment}` : "—"}
+                    {enchantDisplay}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

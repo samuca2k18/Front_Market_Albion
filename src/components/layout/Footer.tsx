@@ -5,9 +5,9 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border/60 bg-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start">
+    <footer className="app-footer">
+      <div className="app-container">
+        <div className="footer-grid items-start">
           {/* Brand / description */}
           <div className="space-y-3">
             <h4 className="text-base font-semibold tracking-tight">
@@ -44,7 +44,7 @@ export function Footer() {
         </div>
 
         {/* Bottom line */}
-        <div className="mt-8 pt-6 border-t border-border/40 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 pt-4 border-t border-border/30 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">
             © {year} {t("footer.copyright")}
           </span>
