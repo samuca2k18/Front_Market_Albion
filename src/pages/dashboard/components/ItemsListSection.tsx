@@ -1,9 +1,13 @@
 // src/pages/dashboard/components/ItemsListSection.tsx
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Item } from "@/api/types";
 import { Card } from "@/components/common/Card";
-import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
+import {
+  getItemDisplayNameWithEnchantment,
+  getItemDisplayNameWithEnchantmentAsync,
+} from "@/utils/itemNameMapper";
 import { splitItemName, buildItemImageUrlFromName } from "../utils/itemFilters";
 
 interface ItemsListSectionProps {
@@ -27,7 +31,52 @@ export function ItemsListSection({
   onDeleteSelected,
   onDeleteSingle,
 }: ItemsListSectionProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [displayNames, setDisplayNames] = useState<Record<number, string>>({});
+
+  // Resolve nomes respeitando o idioma atual e cacheando no estado
+  useEffect(() => {
+    let cancelled = false;
+
+    async function resolveNames() {
+      if (trackedItems.length === 0) {
+        setDisplayNames({});
+        return;
+      }
+
+      const entries = await Promise.all(
+        trackedItems.map(async (item) => {
+          const baseName = item.item_name;
+          try {
+            if (item.display_name) {
+              return [item.id, item.display_name] as const;
+            }
+
+            const name = await getItemDisplayNameWithEnchantmentAsync(
+              baseName,
+              i18n.language as "pt-BR" | "en-US",
+            );
+            return [item.id, name] as const;
+          } catch {
+            // Fallback rápido para não quebrar UI
+            const { base, enchant } = splitItemName(baseName);
+            const fallback = getItemDisplayNameWithEnchantment(base);
+            const finalName = enchant ? `${fallback} @${enchant}` : fallback;
+            return [item.id, finalName] as const;
+          }
+        }),
+      );
+
+      if (!cancelled) {
+        setDisplayNames(Object.fromEntries(entries));
+      }
+    }
+
+    void resolveNames();
+    return () => {
+      cancelled = true;
+    };
+  }, [trackedItems, i18n.language]);
 
   return (
     <Card
@@ -84,7 +133,10 @@ export function ItemsListSection({
           <ul className="space-y-2">
             {trackedItems.map((item) => {
               const { base } = splitItemName(item.item_name);
-              const displayName = getItemDisplayNameWithEnchantment(base);
+              const displayName =
+                displayNames[item.id] ??
+                item.display_name ??
+                getItemDisplayNameWithEnchantment(base);
               const isSelected = selectedItems.has(item.id);
 
               return (

@@ -11,27 +11,29 @@ const nameCache = new Map<string, string>();
  * Primeiro tenta buscar na API, se não encontrar, usa fallback.
  */
 export async function getItemDisplayNameWithEnchantmentAsync(
-  internalName: string
+  internalName: string,
+  language?: 'pt-BR' | 'en-US',
 ): Promise<string> {
   if (!internalName) return '';
 
+  const lang = language || (localStorage.getItem('i18nextLng') as 'pt-BR' | 'en-US') || 'pt-BR';
+  const cacheKey = `${internalName}:${lang}`;
+
   // Verifica cache
-  if (nameCache.has(internalName)) {
-    return nameCache.get(internalName)!;
+  if (nameCache.has(cacheKey)) {
+    return nameCache.get(cacheKey)!;
   }
 
   try {
     // Tenta buscar na API
     const { searchItems } = await import('../api/albion');
     const baseName = internalName.split('@')[0];
-    const currentLanguage = localStorage.getItem('i18nextLng') || 'pt-BR';
-    const results = await searchItems(baseName, currentLanguage as 'pt-BR' | 'en-US');
+    const results = await searchItems(baseName, lang);
     
     const found = results.find(r => r.unique_name === baseName);
     if (found) {
       // Prioriza o idioma atual
-      const currentLanguage = localStorage.getItem('i18nextLng') || 'pt-BR';
-      const nameToUse = currentLanguage === 'pt-BR' 
+      const nameToUse = lang === 'pt-BR' 
         ? (found.name_pt || found.name_en)
         : (found.name_en || found.name_pt);
       
@@ -39,7 +41,7 @@ export async function getItemDisplayNameWithEnchantmentAsync(
         const displayName = internalName.includes('@')
           ? `${nameToUse} @${internalName.split('@')[1]}`
           : nameToUse;
-        nameCache.set(internalName, displayName);
+        nameCache.set(cacheKey, displayName);
         return displayName;
       }
     }
@@ -49,7 +51,7 @@ export async function getItemDisplayNameWithEnchantmentAsync(
 
   // Fallback: usa o método antigo
   const fallbackName = getItemDisplayNameWithEnchantment(internalName);
-  nameCache.set(internalName, fallbackName);
+  nameCache.set(cacheKey, fallbackName);
   return fallbackName;
 }
 

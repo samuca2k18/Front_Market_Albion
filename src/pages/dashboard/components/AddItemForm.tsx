@@ -13,7 +13,7 @@ interface AddItemFormProps {
 }
 
 export function AddItemForm({ createMutation }: AddItemFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <Card
@@ -27,7 +27,15 @@ export function AddItemForm({ createMutation }: AddItemFormProps) {
               product.unique_name ?? (product as any).UniqueName;
             if (!internal || createMutation.isPending) return;
 
-            createMutation.mutate({ item_name: internal });
+            const isPT = i18n.language === "pt-BR";
+            const label = isPT
+              ? product.name_pt || product.name_en || internal
+              : product.name_en || product.name_pt || internal;
+
+            createMutation.mutate({
+              item_name: internal,
+              display_name: label,
+            });
           }}
         />
 

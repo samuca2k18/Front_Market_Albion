@@ -24,11 +24,13 @@ export interface AuthResponse {
 // === Itens do usuário ===
 export interface ItemPayload {
   item_name: string;
+  display_name?: string;
 }
 
 export interface Item {
   id: number;
   item_name: string;
+  display_name?: string;
   created_at?: string;
 }
 
