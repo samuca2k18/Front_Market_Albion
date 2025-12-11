@@ -1,5 +1,5 @@
 // src/pages/dashboard/components/ItemsListSection.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Item } from "@/api/types";
