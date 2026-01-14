@@ -1,6 +1,12 @@
 // src/api/auth.ts
 import { api } from './client';
-import type { AuthCredentials, AuthResponse, SignupPayload, User } from './types';
+import type {
+  AuthCredentials,
+  AuthResponse,
+  SignupPayload,
+  User,
+  VerificationMessage,
+} from './types';
 
 export async function loginRequest(credentials: AuthCredentials): Promise<AuthResponse> {
   const formData = new URLSearchParams();
@@ -21,5 +27,21 @@ export async function signupRequest(payload: SignupPayload): Promise<User> {
 
 export async function meRequest(): Promise<User> {
   const { data } = await api.get<User>('/me');
+  return data;
+}
+
+export async function verifyEmailRequest(token: string): Promise<VerificationMessage> {
+  const { data } = await api.get<VerificationMessage>('/verify-email', {
+    params: { token },
+  });
+  return data;
+}
+
+export async function resendVerificationRequest(
+  email: string,
+): Promise<VerificationMessage> {
+  const { data } = await api.post<VerificationMessage>('/resend-verification', {
+    email,
+  });
   return data;
 }

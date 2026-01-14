@@ -5,6 +5,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  is_verified: boolean;
 }
 
 export interface AuthCredentials {
@@ -19,6 +20,10 @@ export interface SignupPayload extends AuthCredentials {
 export interface AuthResponse {
   access_token: string;
   token_type: string;
+}
+
+export interface VerificationMessage {
+  message: string;
 }
 
 // === Itens do usuário ===

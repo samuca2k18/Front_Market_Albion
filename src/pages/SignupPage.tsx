@@ -41,8 +41,14 @@ export function SignupPage() {
     mutationFn: async (formData) => {
       await signup(formData);
     },
-    onSuccess: () => {
-      navigate("/dashboard", { replace: true });
+    onSuccess: (_data, variables) => {
+      navigate("/login", {
+        replace: true,
+        state: {
+          fromSignup: true,
+          email: variables?.email,
+        },
+      });
     },
   });
 

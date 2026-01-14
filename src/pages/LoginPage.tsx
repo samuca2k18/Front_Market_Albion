@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useLocation, useNavigate, Link, type Location } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import type { ApiErrorShape } from "../api/client";
+import { resendVerificationRequest } from "../api/auth";
 
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -32,6 +33,15 @@ export function LoginPage() {
   const location = useLocation();
   const { login } = useAuth();
   const [filledFields, setFilledFields] = useState<Set<string>>(new Set());
+  const [infoMessageDismissed, setInfoMessageDismissed] = useState(false);
+  const [resendStatus, setResendStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  const locationState = location.state as
+    | { from?: Location; fromSignup?: boolean; email?: string }
+    | null;
 
   const mutation = useMutation<void, ApiErrorShape, LoginFormData>({
     mutationFn: async (formData) => {
@@ -66,6 +76,24 @@ export function LoginPage() {
   };
 
   const onSubmit = (data: LoginFormData) => mutation.mutate(data);
+
+  const handleResendVerification = async () => {
+    const email =
+      locationState?.email || window.prompt("Informe o e-mail cadastrado:");
+
+    if (!email) return;
+
+    try {
+      setResendStatus("loading");
+      setResendError(null);
+      await resendVerificationRequest(email);
+      setResendStatus("success");
+    } catch (error) {
+      const err = error as ApiErrorShape;
+      setResendStatus("error");
+      setResendError(err.message || "Não foi possível reenviar o e-mail.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -133,6 +161,23 @@ export function LoginPage() {
                 </p>
               </div>
 
+              {locationState?.fromSignup && !infoMessageDismissed && (
+                <div className="mb-4 rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 flex items-start justify-between gap-3">
+                  <span>
+                    Conta criada com sucesso! Enviamos um link de verificação para{" "}
+                    <strong>{locationState.email || "seu e-mail"}</strong>. Confirme
+                    seu e-mail antes de fazer login.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setInfoMessageDismissed(true)}
+                    className="ml-2 text-emerald-200/70 hover:text-emerald-100 text-[10px] uppercase tracking-wide"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              )}
+
               <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
                 {/* USERNAME */}
                 <div className="field">
@@ -189,9 +234,36 @@ export function LoginPage() {
                 </div>
 
                 {mutation.error && (
-                  <p className="text-xs text-destructive mt-1">
-                    {mutation.error.message || "Não foi possível fazer login."}
-                  </p>
+                  <div className="mt-2 text-xs">
+                    <p className="text-destructive">
+                      {mutation.error.status === 403
+                        ? "Seu e-mail ainda não foi verificado. Confirme o link enviado para sua caixa de entrada."
+                        : mutation.error.message || "Não foi possível fazer login."}
+                    </p>
+
+                    {mutation.error.status === 403 && (
+                      <div className="mt-2 flex flex-col gap-1 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={handleResendVerification}
+                          className="self-start text-primary hover:underline font-medium"
+                          disabled={resendStatus === "loading"}
+                        >
+                          {resendStatus === "loading"
+                            ? "Reenviando..."
+                            : "Reenviar e-mail de verificação"}
+                        </button>
+                        {resendStatus === "success" && (
+                          <p className="text-emerald-400">
+                            Se o e-mail existir, enviaremos um novo link de verificação.
+                          </p>
+                        )}
+                        {resendStatus === "error" && resendError && (
+                          <p className="text-destructive">{resendError}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <Button

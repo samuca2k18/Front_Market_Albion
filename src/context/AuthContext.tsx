@@ -88,12 +88,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (payload: SignupPayload) => {
       try {
         await signupRequest(payload);
-        await login({ username: payload.username, password: payload.password });
       } catch (error) {
         throw parseApiError(error) as ApiErrorShape;
       }
     },
-    [login],
+    [],
   );
 
   const logout = useCallback(() => {
