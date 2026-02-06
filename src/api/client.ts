@@ -14,7 +14,7 @@ export const STORAGE_KEYS = {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // 30 segundos para operações que podem demorar (envio de email)
 });
 
 api.interceptors.request.use((config) => {
