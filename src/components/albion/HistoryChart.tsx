@@ -30,6 +30,10 @@ const RANGE_LABEL: Record<RangeOption, string> = {
 };
 
 function rangeToParams(range: RangeOption): { days: number; resolution: '1h' | '6h' | '24h' } {
+  // Regras “bonitas” de resolução:
+  // - curto: 1h
+  // - médio: 6h
+  // - longo: 24h
   switch (range) {
     case '1D':
       return { days: 1, resolution: '1h' };
@@ -37,6 +41,8 @@ function rangeToParams(range: RangeOption): { days: number; resolution: '1h' | '
       return { days: 5, resolution: '6h' };
     case '1M':
       return { days: 30, resolution: '24h' };
+
+    // estes exigem backend aceitar > 30 dias
     case '6M':
     case 'YTD':
     case '1A':
@@ -144,41 +150,28 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
     range === '6M' || range === 'YTD' || range === '1A' || range === '5A' || range === 'MAX';
 
   return (
-    // ✅ minWidth:0 resolve bug clássico de Recharts dentro de flex/grid
-    <div style={{ width: '100%', minWidth: 0 }}>
+    <div style={{ width: '100%' }}>
       {/* Header */}
       <div
         style={{
           display: 'flex',
           gap: 14,
-          alignItems: 'center',
+          alignItems: 'flex-end',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           marginBottom: 12,
-          minWidth: 0,
         }}
       >
-        <div style={{ minWidth: 0 }}>
+        <div>
           <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 2 }}>
             Histórico • {city}
           </div>
-          <div
-            style={{
-              fontSize: 18,
-              fontWeight: 900,
-              color: 'hsl(var(--foreground))',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: 520,
-            }}
-            title={itemId}
-          >
+          <div style={{ fontSize: 18, fontWeight: 900, color: 'hsl(var(--foreground))' }}>
             {itemId}
           </div>
         </div>
 
-        {/* Range buttons */}
+        {/* Range buttons (estilo TradingView) */}
         <div
           style={{
             display: 'flex',
@@ -191,17 +184,14 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
             backdropFilter: 'blur(10px)',
             overflowX: 'auto',
             maxWidth: '100%',
-            minWidth: 0,
           }}
         >
           {RANGE_OPTIONS.map((opt) => {
             const active = opt === range;
 
-            const requiresMoreDays =
-              opt === '6M' || opt === 'YTD' || opt === '1A' || opt === '5A' || opt === 'MAX';
-
-            // ✅ agora desabilita corretamente quando backend só tem 30 dias
-            const disabled = requiresMoreDays && BACKEND_MAX_DAYS <= 30;
+            // desabilita opções > 30 dias enquanto backend não liberar
+            const requiresMoreDays = opt === '6M' || opt === 'YTD' || opt === '1A' || opt === '5A' || opt === 'MAX';
+            const disabled = requiresMoreDays && BACKEND_MAX_DAYS < 180;
 
             return (
               <button
@@ -209,7 +199,11 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
                 type="button"
                 onClick={() => !disabled && setRange(opt)}
                 disabled={disabled}
-                title={disabled ? `Backend ainda limita a ${BACKEND_MAX_DAYS} dias.` : ''}
+                title={
+                  disabled
+                    ? `Precisa liberar mais dias no backend (hoje: max ${BACKEND_MAX_DAYS}).`
+                    : ''
+                }
                 style={{
                   border: 'none',
                   cursor: disabled ? 'not-allowed' : 'pointer',
@@ -221,6 +215,7 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
                   opacity: disabled ? 0.35 : 1,
                   background: active ? 'hsl(var(--primary))' : 'transparent',
                   color: active ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                  transition: 'transform 120ms ease, background 120ms ease, opacity 120ms ease',
                 }}
               >
                 {RANGE_LABEL[opt]}
@@ -230,6 +225,7 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
         </div>
       </div>
 
+      {/* Aviso quando clicar em ranges longos mas backend capado */}
       {longRangeSelected && BACKEND_MAX_DAYS <= 30 && (
         <div
           style={{
@@ -242,8 +238,83 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
             fontSize: 12,
           }}
         >
-          6M/YTD/1A/5A/Máx exigem backend aceitar mais de 30 dias. Por enquanto mostrando até{' '}
-          <strong>30 dias</strong>.
+          Esses períodos (6M/YTD/1A/5A/Máx) precisam do backend aceitar mais de 30 dias.
+          No momento, estou mostrando até <strong>30 dias</strong>.
+        </div>
+      )}
+
+      {/* Stats banner */}
+      {stats && !isLoading && !isError && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 10,
+            marginBottom: 12,
+          }}
+        >
+          <div
+            style={{
+              padding: '10px 12px',
+              borderRadius: 14,
+              border: '1px solid hsl(var(--border))',
+              background: 'hsla(220, 30%, 10%, 0.55)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Variação</div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 16,
+                fontWeight: 900,
+                color: stats.isPositive ? 'hsl(154 80% 52%)' : 'hsl(0 84% 60%)',
+              }}
+            >
+              {stats.isPositive ? '+' : ''}
+              {stats.change.toLocaleString('pt-BR')} silver
+              {stats.percent !== null
+                ? ` (${stats.isPositive ? '+' : ''}${stats.percent}%)`
+                : ''}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '10px 12px',
+              borderRadius: 14,
+              border: '1px solid hsl(var(--border))',
+              background: 'hsla(220, 30%, 10%, 0.55)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Mín / Máx</div>
+            <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: 'hsl(var(--foreground))' }}>
+              {stats.min.toLocaleString('pt-BR')} • {stats.max.toLocaleString('pt-BR')}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '10px 12px',
+              borderRadius: 14,
+              border: '1px solid hsl(var(--border))',
+              background: 'hsla(220, 30%, 10%, 0.55)',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Período</div>
+              <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: 'hsl(var(--foreground))' }}>
+                {range} • {resolution}
+              </div>
+            </div>
+            <div style={{ fontSize: 22 }}>{stats.isPositive ? '📈' : '📉'}</div>
+          </div>
         </div>
       )}
 
@@ -294,90 +365,12 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
         </div>
       )}
 
-      {/* Stats banner (fica abaixo do header; não some) */}
-      {stats && !isLoading && !isError && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-            gap: 10,
-            marginBottom: 12,
-          }}
-        >
-          <div
-            style={{
-              padding: '10px 12px',
-              borderRadius: 14,
-              border: '1px solid hsl(var(--border))',
-              background: 'hsla(220, 30%, 10%, 0.55)',
-              backdropFilter: 'blur(10px)',
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Variação</div>
-            <div
-              style={{
-                marginTop: 4,
-                fontSize: 16,
-                fontWeight: 900,
-                color: stats.isPositive ? 'hsl(154 80% 52%)' : 'hsl(0 84% 60%)',
-              }}
-            >
-              {stats.isPositive ? '+' : ''}
-              {stats.change.toLocaleString('pt-BR')} silver
-              {stats.percent !== null ? ` (${stats.isPositive ? '+' : ''}${stats.percent}%)` : ''}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: '10px 12px',
-              borderRadius: 14,
-              border: '1px solid hsl(var(--border))',
-              background: 'hsla(220, 30%, 10%, 0.55)',
-              backdropFilter: 'blur(10px)',
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Mín / Máx</div>
-            <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: 'hsl(var(--foreground))' }}>
-              {stats.min.toLocaleString('pt-BR')} • {stats.max.toLocaleString('pt-BR')}
-            </div>
-          </div>
-
-          <div
-            style={{
-              padding: '10px 12px',
-              borderRadius: 14,
-              border: '1px solid hsl(var(--border))',
-              background: 'hsla(220, 30%, 10%, 0.55)',
-              backdropFilter: 'blur(10px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 10,
-              minWidth: 0,
-            }}
-          >
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>Período</div>
-              <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: 'hsl(var(--foreground))' }}>
-                {range} • {resolution}
-              </div>
-            </div>
-            <div style={{ fontSize: 22 }}>{stats.isPositive ? '📈' : '📉'}</div>
-          </div>
-        </div>
-      )}
-
       {/* Chart */}
       {!isLoading && !isError && !isEmpty && (
         <div
           style={{
             width: '100%',
-            minWidth: 0,          // ✅
             height: 360,
-            minHeight: 360,       // ✅
             borderRadius: 18,
             border: '1px solid hsl(var(--border))',
             background: 'linear-gradient(140deg, hsla(222, 26%, 12%, 1), hsla(220, 26%, 8%, 1))',
@@ -385,9 +378,8 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
             overflow: 'hidden',
           }}
         >
-          {/* ✅ define altura/largura pro ResponsiveContainer */}
-          <div style={{ width: '100%', height: 310, minHeight: 310, minWidth: 0, padding: '14px 10px 0 10px' }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ width: '100%', height: 310, padding: '14px 10px 0 10px' }}>
+            <ResponsiveContainer>
               <AreaChart data={chartData} margin={{ top: 12, right: 18, left: 6, bottom: 0 }}>
                 <defs>
                   <linearGradient id="priceStroke" x1="0" y1="0" x2="1" y2="0">
@@ -432,12 +424,7 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
                   strokeWidth={3}
                   fill="url(#priceFill)"
                   dot={false}
-                  activeDot={{
-                    r: 6,
-                    stroke: 'hsl(var(--background))',
-                    strokeWidth: 2,
-                    fill: 'hsl(var(--primary))',
-                  }}
+                  activeDot={{ r: 6, stroke: 'hsl(var(--background))', strokeWidth: 2, fill: 'hsl(var(--primary))' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
