@@ -3,7 +3,6 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-  type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -85,11 +84,6 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
     onSelectProduct?.(product);
   };
 
-  const handleClear = (e?: ReactMouseEvent) => {
-    e?.stopPropagation();
-    setQuery("");
-    setIsOpen(false);
-  };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
