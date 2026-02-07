@@ -155,6 +155,8 @@
       "loading": "Loading...",
       "error": "Error loading results.",
       "noResults": "No items found.",
-      "placeholder": "Search item..."
+      "placeholder": "Search item...",
+      "resultsTitle": "Search Results",
+      "openModal": "Open results"
     }
   }
