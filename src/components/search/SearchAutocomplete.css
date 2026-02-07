@@ -49,6 +49,24 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+.search-open-modal-btn {
+  margin-left: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(65, 240, 181, 0.25);
+  background: linear-gradient(135deg, rgba(65, 240, 181, 0.18), rgba(31, 178, 255, 0.18));
+  color: #41f0b5;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-open-modal-btn:hover {
+  background: linear-gradient(135deg, rgba(65, 240, 181, 0.24), rgba(31, 178, 255, 0.24));
+  border-color: rgba(65, 240, 181, 0.45);
+}
+
 /* DROPDOWN DE RESULTADOS */
 .search-dropdown {
   position: absolute;
@@ -159,4 +177,81 @@
 .search-item-internal {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
+}
+
+.search-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-modal {
+  width: min(880px, 92vw);
+  max-height: 80vh;
+  background: rgba(20, 28, 43, 0.95);
+  border: 1px solid rgba(65, 240, 181, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+.search-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(65, 240, 181, 0.18);
+}
+
+.search-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f4f8ff;
+}
+
+.search-modal-close {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f8ff;
+  cursor: pointer;
+}
+
+.search-modal-content {
+  padding: 12px 14px 16px;
+  overflow: auto;
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.search-result-card--modal {
+  max-height: none;
+  min-height: 72px;
+}
+
+.search-add-btn {
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(65, 240, 181, 0.25);
+  background: rgba(65, 240, 181, 0.12);
+  color: #41f0b5;
+  cursor: pointer;
+}
+
+.search-add-btn:hover {
+  background: rgba(65, 240, 181, 0.18);
+  border-color: rgba(65, 240, 181, 0.4);
 }

@@ -3,9 +3,11 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { FilterGroup } from './FilterGroup';
 import { getQualityLabel } from '../../constants/qualities'
 import type { UsePricesFilterReturn } from "hooks/usePricesFilter"
+import { getItemDisplayNameWithEnchantment, getItemDisplayNameWithEnchantmentAsync } from "../../utils/items";
 import '../prices/PricesPage.css';
 
 interface PricesFiltersPanelProps {
@@ -13,7 +15,34 @@ interface PricesFiltersPanelProps {
 }
 
 export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [labelsMap, setLabelsMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const entries = await Promise.all(
+        filter.uniqueItems.map(async (itemName) => {
+          try {
+            const label = await getItemDisplayNameWithEnchantmentAsync(
+              itemName,
+              i18n.language as 'pt-BR' | 'en-US'
+            );
+            return [itemName, label] as const;
+          } catch {
+            return [itemName, getItemDisplayNameWithEnchantment(itemName, i18n.language as 'pt-BR' | 'en-US')] as const;
+          }
+        })
+      );
+      if (!cancelled) {
+        setLabelsMap(Object.fromEntries(entries));
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [filter.uniqueItems, i18n.language]);
 
   return (
     <div className="prices-filters">
@@ -28,7 +57,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
             <option value="">{t('prices.allItems')}</option>
             {filter.uniqueItems.map((itemName) => (
               <option key={itemName} value={itemName}>
-                {itemName}
+                {labelsMap[itemName] ?? getItemDisplayNameWithEnchantment(itemName, i18n.language as 'pt-BR' | 'en-US')}
               </option>
             ))}
           </select>

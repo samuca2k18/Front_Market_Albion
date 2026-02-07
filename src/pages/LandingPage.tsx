@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { ArrowRight, Zap, Shield, BarChart3, TrendingUp, MapPin, Clock } from "lucide-react";
+import { getItemImageUrl, getItemDisplayNameWithEnchantment } from "../utils/items";
 
 const featureList = [
   {
@@ -26,7 +27,7 @@ const featureList = [
 const marketData = [
   { city: "Caerleon", item: "T8_BAG@3", price: "1.245.000" },
   { city: "Bridgewatch", item: "T6_CAPE", price: "312.400" },
-  { city: "Martlock", item: "T4_ARMOR_PLATE", price: "48.900" },
+  { city: "Martlock", item: "T8_ROYALCALF", price: "48.900" },
 ];
 
 export function LandingPage() {
@@ -120,7 +121,24 @@ export function LandingPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground font-mono">{item.item}</span>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={getItemImageUrl(item.item)}
+                              alt={item.item}
+                              loading="lazy"
+                              className="h-6 w-6 object-contain rounded-md border border-border bg-background/60"
+                              onError={(e) => {
+                                const img = e.currentTarget;
+                                if (img.getAttribute("data-fallback") !== "1") {
+                                  img.setAttribute("data-fallback", "1");
+                                  img.src = "https://render.albiononline.com/v1/item/T1_BAG.png";
+                                }
+                              }}
+                            />
+                            <span className="text-sm text-foreground font-medium">
+                              {getItemDisplayNameWithEnchantment(item.item)}
+                            </span>
+                          </div>
                           <span className="text-lg font-bold text-accent">{item.price}</span>
                         </div>
                       </div>
