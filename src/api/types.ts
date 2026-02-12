@@ -98,6 +98,40 @@ export interface MyItemPrice {
   enchantment: number;
 }
 
+// === Alertas de preço ===
+export interface PriceAlert {
+  id: number;
+  item_id: string;
+  display_name?: string | null;
+  city?: string | null;
+  quality?: number | null;
+
+  target_price?: number | null;
+  expected_price?: number | null;
+  percent_below?: number | null;
+
+  use_ai_expected: boolean;
+  ai_days: number;
+  ai_resolution: string;
+  ai_stat: string;
+  ai_min_points: number;
+
+  cooldown_minutes: number;
+  is_active: boolean;
+
+  last_triggered_at?: string | null;
+  last_expected_price?: number | null;
+  last_expected_at?: string | null;
+}
+
+export interface UserNotification {
+  id: number;
+  title: string;
+  body: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 // === Filtros (frontend) ===
 export interface PriceFilters {
   item_name: string;
