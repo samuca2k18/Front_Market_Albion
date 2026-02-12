@@ -15,6 +15,7 @@ import { AddItemForm } from "./components/AddItemForm";
 import { ItemsListSection } from "./components/ItemsListSection";
 import { PricesTableSection } from "./components/PricesTableSection";
 import { PriceHistoryChart } from "./components/PriceHistoryChart";
+import { PriceAlertsSection } from "./components/PriceAlertsSection";
 
 import { splitItemName } from "./utils/itemFilters";
 
@@ -141,20 +142,28 @@ export function DashboardPage() {
           <AddItemForm createMutation={createMutation} />
         </section>
 
-        {/* Bottom: lista + preços / gráfico */}
-        <section className="grid gap-6 lg:grid-cols-2">
-          <ItemsListSection
-            trackedItems={trackedItems}
-            selectedItems={selectedItems}
-            locale={locale}
-            isDeleting={isDeleting}
-            onToggleSelect={handleToggleSelect}
-            onSelectAll={handleSelectAll}
-            onDeleteSelected={handleDeleteSelected}
-            onDeleteSingle={handleDeleteSingle}
-          />
+        {/* Bottom: lista + preços / gráfico + alertas */}
+        <section className="grid gap-6 lg:grid-cols-3">
+          {/* Itens cadastrados */}
+          <div className="lg:col-span-1">
+            <ItemsListSection
+              trackedItems={trackedItems}
+              selectedItems={selectedItems}
+              locale={locale}
+              isDeleting={isDeleting}
+              onToggleSelect={handleToggleSelect}
+              onSelectAll={handleSelectAll}
+              onDeleteSelected={handleDeleteSelected}
+              onDeleteSingle={handleDeleteSingle}
+            />
 
-          <div>
+            <div className="mt-6">
+              <PriceAlertsSection />
+            </div>
+          </div>
+
+          {/* Preços em tempo real + histórico */}
+          <div className="lg:col-span-2">
             <PricesTableSection
               myPrices={myPrices}
               myPricesQueryIsLoading={myPricesQuery.isLoading}
