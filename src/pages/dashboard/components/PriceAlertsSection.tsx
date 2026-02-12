@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { listPriceAlerts } from "@/api/alerts";
+import { listPriceAlerts, createPriceAlert } from "@/api/alerts";
 import type { PriceAlert } from "@/api/types";
 import { Card } from "@/components/common/Card";
 
@@ -54,6 +54,7 @@ export function PriceAlertsSection() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pinned, setPinned] = useState<Set<number>>(() => loadPinned());
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,11 +78,51 @@ export function PriceAlertsSection() {
       }
     }
 
+    function handleAddAlert(event: Event) {
+      const detail = (event as CustomEvent<{
+        itemName: string;
+        displayName?: string;
+        targetPrice: number;
+      }>).detail;
+      if (!detail) return;
+
+      void (async () => {
+        try {
+          setIsCreating(true);
+          const created = await createPriceAlert({
+            item_id: detail.itemName,
+            display_name: detail.displayName,
+            target_price: detail.targetPrice,
+          });
+          if (!cancelled) {
+            setAlerts((prev) => [created, ...prev]);
+          }
+        } catch (e: any) {
+          if (!cancelled) {
+            setError(
+              e?.message ||
+                "Não foi possível criar o alerta de preço. Tente novamente.",
+            );
+          }
+        } finally {
+          if (!cancelled) {
+            setIsCreating(false);
+          }
+        }
+      })();
+    }
+
+    window.addEventListener("dashboard:add-alert", handleAddAlert as EventListener);
+
     void fetchAlerts();
     const interval = window.setInterval(fetchAlerts, 2 * 60 * 1000);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener(
+        "dashboard:add-alert",
+        handleAddAlert as EventListener,
+      );
     };
   }, []);
 
@@ -114,7 +155,11 @@ export function PriceAlertsSection() {
   return (
     <Card
       title="Alertas de preço"
-      description="Itens monitorados e regras de disparo configuradas."
+      description={
+        isCreating
+          ? "Criando alerta..."
+          : "Itens monitorados e regras de disparo configuradas."
+      }
     >
       {isLoading && alerts.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">

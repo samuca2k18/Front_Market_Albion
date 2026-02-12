@@ -185,15 +185,49 @@ export function ItemsListSection({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => onDeleteSingle(item.id)}
-                    disabled={isDeleting}
-                    className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors ml-2 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={t("dashboard.removeItemButtonTooltip")}
-                  >
-                    {t("dashboard.removeItem")}
-                  </button>
+                  <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const raw = window.prompt(
+                          t("dashboard.setAlertPrompt") ||
+                            "Informe o preço alvo (silver) para receber alerta:",
+                        );
+                        if (!raw) return;
+                        const value = Number(
+                          String(raw).replace(/\./g, "").replace(",", "."),
+                        );
+                        if (!Number.isFinite(value) || value <= 0) {
+                          window.alert(
+                            t("dashboard.invalidAlertPrice") ||
+                              "Valor inválido. Informe um número maior que zero.",
+                          );
+                          return;
+                        }
+                        const event = new CustomEvent("dashboard:add-alert", {
+                          detail: {
+                            itemName: item.item_name,
+                            displayName,
+                            targetPrice: value,
+                          },
+                        });
+                        window.dispatchEvent(event);
+                      }}
+                      className="text-[11px] rounded-full border border-primary/40 px-3 py-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {t("dashboard.addPriceAlert") || "Criar alerta de preço"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onDeleteSingle(item.id)}
+                      disabled={isDeleting}
+                      className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={t("dashboard.removeItemButtonTooltip")}
+                    >
+                      {t("dashboard.removeItem")}
+                    </button>
+                  </div>
                 </li>
               );
             })}
