@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { listPriceAlerts, createPriceAlert } from "@/api/alerts";
 import type { PriceAlert } from "@/api/types";
@@ -55,6 +56,7 @@ export function PriceAlertsSection() {
   const [error, setError] = useState<string | null>(null);
   const [pinned, setPinned] = useState<Set<number>>(() => loadPinned());
   const [isCreating, setIsCreating] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -154,30 +156,31 @@ export function PriceAlertsSection() {
 
   return (
     <Card
-      title="Alertas de preço"
+      title={t("dashboard.alertsTitle")}
       description={
         isCreating
-          ? "Criando alerta..."
-          : "Itens monitorados e regras de disparo configuradas."
+          ? (t("dashboard.alertsCreating") as string)
+          : (t("dashboard.alertsDescription") as string)
       }
     >
       {isLoading && alerts.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Carregando seus alertas...
+          {t("dashboard.alertsLoading")}
         </p>
       ) : error ? (
         <p className="mt-3 text-sm text-destructive">{error}</p>
       ) : alerts.length === 0 ? (
         <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-          Você ainda não configurou nenhum alerta de preço.
+          {t("dashboard.alertsEmptyLine1")}
           <br />
-          Use o backend para criar alertas para itens específicos e eles aparecerão aqui.
+          {t("dashboard.alertsEmptyLine2")}
         </div>
       ) : (
         <ul className="mt-3 space-y-2">
           {orderedAlerts.map((alert) => {
             const label = alert.display_name || alert.item_id;
-            const city = alert.city || "Qualquer cidade";
+            const city =
+              alert.city || (t("dashboard.alertsAnyCity") as string);
             const rule = formatRule(alert);
             const last = formatLastTriggered(alert);
             const isPinned = pinned.has(alert.id);
@@ -200,7 +203,7 @@ export function PriceAlertsSection() {
                     {rule}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    Último disparo: {last}
+                    {t("dashboard.alertsLastFire", { value: last })}
                   </span>
                 </div>
 
@@ -214,11 +217,13 @@ export function PriceAlertsSection() {
                   }`}
                   title={
                     isPinned
-                      ? "Remover prioridade deste alerta"
-                      : "Priorizar este alerta"
+                      ? (t("dashboard.alertsUnpinTooltip") as string)
+                      : (t("dashboard.alertsPinTooltip") as string)
                   }
                 >
-                  {isPinned ? "Prioritário" : "Priorizar"}
+                  {isPinned
+                    ? (t("dashboard.alertsPinned") as string)
+                    : (t("dashboard.alertsPin") as string)}
                 </button>
               </li>
             );

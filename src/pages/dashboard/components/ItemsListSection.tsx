@@ -33,6 +33,12 @@ export function ItemsListSection({
 }: ItemsListSectionProps) {
   const { t, i18n } = useTranslation();
   const [displayNames, setDisplayNames] = useState<Record<number, string>>({});
+  const [alertModalItem, setAlertModalItem] = useState<{
+    item: Item;
+    displayName: string;
+  } | null>(null);
+  const [alertPriceInput, setAlertPriceInput] = useState("");
+  const [alertError, setAlertError] = useState<string | null>(null);
 
   // Resolve nomes respeitando o idioma atual e cacheando no estado
   useEffect(() => {
@@ -77,6 +83,38 @@ export function ItemsListSection({
       cancelled = true;
     };
   }, [trackedItems, i18n.language]);
+
+  const closeAlertModal = () => {
+    setAlertModalItem(null);
+    setAlertPriceInput("");
+    setAlertError(null);
+  };
+
+  const handleConfirmAlert = () => {
+    if (!alertModalItem) return;
+
+    const raw = alertPriceInput.trim();
+    if (!raw) {
+      setAlertError(t("dashboard.invalidAlertPrice") as string);
+      return;
+    }
+
+    const value = Number(raw.replace(/\./g, "").replace(",", "."));
+    if (!Number.isFinite(value) || value <= 0) {
+      setAlertError(t("dashboard.invalidAlertPrice") as string);
+      return;
+    }
+
+    const event = new CustomEvent("dashboard:add-alert", {
+      detail: {
+        itemName: alertModalItem.item.item_name,
+        displayName: alertModalItem.displayName,
+        targetPrice: value,
+      },
+    });
+    window.dispatchEvent(event);
+    closeAlertModal();
+  };
 
   return (
     <Card
@@ -189,33 +227,13 @@ export function ItemsListSection({
                     <button
                       type="button"
                       onClick={() => {
-                        const raw = window.prompt(
-                          t("dashboard.setAlertPrompt") ||
-                            "Informe o preço alvo (silver) para receber alerta:",
-                        );
-                        if (!raw) return;
-                        const value = Number(
-                          String(raw).replace(/\./g, "").replace(",", "."),
-                        );
-                        if (!Number.isFinite(value) || value <= 0) {
-                          window.alert(
-                            t("dashboard.invalidAlertPrice") ||
-                              "Valor inválido. Informe um número maior que zero.",
-                          );
-                          return;
-                        }
-                        const event = new CustomEvent("dashboard:add-alert", {
-                          detail: {
-                            itemName: item.item_name,
-                            displayName,
-                            targetPrice: value,
-                          },
-                        });
-                        window.dispatchEvent(event);
+                        setAlertModalItem({ item, displayName });
+                        setAlertPriceInput("");
+                        setAlertError(null);
                       }}
                       className="text-[11px] rounded-full border border-primary/40 px-3 py-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {t("dashboard.addPriceAlert") || "Criar alerta de preço"}
+                      {t("dashboard.addPriceAlert")}
                     </button>
 
                     <button
@@ -233,6 +251,69 @@ export function ItemsListSection({
             })}
           </ul>
         </>
+      )}
+
+      {alertModalItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="glass max-w-sm w-full mx-4 rounded-2xl border border-border/70 bg-background/95 p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {t("dashboard.alertModalTitle")}
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("dashboard.alertModalDescription", {
+                    item: alertModalItem.displayName,
+                  })}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeAlertModal}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                {t("common.close")}
+              </button>
+            </div>
+
+            <div className="space-y-2 mb-3">
+              <label className="text-xs font-medium text-foreground">
+                {t("dashboard.alertModalPriceLabel")}
+              </label>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={alertPriceInput}
+                onChange={(e) => {
+                  setAlertPriceInput(e.target.value);
+                  if (alertError) setAlertError(null);
+                }}
+                placeholder={(t("dashboard.alertModalPricePlaceholder") as string) || "150000"}
+                className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
+              />
+              {alertError && (
+                <p className="text-[11px] text-destructive">{alertError}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 mt-2">
+              <button
+                type="button"
+                onClick={closeAlertModal}
+                className="text-xs rounded-full border border-border/70 px-3 py-1.5 text-muted-foreground hover:bg-background/80"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAlert}
+                className="text-xs rounded-full bg-primary px-3 py-1.5 text-primary-foreground hover:bg-primary/90"
+              >
+                {t("dashboard.alertModalConfirm")}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </Card>
   );
