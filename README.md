@@ -422,4 +422,4 @@ Este projeto está sob a licença MIT. Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Feito com ❤️ por [@samuca2k18](https://github.com/samuca2k18) e [@guigasdev]https://github.com/guigasdev  para a comunidade brasileira de Albion Online.**
+**Feito com ❤️ por [@samuca2k18](https://github.com/samuca2k18) e [@guigasdev](https://github.com/guigasdev)  para a comunidade brasileira de Albion Online.**
