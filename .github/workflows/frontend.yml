@@ -1,5 +1,4 @@
-```yaml
-name: ⚛️ Frontend CI
+name: "⚛️ Frontend CI"
 
 on:
   push:
@@ -13,30 +12,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Baixa o código do repositório
-      - name: 📥 Checkout do código
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      # 2. Configura o Node.js
-      - name: 🟢 Configurar Node.js
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"  # cacheia node_modules para ser mais rápido
+          cache: "npm"
 
-      # 3. Instala as dependências
-      - name: 📦 Instalar dependências
-        run: npm ci  # mais seguro que npm install em CI
+      - name: Instalar dependências
+        run: npm ci
 
-      # 4. Roda o lint
-      - name: 🔍 Verificar lint
+      - name: Verificar lint
         run: npm run lint
 
-      # 5. Roda os testes
-      - name: 🧪 Rodar Vitest
+      - name: Rodar Vitest
         run: npm run test:run
 
-      # 6. Verifica se o build funciona
-      - name: 🏗️ Verificar build
+      - name: Verificar build
         run: npm run build
-```
