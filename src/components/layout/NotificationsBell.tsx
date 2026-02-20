@@ -20,10 +20,14 @@ export function NotificationsBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // não mostra nada se não estiver logado
-  if (!user) return null;
-
   useEffect(() => {
+    if (!user) {
+      // Se não estiver logado, não busca notificações
+      setNotifications([]);
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function fetchData() {
@@ -50,7 +54,10 @@ export function NotificationsBell() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [user]);
+
+  // não mostra nada se não estiver logado
+  if (!user) return null;
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
