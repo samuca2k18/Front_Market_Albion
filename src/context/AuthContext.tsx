@@ -32,10 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
-  // salva/remove token no localStorage
+  // salva/remove tokens no localStorage
   const persistToken = useCallback((value: string | null) => {
     if (!value) {
       localStorage.removeItem(STORAGE_KEYS.token);
+      localStorage.removeItem(STORAGE_KEYS.refreshToken);
       setToken(null);
       return;
     }
@@ -74,10 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (credentials: AuthCredentials) => {
       try {
         const data = await loginRequest(credentials);
+        // salva access e refresh tokens
         persistToken(data.access_token);
+        localStorage.setItem(STORAGE_KEYS.refreshToken, data.refresh_token);
         await refreshUser();
       } catch (error) {
-        // sempre lançar ApiErrorShape
         throw parseApiError(error) as ApiErrorShape;
       }
     },
