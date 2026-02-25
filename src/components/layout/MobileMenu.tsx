@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
 import { LanguageSwitcher } from "../common/LanguageSwitcher";
+import { NotificationsBell } from "./NotificationsBell";
 
 interface NavItem {
   label: string;
@@ -57,9 +58,10 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
           ))}
         </nav>
 
-        {/* Language Switcher */}
-        <div className="py-2 border-t border-border/40">
+        {/* Language Switcher + Notificações */}
+        <div className="py-2 border-t border-border/40 flex items-center gap-3">
           <LanguageSwitcher />
+          <NotificationsBell />
         </div>
 
         {/* User Info / Auth */}
