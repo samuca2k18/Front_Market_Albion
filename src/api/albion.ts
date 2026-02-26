@@ -35,12 +35,14 @@ export async function fetchAlbionPrices(
   items: string[],
   cities?: string[],
   qualities?: number[],
+  region?: string,
 ): Promise<AlbionPricesResponse> {
   try {
-    const params = {
+    const params: Record<string, string | undefined> = {
       items: items.join(','),
       cities: cities?.join(','),
       qualities: qualities?.join(','),
+      region: region ?? 'europe',
     };
 
     const { data } = await api.get<AlbionPricesResponse>('/albion/prices', {
@@ -56,11 +58,12 @@ export async function fetchAlbionPrices(
 // Preço para um item por nome amigável (/albion/price-by-name)
 export async function fetchAlbionPriceByName(
   name: string,
+  region?: string,
 ): Promise<AlbionPriceByNameResponse> {
   try {
     const { data } = await api.get<AlbionPriceByNameResponse>(
       '/albion/price-by-name',
-      { params: { name } },
+      { params: { name, region: region ?? 'europe' } },
     );
     return data;
   } catch (error) {
@@ -69,9 +72,11 @@ export async function fetchAlbionPriceByName(
 }
 
 // Preços apenas dos itens do usuário (/albion/my-items-prices)
-export async function fetchMyItemsPrices(): Promise<MyItemPrice[]> {
+export async function fetchMyItemsPrices(region?: string): Promise<MyItemPrice[]> {
   try {
-    const { data } = await api.get<MyItemPrice[]>('/albion/my-items-prices');
+    const { data } = await api.get<MyItemPrice[]>('/albion/my-items-prices', {
+      params: { region: region ?? 'europe' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);
@@ -105,12 +110,14 @@ export async function fetchAlbionHistory(
   days: number = 7,
   cities: string[] = ['Caerleon'],
   resolution: '1h' | '6h' | '24h' = '6h',
+  region?: string,
 ): Promise<AlbionHistoryResponse> {
   try {
     const params = {
       days,
       cities: cities.join(','),
       resolution,
+      region: region ?? 'europe',
     };
 
     const { data } = await api.get<AlbionHistoryResponse>(
@@ -124,11 +131,22 @@ export async function fetchAlbionHistory(
   }
 }
 
-/**
- * NOVO: endpoints usados pela PricesPage
- * Ajuste as rotas ('/albion/unique-items' e '/albion/cities')
- * se no seu backend o path for diferente.
- */
+export interface AlbionRegion {
+  id: string;
+  label: string;
+  flag: string;
+  host: string;
+}
+
+// Lista de regiões do backend (/albion/regions) — sem autenticação
+export async function getRegions(): Promise<AlbionRegion[]> {
+  try {
+    const { data } = await api.get<AlbionRegion[]>('/albion/regions');
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
 
 // Lista de itens únicos disponíveis para consulta
 export async function getUniqueItems(): Promise<any[]> {
@@ -154,4 +172,5 @@ export async function getCities(): Promise<string[]> {
 export const albionAPI = {
   getUniqueItems,
   getCities,
+  getRegions,
 };

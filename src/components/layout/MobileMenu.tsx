@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
 import { LanguageSwitcher } from "../common/LanguageSwitcher";
+import { RegionSwitcher } from "../common/RegionSwitcher";
+import { NotificationsBell } from "./NotificationsBell";
 
 interface NavItem {
   label: string;
@@ -31,9 +33,8 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
 
   return (
     <div
-      className={`md:hidden border-t border-border/60 bg-background/95 backdrop-blur transition-[max-height,opacity] duration-200 ${
-        isOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-      }`}
+      className={`md:hidden border-t border-border/60 bg-background/95 backdrop-blur transition-[max-height,opacity] duration-200 ${isOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+        }`}
     >
       <div className="mx-auto max-w-7xl px-4 py-3 space-y-3">
         {/* Navigation */}
@@ -57,9 +58,11 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
           ))}
         </nav>
 
-        {/* Language Switcher */}
-        <div className="py-2 border-t border-border/40">
+        {/* Language Switcher + Região + Notificações */}
+        <div className="py-2 border-t border-border/40 flex items-center gap-3">
           <LanguageSwitcher />
+          <RegionSwitcher />
+          <NotificationsBell />
         </div>
 
         {/* User Info / Auth */}
