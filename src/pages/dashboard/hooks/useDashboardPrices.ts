@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { MyItemPrice } from "@/api/types";
 import { fetchMyItemsPrices } from "@/api/albion";
+import { useRegion } from "@/context/RegionContext";
 import {
   filterPricesByTier,
   type TierFilter,
@@ -23,10 +24,11 @@ interface UseDashboardPricesReturn {
 
 export function useDashboardPrices(): UseDashboardPricesReturn {
   const [selectedTier, setSelectedTier] = useState<TierFilter>("all");
+  const { region } = useRegion();
 
   const myPricesQuery = useQuery<MyItemPrice[]>({
-    queryKey: ["my-items-prices"],
-    queryFn: fetchMyItemsPrices,
+    queryKey: ["my-items-prices", region],
+    queryFn: () => fetchMyItemsPrices(region),
     refetchInterval: 5 * 60 * 1000,
   });
 
