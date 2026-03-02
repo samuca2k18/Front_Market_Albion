@@ -19,10 +19,11 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   const { t, i18n } = useTranslation();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   const debouncedQuery = useDebounce(query, 400);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["product-search", debouncedQuery, i18n.language],
@@ -36,7 +37,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   // Helper para obter o nome no idioma atual
   const getLabel = (product: Product): string => {
     const isPortuguese = i18n.language === "pt-BR";
-    
+
     if (isPortuguese) {
       return product.name_pt || product.name_en || product.unique_name;
     } else {
@@ -62,14 +63,28 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Abre dropdown quando tiver resultado
+  // Reseta o índice ao mudar os resultados ou fechar
   useEffect(() => {
-    if (results.length > 0) {
+    setActiveIndex(-1);
+    if (results.length > 0 && query.length >= 2) {
       setIsOpen(true);
     } else {
       setIsOpen(false);
     }
-  }, [results.length]);
+  }, [results, query]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (activeIndex !== -1 && dropdownRef.current) {
+      const activeElement = dropdownRef.current.children[activeIndex] as HTMLElement;
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          block: "nearest",
+          behavior: "smooth"
+        });
+      }
+    }
+  }, [activeIndex]);
 
   const handleSelect = (product: Product) => {
     const label = getLabel(product);
@@ -78,25 +93,37 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
     // Mostra no input o nome amigável
     setQuery(label + suffix);
     setIsOpen(false);
-    setIsModalOpen(false);
+    setActiveIndex(-1);
 
     // Passa o produto normalizado para o pai
     onSelectProduct?.(product);
   };
 
-
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       setIsOpen(false);
-      setIsModalOpen(false);
       return;
     }
-  
-    if (e.key === "Enter") {
+
+    if (!isOpen && results.length > 0) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+        setIsOpen(true);
+        return;
+      }
+    }
+
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-  
-      if (results.length > 0) {
-        setIsModalOpen(true);
+      setActiveIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex !== -1 && results[activeIndex]) {
+        handleSelect(results[activeIndex]);
+      } else if (results.length > 0) {
+        handleSelect(results[0]);
       }
     }
   };
@@ -104,26 +131,32 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   return (
     <div className="search-wrapper" ref={wrapperRef}>
       <div className="search-input-container">
-        <input
-          type="text"
-          placeholder={t("search.placeholder")}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setIsOpen(true)}
-          onKeyDown={handleKeyDown}
-        />
-
-        <button
-          className="search-open-modal-btn"
-          type="button"
-          onClick={() => results.length > 0 && setIsModalOpen(true)}
-        >
-          {t("common.search")}
-        </button>
+        <div className="search-input-inner">
+          <input
+            type="text"
+            placeholder={t("search.placeholder")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => results.length > 0 && setIsOpen(true)}
+            onKeyDown={handleKeyDown}
+          />
+          {query && (
+            <button
+              className="search-clear-btn"
+              onClick={() => {
+                setQuery("");
+                setIsOpen(false);
+              }}
+              title={t("common.clear")}
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       {isOpen && (
-        <div className="search-dropdown">
+        <div className="search-dropdown" ref={dropdownRef}>
           {isLoading && (
             <div className="search-loading">{t("search.loading")}</div>
           )}
@@ -141,7 +174,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
           {!isLoading &&
             !isError &&
-            results.map((product: Product) => {
+            results.map((product: Product, index) => {
               const label = getLabel(product);
               const suffix = getEnchantSuffix(product.unique_name);
               if (!product.unique_name) return null;
@@ -154,8 +187,9 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                 <button
                   key={product.unique_name}
                   type="button"
-                  className="search-result-card"
+                  className={`search-result-card ${index === activeIndex ? "active" : ""}`}
                   onClick={() => handleSelect(product)}
+                  onMouseEnter={() => setActiveIndex(index)}
                 >
                   <img
                     src={imgUrl}
@@ -166,77 +200,14 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                         "https://render.albiononline.com/v1/item/T1_BAG.png";
                     }}
                   />
-                
+
                   <div className="search-item-content">
                     <span className="search-item-label">{label}{suffix}</span>
                     <span className="search-item-internal">{product.unique_name}</span>
                   </div>
-                </button>  
+                </button>
               );
             })}
-        </div>
-      )}
-      {isModalOpen && (
-        <div className="search-modal-backdrop" onClick={() => setIsModalOpen(false)}>
-          <div className="search-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="search-modal-header">
-              <h3>{t("search.resultsTitle")}</h3>
-              <button
-                type="button"
-                className="search-modal-close"
-                onClick={() => setIsModalOpen(false)}
-              >
-                {t("common.close")}
-              </button>
-            </div>
-            <div className="search-modal-content">
-              {isLoading && (
-                <div className="search-loading">{t("search.loading")}</div>
-              )}
-              {isError && (
-                <div className="search-error">{t("search.error")}</div>
-              )}
-              {!isLoading && !isError && results.length === 0 && (
-                <div className="search-empty">{t("search.noResults")}</div>
-              )}
-              {!isLoading && !isError && results.length > 0 && (
-                <div className="search-results-grid">
-                  {results.map((product: Product) => {
-                    const label = getLabel(product);
-                    const suffix = getEnchantSuffix(product.unique_name);
-                    if (!product.unique_name) return null;
-                    const imgUrl = `https://render.albiononline.com/v1/item/${encodeURIComponent(
-                      product.unique_name,
-                    )}.png`;
-                    return (
-                      <div key={product.unique_name} className="search-result-card search-result-card--modal">
-                        <img
-                          src={imgUrl}
-                          alt={label}
-                          className="search-item-image"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://render.albiononline.com/v1/item/T1_BAG.png";
-                          }}
-                        />
-                        <div className="search-item-content">
-                          <span className="search-item-label">{label}{suffix}</span>
-                          <span className="search-item-internal">{product.unique_name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          className="search-add-btn"
-                          onClick={() => handleSelect(product)}
-                        >
-                          {t("common.add")}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       )}
     </div>
