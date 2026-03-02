@@ -31,36 +31,7 @@
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-}
-
-.gold-card-header {
-    /* ... */
-}
-
-/* ... linhas preservadas ... */
-
-.gold-sparkline-wrapper {
-    margin: 4px -4px;
-}
-
-.gold-tooltip {
-    background: rgba(20, 28, 43, 0.95);
-    border: 1px solid rgba(255, 184, 0, 0.3);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #ffb800;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.gold-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 12px;
 }
 
 .gold-card-header {
@@ -149,11 +120,83 @@
     }
 }
 
+.gold-peaks-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.peak-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.peak-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.05em;
+}
+
+.peak-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.peak-item.max .peak-value {
+    color: #ffb800;
+}
+
+.peak-item.min .peak-value {
+    color: #f4f8ff;
+}
+
+.peak-item.period .peak-value {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.gold-sparkline-wrapper {
+    margin: 4px -4px;
+    position: relative;
+    height: 80px;
+}
+
+.gold-tooltip {
+    background: rgba(20, 28, 43, 0.98);
+    border: 1px solid rgba(255, 184, 0, 0.4);
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+}
+
+.tooltip-date {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
+
+.tooltip-value {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #ffb800;
+}
+
 .gold-card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -192,28 +235,6 @@
     gap: 12px;
 }
 
-.skeleton-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    animation: pulse 1.5s infinite;
-}
-
-.skeleton-line {
-    height: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-    width: 100px;
-    animation: pulse 1.5s infinite;
-}
-
-.skeleton-line.short {
-    width: 60px;
-    height: 12px;
-    margin-bottom: 8px;
-}
-
 @keyframes pulse {
     0% {
         opacity: 0.5;
@@ -236,6 +257,7 @@
 
     .gold-card-inner {
         padding: 12px;
+        gap: 10px;
     }
 
     .gold-price {
@@ -245,5 +267,13 @@
     .gold-icon-wrapper {
         width: 36px;
         height: 36px;
+    }
+
+    .gold-peaks-info {
+        padding: 6px 10px;
+    }
+
+    .peak-value {
+        font-size: 0.75rem;
     }
 }

@@ -192,7 +192,7 @@ export interface GoldPriceResponse {
 export async function fetchGoldPrices(region?: string): Promise<GoldPriceResponse> {
   try {
     const { data } = await api.get<GoldPriceResponse>('/albion/gold', {
-      params: { region: region ?? 'europe', count: 50 },
+      params: { region: region ?? 'europe', count: 200 },
     });
     return data;
   } catch (error) {
