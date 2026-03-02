@@ -9,6 +9,7 @@ import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { useDashboardItems } from "./hooks/useDashboardItems";
 import { useDashboardPrices } from "./hooks/useDashboardPrices";
 import { usePriceHistory } from "./hooks/usePriceHistory";
+import { useRegion } from "@/context/RegionContext";
 
 import { QuickSummary } from "./components/QuickSummary";
 import { AddItemForm } from "./components/AddItemForm";
@@ -42,7 +43,7 @@ export function DashboardPage() {
     setItemNamesCache(new Map());
   }, [i18n.language]);
 
-  const region = "europe";
+  const { region } = useRegion();
 
   // Hooks de dados
   const {
