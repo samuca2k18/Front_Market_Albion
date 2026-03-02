@@ -28,6 +28,17 @@ export function OpportunitiesPage() {
         refetchInterval: 1000 * 60 * 5, // 5 min
     });
 
+    const getQualityName = (q: number) => {
+        const names: Record<number, string> = {
+            1: t("quality.normal", "Normal"),
+            2: t("quality.good", "Bom"),
+            3: t("quality.outstanding", "Excepcional"),
+            4: t("quality.excellent", "Excelente"),
+            5: t("quality.masterpiece", "Obra-prima"),
+        };
+        return names[q] || names[1];
+    };
+
     const locale = i18n.language.startsWith("pt") ? "pt-BR" : "en-US";
 
     const filteredData = data?.filter(opt => opt.profit >= minProfit) || [];
@@ -131,8 +142,11 @@ export function OpportunitiesPage() {
                                             </span>
                                             <span className="item-id">{opt.item_id}</span>
                                         </div>
-                                        <div className="roi-badge">
-                                            ROI {opt.roi}%
+                                        <div className="card-badges">
+                                            <div className="roi-badge">ROI {opt.roi}%</div>
+                                            <div className={`quality-badge q${opt.quality}`}>
+                                                {getQualityName(opt.quality)}
+                                            </div>
                                         </div>
                                     </div>
 

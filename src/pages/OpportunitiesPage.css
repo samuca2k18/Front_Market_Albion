@@ -191,15 +191,55 @@
     font-family: monospace;
 }
 
-.roi-badge {
-    background: rgba(65, 240, 181, 0.1);
-    color: #41f0b5;
-    padding: 4px 10px;
+.card-badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.quality-badge {
+    padding: 2px 10px;
     border-radius: 100px;
     font-size: 0.75rem;
-    font-weight: 800;
-    border: 1px solid rgba(65, 240, 181, 0.2);
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Cores de Qualidade Albion */
+.quality-badge.q1 {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+/* Normal */
+.quality-badge.q2 {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Bom */
+.quality-badge.q3 {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.2);
+}
+
+/* Excepcional */
+.quality-badge.q4 {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border-color: rgba(234, 179, 8, 0.2);
+}
+
+/* Excelente */
+.quality-badge.q5 {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+}
+
+/* Obra-prima */
 
 /* Rota de Trade */
 .opt-route {

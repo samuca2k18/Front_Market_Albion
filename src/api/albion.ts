@@ -201,6 +201,7 @@ export async function fetchGoldPrices(region?: string): Promise<GoldPriceRespons
 }
 export interface ArbitrageOpportunity {
   item_id: string;
+  quality: number;
   buy_from: string;
   buy_price: number;
   sell_at: string;
