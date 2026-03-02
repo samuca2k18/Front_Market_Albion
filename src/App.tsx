@@ -12,6 +12,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { OpportunitiesPage } from './pages/OpportunitiesPage';
 import { PricesPage } from './pages/PricesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
@@ -35,6 +36,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="prices" element={<PricesPage />} />
+            <Route path="opportunities" element={<OpportunitiesPage />} />
           </Route>
 
           {/* 404 */}

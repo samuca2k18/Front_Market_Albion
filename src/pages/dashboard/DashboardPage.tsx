@@ -9,9 +9,13 @@ import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { useDashboardItems } from "./hooks/useDashboardItems";
 import { useDashboardPrices } from "./hooks/useDashboardPrices";
 import { usePriceHistory } from "./hooks/usePriceHistory";
+import { useRegion } from "@/context/RegionContext";
 
 import { QuickSummary } from "./components/QuickSummary";
 import { AddItemForm } from "./components/AddItemForm";
+import { GoldPriceCard } from "./components/GoldPriceCard";
+import { fetchArbitrageOpportunities } from "@/api/albion";
+import { useQuery } from "@tanstack/react-query";
 import { ItemsListSection } from "./components/ItemsListSection";
 import { PricesTableSection } from "./components/PricesTableSection";
 import { PriceHistoryChart } from "./components/PriceHistoryChart";
@@ -33,13 +37,15 @@ export function DashboardPage() {
     i18n.language === "pt"
       ? "pt-BR"
       : i18n.language === "en"
-      ? "en-US"
-      : i18n.language || "en-US";
+        ? "en-US"
+        : i18n.language || "en-US";
 
   // Quando muda idioma, limpa cache para recarregar nomes
   useEffect(() => {
     setItemNamesCache(new Map());
   }, [i18n.language]);
+
+  const { region } = useRegion();
 
   // Hooks de dados
   const {
@@ -58,8 +64,13 @@ export function DashboardPage() {
     myPrices,
     selectedTier,
     setSelectedTier,
-    lowestPrice,
   } = useDashboardPrices();
+
+  const arbitrageQuery = useQuery({
+    queryKey: ["arbitrage-summary", region],
+    queryFn: () => fetchArbitrageOpportunities(region),
+    refetchInterval: 1000 * 60 * 10, // 10 min é suficiente pro dashboard
+  });
 
   const {
     selectedHistoryItem,
@@ -130,14 +141,15 @@ export function DashboardPage() {
   return (
     <div className="min-h-screen bg-background relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top: Resumo + Adicionar item */}
-        <section className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)]">
+        {/* Top: Resumo + Ouro + Adicionar item */}
+        <section className="grid gap-6 md:grid-cols-3">
           <QuickSummary
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
-            lowestPrice={lowestPrice}
-            locale={locale}
+            opportunityCount={arbitrageQuery.data?.length || 0}
           />
+
+          <GoldPriceCard region={region} />
 
           <AddItemForm createMutation={createMutation} />
         </section>

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
 import { LanguageSwitcher } from "../common/LanguageSwitcher";
+import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 
 export function HeaderActions() {
@@ -17,9 +18,10 @@ export function HeaderActions() {
 
   return (
     <div className="hidden md:flex items-center gap-3">
-      {/* Idioma + Notificações */}
+      {/* Idioma + Região + Notificações */}
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
+        <RegionSwitcher />
         <NotificationsBell />
       </div>
 

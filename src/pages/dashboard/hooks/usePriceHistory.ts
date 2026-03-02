@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchAlbionHistory, type AlbionHistoryResponse } from "@/api/albion";
+import { useRegion } from "@/context/RegionContext";
 import { formatHistoryToChartData, type ChartPoint } from "../utils/chartFormatters";
 
 interface UsePriceHistoryReturn {
@@ -14,11 +15,12 @@ interface UsePriceHistoryReturn {
 
 export function usePriceHistory(locale: string): UsePriceHistoryReturn {
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<string | null>(null);
+  const { region } = useRegion();
 
   const historyQuery = useQuery<AlbionHistoryResponse>({
-    queryKey: ["albion-history", selectedHistoryItem],
+    queryKey: ["albion-history", selectedHistoryItem, region],
     queryFn: () =>
-      fetchAlbionHistory(selectedHistoryItem!, 7, ["Caerleon"], "6h"),
+      fetchAlbionHistory(selectedHistoryItem!, 7, ["Caerleon"], "6h", region),
     enabled: !!selectedHistoryItem,
   });
 

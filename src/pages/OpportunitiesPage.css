@@ -1,0 +1,402 @@
+.opportunities-page {
+    padding-bottom: 2rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(20, 28, 43, 0.4), rgba(20, 28, 43, 0.2));
+    padding: 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.title-icon {
+    color: #41f0b5;
+    filter: drop-shadow(0 0 8px rgba(65, 240, 181, 0.4));
+}
+
+.page-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.tax-selector {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    margin-left: 8px;
+    margin-right: 12px;
+}
+
+.tax-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.tax-btn:hover {
+    color: #fff;
+}
+
+.tax-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.opportunities-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+}
+
+/* Sidebar Filtros */
+.filters-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: rgba(20, 28, 43, 0.6);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filter-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.filter-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 1rem;
+    border-radius: 16px;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.info-icon {
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.filter-info p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+/* Grid de Oportunidades */
+.opportunities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.opportunity-card {
+    padding: 1.5rem;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: rgba(20, 28, 43, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+}
+
+.opportunity-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(65, 240, 181, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.opt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.item-id {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: monospace;
+}
+
+.card-badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.quality-badge {
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Cores de Qualidade Albion */
+.quality-badge.q1 {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+/* Normal */
+.quality-badge.q2 {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Bom */
+.quality-badge.q3 {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.2);
+}
+
+/* Excepcional */
+.quality-badge.q4 {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border-color: rgba(234, 179, 8, 0.2);
+}
+
+/* Excelente */
+.quality-badge.q5 {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.2);
+}
+
+/* Obra-prima */
+
+/* Rota de Trade */
+.opt-route {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.25rem;
+    border-radius: 16px;
+}
+
+.route-step {
+    flex: 1;
+}
+
+.step-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 4px;
+}
+
+.city-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.price-info {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.silver {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.time-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.route-arrow {
+    padding: 0 1rem;
+    color: rgba(255, 255, 255, 0.15);
+}
+
+/* Footer do Card */
+.opt-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profit-total .label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    display: block;
+}
+
+.profit-total .value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #41f0b5;
+}
+
+.check-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+/* Estados da Página */
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    background: rgba(20, 28, 43, 0.4);
+    border-radius: 24px;
+    text-align: center;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(65, 240, 181, 0.1);
+    border-top-color: #41f0b5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .opportunities-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-sidebar {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .opportunities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .opportunity-card {
+        padding: 1.25rem;
+    }
+
+    .opt-route {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .route-arrow {
+        transform: rotate(90deg);
+        padding: 0;
+        align-self: center;
+    }
+}

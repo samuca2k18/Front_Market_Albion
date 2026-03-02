@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { fetchMyItemsPrices } from '../api/albion';
+import { useRegion } from '../context/RegionContext';
 import { Loader } from '../components/common/LoadingScreen';
 import { PricesFiltersPanel } from '../components/prices/PricesFiltersPanel';
 import { PricesTable } from '../components/prices/PricesTable';
@@ -16,6 +17,7 @@ import '../components/prices/PricesPage.css';
 
 export const PricesPage = () => {
   const { t, i18n } = useTranslation();
+  const { region } = useRegion();
   const [error, setError] = useState<string | null>(null);
 
   // Fetch dados
@@ -24,8 +26,8 @@ export const PricesPage = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['my-items-prices'],
-    queryFn: fetchMyItemsPrices,
+    queryKey: ['my-items-prices', region],
+    queryFn: () => fetchMyItemsPrices(region),
     retry: 1,
   });
 
@@ -101,9 +103,8 @@ export const PricesPage = () => {
         <div className="prices-results-info">
           <p className="results-count">
             {t('common.showing', {
-              defaultValue: `Showing ${filter.resultCount} result${
-                filter.resultCount !== 1 ? 's' : ''
-              }`,
+              defaultValue: `Showing ${filter.resultCount} result${filter.resultCount !== 1 ? 's' : ''
+                }`,
             })}
           </p>
           <PricesTable
