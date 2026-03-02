@@ -14,6 +14,8 @@ import { useRegion } from "@/context/RegionContext";
 import { QuickSummary } from "./components/QuickSummary";
 import { AddItemForm } from "./components/AddItemForm";
 import { GoldPriceCard } from "./components/GoldPriceCard";
+import { fetchArbitrageOpportunities } from "@/api/albion";
+import { useQuery } from "@tanstack/react-query";
 import { ItemsListSection } from "./components/ItemsListSection";
 import { PricesTableSection } from "./components/PricesTableSection";
 import { PriceHistoryChart } from "./components/PriceHistoryChart";
@@ -62,8 +64,13 @@ export function DashboardPage() {
     myPrices,
     selectedTier,
     setSelectedTier,
-    lowestPrice,
   } = useDashboardPrices();
+
+  const arbitrageQuery = useQuery({
+    queryKey: ["arbitrage-summary", region],
+    queryFn: () => fetchArbitrageOpportunities(region),
+    refetchInterval: 1000 * 60 * 10, // 10 min é suficiente pro dashboard
+  });
 
   const {
     selectedHistoryItem,
@@ -139,8 +146,7 @@ export function DashboardPage() {
           <QuickSummary
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
-            lowestPrice={lowestPrice}
-            locale={locale}
+            opportunityCount={arbitrageQuery.data?.length || 0}
           />
 
           <GoldPriceCard region={region} />

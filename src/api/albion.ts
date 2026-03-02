@@ -199,3 +199,37 @@ export async function fetchGoldPrices(region?: string): Promise<GoldPriceRespons
     throw parseApiError(error);
   }
 }
+export interface ArbitrageOpportunity {
+  item_id: string;
+  buy_from: string;
+  buy_price: number;
+  sell_at: string;
+  sell_price: number;
+  profit: number;
+  roi: number;
+  buy_date: string;
+  sell_date: string;
+}
+
+export async function fetchArbitrageOpportunities(
+  region?: string,
+  tax: number = 0.08,
+  items?: string[],
+): Promise<ArbitrageOpportunity[]> {
+  try {
+    const params: any = {
+      region: region ?? 'europe',
+      tax,
+    };
+    if (items && items.length > 0) {
+      params.items = items;
+    }
+
+    const { data } = await api.get<ArbitrageOpportunity[]>('/albion/arbitrage', {
+      params,
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
