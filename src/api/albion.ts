@@ -173,4 +173,29 @@ export const albionAPI = {
   getUniqueItems,
   getCities,
   getRegions,
+  fetchGoldPrices,
 };
+
+export interface GoldPricePoint {
+  price: number;
+  timestamp: string;
+}
+
+export interface GoldPriceResponse {
+  current: GoldPricePoint | null;
+  previous: GoldPricePoint | null;
+  variation: number;
+  all: GoldPricePoint[];
+  region: string;
+}
+
+export async function fetchGoldPrices(region?: string): Promise<GoldPriceResponse> {
+  try {
+    const { data } = await api.get<GoldPriceResponse>('/albion/gold', {
+      params: { region: region ?? 'europe', count: 2 },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
