@@ -31,7 +31,36 @@
     border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+}
+
+.gold-card-header {
+    /* ... */
+}
+
+/* ... linhas preservadas ... */
+
+.gold-sparkline-wrapper {
+    margin: 4px -4px;
+}
+
+.gold-tooltip {
+    background: rgba(20, 28, 43, 0.95);
+    border: 1px solid rgba(255, 184, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffb800;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.gold-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .gold-card-header {

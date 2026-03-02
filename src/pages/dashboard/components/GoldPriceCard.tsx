@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchGoldPrices } from "@/api/albion";
 import { TrendingUp, TrendingDown, Coins, RefreshCw } from "lucide-react";
+import {
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    Tooltip as RechartsTooltip
+} from "recharts";
 import "./GoldPriceCard.css";
 
 interface GoldPriceCardProps {
@@ -30,9 +38,12 @@ export function GoldPriceCard({ region = "europe" }: GoldPriceCardProps) {
         return null;
     }
 
-    const { current, variation } = data;
+    const { current, variation, all } = data;
     const isUp = variation > 0;
     const isDown = variation < 0;
+
+    // Inverter o array para o gráfico (API retorna do mais recente pro mais antigo)
+    const chartData = [...all].reverse();
 
     return (
         <div className="gold-price-card">
@@ -60,15 +71,53 @@ export function GoldPriceCard({ region = "europe" }: GoldPriceCardProps) {
                     </button>
                 </div>
 
+                {/* Gráfico Sparkline */}
+                <div className="gold-sparkline-wrapper">
+                    <ResponsiveContainer width="100%" height={60}>
+                        <AreaChart data={chartData}>
+                            <defs>
+                                <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#ffb800" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#ffb800" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <XAxis dataKey="timestamp" hide />
+                            <YAxis domain={['auto', 'auto']} hide />
+                            <RechartsTooltip
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="gold-tooltip">
+                                                <span>{Number(payload[0].value).toLocaleString("pt-BR")} silver</span>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="price"
+                                stroke="#ffb800"
+                                strokeWidth={2}
+                                fillOpacity={1}
+                                fill="url(#goldGradient)"
+                                animationDuration={1500}
+                                isAnimationActive={true}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+
                 <div className="gold-card-footer">
                     <div className={`gold-variation ${isUp ? "up" : isDown ? "down" : "neutral"}`}>
                         {isUp ? <TrendingUp size={14} /> : isDown ? <TrendingDown size={14} /> : null}
                         <span>
-                            {variation !== 0 ? Math.abs(variation).toLocaleString("pt-BR") : "Sem alteração"}
+                            {variation !== 0 ? `${variation > 0 ? "+" : ""}${variation.toLocaleString("pt-BR")}` : "Sem alteração"}
                         </span>
                     </div>
                     <span className="gold-updated">
-                        Último: {new Date(current.timestamp).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(current.timestamp).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </div>
             </div>
