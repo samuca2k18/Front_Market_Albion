@@ -1,5 +1,6 @@
 // src/pages/dashboard/components/PricesTableSection.tsx
 import { useTranslation } from "react-i18next";
+import { Clock } from "lucide-react";
 
 import type { MyItemPrice } from "@/api/types";
 import { Card } from "@/components/common/Card";
@@ -7,6 +8,15 @@ import { getQualityColor, getQualityLabel } from "@/constants/qualities";
 import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { buildItemImageUrl, splitItemName, type TierFilter } from "../utils/itemFilters";
 import { TierFilter as TierFilterComponent } from "./TierFilter";
+
+function getFreshnessInfo(dateStr?: string) {
+  if (!dateStr || dateStr.startsWith("0001")) return { color: "#666", label: "—", level: "unknown" };
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const hours = diffMs / (1000 * 60 * 60);
+  if (hours < 1) return { color: "#22c55e", label: `${Math.round(hours * 60)}min`, level: "fresh" };
+  if (hours < 6) return { color: "#eab308", label: `${Math.round(hours)}h`, level: "stale" };
+  return { color: "#ef4444", label: `${Math.round(hours)}h`, level: "old" };
+}
 
 interface PricesTableSectionProps {
   myPrices: MyItemPrice[];
@@ -69,6 +79,10 @@ export function PricesTableSection({
                 <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
                   {t("prices.table.enchantment")}
                 </th>
+                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
+                  <Clock size={12} className="inline mr-1" />
+                  Frescor
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -79,66 +93,85 @@ export function PricesTableSection({
                 const enchantDisplay = enchant ? `@${enchant}` : "—";
 
                 return (
-                <tr
-                  key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
-                  className="cursor-pointer hover:bg-muted/60 transition-colors"
-                  onClick={() => onSelectHistoryItem(item.item_name)}
-                  title={t("dashboard.clickToViewHistory")}
-                >
-                  <td className="px-3 py-2 align-middle">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={buildItemImageUrl(item)}
-                        alt={item.item_name}
-                        className="h-9 w-9 rounded-md bg-black/40"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "https://render.albiononline.com/v1/item/T1_BAG.png";
-                        }}
-                      />
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {displayName}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground mt-0.5">
-                          {item.item_name}
-                        </span>
+                  <tr
+                    key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
+                    className="cursor-pointer hover:bg-muted/60 transition-colors"
+                    onClick={() => onSelectHistoryItem(item.item_name)}
+                    title={t("dashboard.clickToViewHistory")}
+                  >
+                    <td className="px-3 py-2 align-middle">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={buildItemImageUrl(item)}
+                          alt={item.item_name}
+                          className="h-9 w-9 rounded-md bg-black/40"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://render.albiononline.com/v1/item/T1_BAG.png";
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {displayName}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground mt-0.5">
+                            {item.item_name}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="px-3 py-2 align-middle">
-                    <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-xs">
-                      {item.city || "—"}
-                    </span>
-                  </td>
+                    <td className="px-3 py-2 align-middle">
+                      <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-xs">
+                        {item.city || "—"}
+                      </span>
+                    </td>
 
-                  <td className="px-3 py-2 align-middle">
-                    {typeof item.price === "number"
-                      ? `${item.price.toLocaleString(locale)} ${t(
+                    <td className="px-3 py-2 align-middle">
+                      {typeof item.price === "number"
+                        ? `${item.price.toLocaleString(locale)} ${t(
                           "dashboard.silver",
                         )}`
-                      : "—"}
-                  </td>
+                        : "—"}
+                    </td>
 
-                  <td className="px-3 py-2 align-middle">
-                    <span
-                      style={{
-                        color: getQualityColor(item.quality),
-                        fontWeight: 700,
-                        textShadow:
-                          item.quality === 5 ? "0 0 10px #FF9800" : "none",
-                      }}
-                    >
-                      {getQualityLabel(item.quality)}
-                    </span>
-                  </td>
+                    <td className="px-3 py-2 align-middle">
+                      <span
+                        style={{
+                          color: getQualityColor(item.quality),
+                          fontWeight: 700,
+                          textShadow:
+                            item.quality === 5 ? "0 0 10px #FF9800" : "none",
+                        }}
+                      >
+                        {getQualityLabel(item.quality)}
+                      </span>
+                    </td>
 
-                  <td className="px-3 py-2 align-middle">
-                    {enchantDisplay}
-                  </td>
-                </tr>
+                    <td className="px-3 py-2 align-middle">
+                      {enchantDisplay}
+                    </td>
+
+                    <td className="px-3 py-2 align-middle">
+                      {(() => {
+                        const f = getFreshnessInfo(item.updated_at);
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-xs" title={item.updated_at || "Sem data"}>
+                            <span
+                              style={{
+                                width: 8, height: 8, borderRadius: "50%",
+                                backgroundColor: f.color,
+                                boxShadow: f.level === "fresh" ? `0 0 6px ${f.color}` : "none",
+                                display: "inline-block",
+                              }}
+                            />
+                            {f.label}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                  </tr>
                 );
               })}
             </tbody>

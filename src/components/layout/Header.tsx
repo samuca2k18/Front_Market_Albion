@@ -6,11 +6,14 @@ import { HeaderNav } from "./HeaderNav";
 import { HeaderActions } from "./HeaderActions";
 import { MobileMenuToggle } from "./MobileMenuToggle";
 import { MobileMenu } from "./MobileMenu";
+import { BanditEventIndicator } from "./BanditEventIndicator";
 import "./layout.css";
 
 const navItems = [
   { label: "dashboard", path: "/dashboard", protected: true },
   { label: "prices", path: "/prices", protected: true },
+  { label: "opportunities", path: "/opportunities", protected: true },
+  { label: "killboard", path: "/killboard", protected: true },
 ];
 
 export function Header() {
@@ -33,6 +36,9 @@ export function Header() {
         {hasNavigation && (
           <HeaderNav items={availableItems} />
         )}
+
+        {/* Bandit Event Indicator */}
+        <BanditEventIndicator />
 
         {/* Right Actions */}
         <HeaderActions />

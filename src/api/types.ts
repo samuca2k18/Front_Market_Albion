@@ -97,6 +97,7 @@ export interface MyItemPrice {
   price: number;
   quality: number;
   enchantment: number;
+  updated_at?: string;
 }
 
 // === Alertas de preço ===

@@ -35,12 +35,16 @@ Interface web profissional para monitoramento inteligente de preços e inteligê
 
 - **🔐 Autenticação Segura**: Fluxo completo de signup, login e logout com tokens JWT
 - **📊 Dashboard Inteligente**: Resumo rápido de itens monitorados, preços ativos e melhor oportunidade
-- **💰 Monitoramento de Preços**: Preços em tempo real consolidados das principais cidades
-- **🔍 Busca Avançada**: Autocomplete com sugestões de itens e filtros por cidade, qualidade e encantamento
-- **📈 Histórico de Preços**: Gráficos interativos com 7 dias de histórico e variação de preço
+- **💰 Monitoramento de Preços**: Preços em tempo real com **indicador de frescor** (🟢🟡🔴)
+- **💱 Monitor de Ouro**: Preço atual, variação 24h e gráfico sparkline
+- **⚖️ Calculadora de Arbitragem**: Oportunidades de trade entre cidades com cálculo de lucro e ROI
+- **🚩 Monitor Bandit Event**: Countdown na Top Bar com animação pulsante quando ativo
+- **🗡️ Killboard**: Feed de kills em tempo real com armas, guilds e fame
+- **🔍 Busca Avançada**: Autocomplete com sugestões de itens e filtros
+- **📈 Histórico de Preços**: Gráficos interativos com 7 dias de histórico
 - **🌍 Suporte Multilíngue**: Português (PT-BR) e Inglês (EN-US)
 - **📱 Design Responsivo**: Otimizado para desktop e mobile
-- **⚡ Performance**: Construído com React 19, Vite 7 e TanStack Query para máxima eficiência
+- **⚡ Performance**: Construído com React 19, Vite 7 e TanStack Query
 
 ---
 
@@ -91,9 +95,11 @@ src/
 │  ├─ LandingPage.tsx     # Página inicial
 │  ├─ LoginPage.tsx       # Login
 │  ├─ SignupPage.tsx      # Cadastro
+│  ├─ OpportunitiesPage.tsx # Calculadora de arbitragem
+│  ├─ KillboardPage.tsx   # Feed de kills em tempo real
 │  ├─ dashboard/          # Dashboard com componentes
 │  │  ├─ DashboardPage.tsx
-│  │  ├─ components/      # QuickSummary, AddItemForm, etc
+│  │  ├─ components/      # QuickSummary, AddItemForm, GoldPriceCard, etc
 │  │  └─ hooks/           # useDashboardItems, useDashboardPrices
 │  ├─ PricesPage.tsx      # Página de preços consolidados
 │  └─ NotFoundPage.tsx    # 404
@@ -215,6 +221,40 @@ Consulte e analise todos os preços com filtros avançados:
 - **Busca por Texto**: Procure por nome do item
 - **Ordenação**: Por preço, cidade, qualidade, encantamento ou nome
 
+### ⚖️ Oportunidades de Arbitragem
+
+Página dedicada (`/opportunities`) para identificar trades lucrativos:
+
+- **Cálculo real de lucro**: Desconta taxas de mercado (8% ou 4% premium) e setup de ordem (1%)
+- **Badges de qualidade**: Normal → Obra-prima com cores distintas
+- **Filtro por lucro mínimo**: Defina o mínimo aceitável em silver
+- **ROI**: Retorno sobre investimento em cada oportunidade
+
+### 🗡️ Killboard
+
+Feed de kills em tempo real (`/killboard`):
+
+- **Killer vs Victim**: Nome, guild, aliança e Item Power
+- **Ícones de armas**: Via Albion Render Service
+- **Fame perdida**: Valor total do kill
+- **Atualização**: A cada 30 segundos
+
+### 🚩 Bandit Event
+
+Indicador na Top Bar com countdown:
+
+- **🔴 Ativo**: Animação pulsante durante o evento
+- **⚡ Em breve**: Countdown amarelo quando falta < 30min
+- **⚪ Esperando**: Discreto quando falta bastante
+
+### 🌡️ Frescor de Dados
+
+Dot colorido na tabela de preços:
+
+- 🟢 Verde: dado fresquinho (< 1h)
+- 🟡 Amarelo: morno (1-6h)
+- 🔴 Vermelho: dado obsoleto (> 6h)
+
 ### 🌍 Internacionalização
 
 - Alterne entre **Português (BR)** e **Inglês (US)** com um clique
@@ -307,10 +347,12 @@ O frontend consome a API [Market_Albion_Online](https://github.com/samuca2k18/Ma
 | GET | `/albion/search` | Buscar item por nome |
 | GET | `/albion/prices` | Preços em batch de múltiplos itens |
 | GET | `/albion/price-by-name` | Preço por nome amigável |
-| GET | `/albion/my-items-prices` | Preços dos itens do usuário |
+| GET | `/albion/my-items-prices` | Preços dos itens do usuário (com `updated_at`) |
 | GET | `/albion/history/{item_id}` | Histórico de 7 dias |
-| GET | `/albion/unique-items` | Lista de itens únicos |
-| GET | `/albion/cities` | Lista de cidades |
+| GET | `/albion/gold` | Preço do ouro e variação |
+| GET | `/albion/arbitrage` | Oportunidades de arbitragem |
+| GET | `/albion/bandit-event` | Status do Bandit Event |
+| GET | `/albion/killboard` | Feed de kills em tempo real |
 
 ---
 
@@ -389,13 +431,17 @@ Verifique `.env.local` ou deixe em branco para usar a API pública em produção
 
 ## 🎯 Roadmap
 
+- [x] Dashboard com preços em tempo real
+- [x] Monitor de preço do ouro com gráfico
+- [x] Calculadora de arbitragem com qualidade
+- [x] Killboard com feed de kills em tempo real
+- [x] Monitor de Bandit Event na Top Bar
+- [x] Indicador de frescor de dados
 - [ ] Gráficos de tendência (últimos 30 dias)
-- [ ] Notificações de alerta quando preço cair abaixo de X
 - [ ] Exportar dados em CSV/Excel
-- [ ] Comparador de preços entre cidades
+- [ ] Heatmap de preços multi-cidade
 - [ ] Modo dark/light automático (preferência do sistema)
 - [ ] PWA (instalável como app no celular)
-- [ ] Histórico de vendas do usuário
 - [ ] Previsões de preço com IA
 
 ---

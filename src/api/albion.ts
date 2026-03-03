@@ -234,3 +234,45 @@ export async function fetchArbitrageOpportunities(
     throw parseApiError(error);
   }
 }
+
+// === Bandit Event ===
+export interface BanditEventStatus {
+  status: 'active' | 'soon' | 'waiting';
+  phase: number;
+  next_event_utc: string;
+  minutes_remaining: number;
+  cycle_minutes: number;
+  event_duration_minutes: number;
+}
+
+export async function fetchBanditEvent(): Promise<BanditEventStatus> {
+  const { data } = await api.get<BanditEventStatus>('/albion/bandit-event');
+  return data;
+}
+
+// === Killboard ===
+export interface KillboardPlayer {
+  name: string;
+  guild: string;
+  alliance: string;
+  ip: number;
+  weapon: string | null;
+  death_fame?: number;
+}
+
+export interface KillEvent {
+  event_id: number;
+  timestamp: string;
+  kill_area: string;
+  total_fame: number;
+  participants: number;
+  killer: KillboardPlayer;
+  victim: KillboardPlayer;
+}
+
+export async function fetchKillboard(limit = 20): Promise<KillEvent[]> {
+  const { data } = await api.get<KillEvent[]>('/albion/killboard', {
+    params: { limit },
+  });
+  return data;
+}
