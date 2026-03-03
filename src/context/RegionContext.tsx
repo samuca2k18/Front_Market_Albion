@@ -7,6 +7,7 @@ import {
     useState,
 } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export type RegionId = 'europe' | 'west' | 'east';
 
@@ -35,6 +36,8 @@ interface RegionContextValue {
 const RegionContext = createContext<RegionContextValue | undefined>(undefined);
 
 export function RegionProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
+
     const [region, setRegionState] = useState<RegionId>(() => {
         const saved = localStorage.getItem(STORAGE_KEY) as RegionId | null;
         return saved && REGIONS.some((r) => r.id === saved) ? saved : 'europe';
@@ -43,7 +46,14 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     const setRegion = useCallback((r: RegionId) => {
         localStorage.setItem(STORAGE_KEY, r);
         setRegionState(r);
-    }, []);
+        // Limpar cache de todas as queries que dependem da região
+        // para que não mostrem dados stale da região anterior
+        queryClient.removeQueries({ queryKey: ['my-items-prices'] });
+        queryClient.removeQueries({ queryKey: ['arbitrage-summary'] });
+        queryClient.removeQueries({ queryKey: ['arbitrage-opportunities'] });
+        queryClient.removeQueries({ queryKey: ['gold-price'] });
+        queryClient.removeQueries({ queryKey: ['albion-history'] });
+    }, [queryClient]);
 
     const regionOption = useMemo(
         () => REGIONS.find((r) => r.id === region) ?? REGIONS[0],
