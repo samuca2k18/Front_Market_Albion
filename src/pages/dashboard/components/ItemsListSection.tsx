@@ -162,13 +162,13 @@ export function ItemsListSection({
                 {isDeleting
                   ? t("dashboard.removing")
                   : t("dashboard.removeSelected", {
-                      count: selectedItems.size,
-                    })}
+                    count: selectedItems.size,
+                  })}
               </button>
             )}
           </div>
 
-          <ul className="space-y-2">
+          <ul className="space-y-2" style={{ maxHeight: '420px', overflowY: 'auto' }}>
             {trackedItems.map((item) => {
               const { base } = splitItemName(item.item_name);
               const displayName =
@@ -180,11 +180,10 @@ export function ItemsListSection({
               return (
                 <li
                   key={item.id}
-                  className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${
-                    isSelected
+                  className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${isSelected
                       ? "border-primary/50 bg-primary/10"
                       : "border-border/70 bg-card/80"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <input

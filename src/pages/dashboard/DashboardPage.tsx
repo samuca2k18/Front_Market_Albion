@@ -157,19 +157,17 @@ export function DashboardPage() {
         {/* Bottom: lista + preços / gráfico + alertas */}
         <section className="grid gap-6 lg:grid-cols-3">
           {/* Itens cadastrados */}
-          <div className="lg:col-span-1 flex flex-col gap-6" style={{ maxHeight: 'calc(100vh - 120px)' }}>
-            <div className="overflow-y-auto flex-1" style={{ maxHeight: '500px' }}>
-              <ItemsListSection
-                trackedItems={trackedItems}
-                selectedItems={selectedItems}
-                locale={locale}
-                isDeleting={isDeleting}
-                onToggleSelect={handleToggleSelect}
-                onSelectAll={handleSelectAll}
-                onDeleteSelected={handleDeleteSelected}
-                onDeleteSingle={handleDeleteSingle}
-              />
-            </div>
+          <div className="lg:col-span-1 space-y-6">
+            <ItemsListSection
+              trackedItems={trackedItems}
+              selectedItems={selectedItems}
+              locale={locale}
+              isDeleting={isDeleting}
+              onToggleSelect={handleToggleSelect}
+              onSelectAll={handleSelectAll}
+              onDeleteSelected={handleDeleteSelected}
+              onDeleteSingle={handleDeleteSingle}
+            />
 
             <PriceAlertsSection />
           </div>
