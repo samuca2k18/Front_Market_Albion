@@ -46,13 +46,12 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     const setRegion = useCallback((r: RegionId) => {
         localStorage.setItem(STORAGE_KEY, r);
         setRegionState(r);
-        // Limpar cache de todas as queries que dependem da região
-        // para que não mostrem dados stale da região anterior
-        queryClient.removeQueries({ queryKey: ['my-items-prices'] });
-        queryClient.removeQueries({ queryKey: ['arbitrage-summary'] });
-        queryClient.removeQueries({ queryKey: ['arbitrage-opportunities'] });
-        queryClient.removeQueries({ queryKey: ['gold-price'] });
-        queryClient.removeQueries({ queryKey: ['albion-history'] });
+        // Invalida queries que dependem da região para refetch automático
+        queryClient.invalidateQueries({ queryKey: ['my-items-prices'] });
+        queryClient.invalidateQueries({ queryKey: ['arbitrage-summary'] });
+        queryClient.invalidateQueries({ queryKey: ['arbitrage-opportunities'] });
+        queryClient.invalidateQueries({ queryKey: ['gold-price'] });
+        queryClient.invalidateQueries({ queryKey: ['albion-history'] });
     }, [queryClient]);
 
     const regionOption = useMemo(
