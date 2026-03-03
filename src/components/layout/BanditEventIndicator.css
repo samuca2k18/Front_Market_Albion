@@ -1,12 +1,12 @@
 .bandit-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
+    gap: 5px;
+    padding: 3px 10px;
     border-radius: 100px;
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     cursor: default;
     transition: all 0.3s ease;

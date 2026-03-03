@@ -17,9 +17,9 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="hidden md:flex items-center gap-3">
+    <div className="hidden md:flex items-center gap-2">
       {/* Idioma + Região + Notificações */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <LanguageSwitcher />
         <RegionSwitcher />
         <NotificationsBell />
@@ -52,21 +52,21 @@ function HeaderUserMenu({ user, onLogout }: any) {
 
   return (
     <>
-      <div className="flex items-center gap-3">
-        <div className="relative h-9 w-9 rounded-full bg-accent/20 flex items-center justify-center text-sm font-semibold text-accent">
+      <div className="flex items-center gap-2">
+        <div className="relative h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center text-xs font-semibold text-accent">
           <span>{firstLetter}</span>
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background" />
+          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border-2 border-background" />
         </div>
         <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground leading-tight">
             {t("header.loggedAs")}
           </span>
-          <span className="text-sm font-medium truncate max-w-[140px]">
+          <span className="text-xs font-medium truncate max-w-[110px]">
             {user.username}
           </span>
         </div>
       </div>
-      <Button variant="outline" size="sm" onClick={onLogout} className="ml-1">
+      <Button variant="outline" size="sm" onClick={onLogout} className="ml-1 text-xs h-7 px-2">
         {t("header.logout")}
       </Button>
     </>

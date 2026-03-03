@@ -15,7 +15,7 @@ export function HeaderNav({ items }: HeaderNavProps) {
   const { t } = useTranslation();
 
   return (
-    <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+    <nav className="hidden md:flex items-center gap-4 text-[13px] font-medium">
       {items.map((item) => (
         <NavLink
           key={item.path}

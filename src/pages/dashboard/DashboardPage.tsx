@@ -140,7 +140,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Top: Resumo + Ouro + Adicionar item */}
         <section className="grid gap-6 md:grid-cols-3">
           <QuickSummary
@@ -157,21 +157,21 @@ export function DashboardPage() {
         {/* Bottom: lista + preços / gráfico + alertas */}
         <section className="grid gap-6 lg:grid-cols-3">
           {/* Itens cadastrados */}
-          <div className="lg:col-span-1">
-            <ItemsListSection
-              trackedItems={trackedItems}
-              selectedItems={selectedItems}
-              locale={locale}
-              isDeleting={isDeleting}
-              onToggleSelect={handleToggleSelect}
-              onSelectAll={handleSelectAll}
-              onDeleteSelected={handleDeleteSelected}
-              onDeleteSingle={handleDeleteSingle}
-            />
-
-            <div className="mt-6">
-              <PriceAlertsSection />
+          <div className="lg:col-span-1 flex flex-col gap-6" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+            <div className="overflow-y-auto flex-1" style={{ maxHeight: '500px' }}>
+              <ItemsListSection
+                trackedItems={trackedItems}
+                selectedItems={selectedItems}
+                locale={locale}
+                isDeleting={isDeleting}
+                onToggleSelect={handleToggleSelect}
+                onSelectAll={handleSelectAll}
+                onDeleteSelected={handleDeleteSelected}
+                onDeleteSingle={handleDeleteSingle}
+              />
             </div>
+
+            <PriceAlertsSection />
           </div>
 
           {/* Preços em tempo real + histórico */}
