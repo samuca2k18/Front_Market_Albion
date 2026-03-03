@@ -21,6 +21,7 @@
     "prices": "Prices",
     "opportunities": "Opportunities",
     "killboard": "Killboard",
+    "contribute": "Contribute",
     "tagline": "Market Intelligence",
     "loggedAs": "Logged as",
     "logout": "Logout",
@@ -180,5 +181,29 @@
     "placeholder": "Search item...",
     "resultsTitle": "Search Results",
     "openModal": "Open results"
+  },
+  "dataClient": {
+    "badge": "Community",
+    "heroTitle": "Help improve market data quality",
+    "heroDesc": "Market prices depend on players using the Albion Online Data Client. The more players install it, the fresher the data everyone gets.",
+    "activeClients": "active clients",
+    "whyTitle": "Why install it?",
+    "why1Title": "Near real-time data",
+    "why1Desc": "Every item you browse in the market is sent to the community. Other players see prices almost instantly.",
+    "why2Title": "More city coverage",
+    "why2Desc": "More players in different cities means a more complete price map across the whole server.",
+    "why3Title": "Open-source project",
+    "why3Desc": "The Albion Data Project is free, no ads, no telemetry. Just market data for the whole community.",
+    "stepsTitle": "How to install",
+    "step1Title": "Download the installer",
+    "step1Desc": "Go to albion-online-data.com and download the installer for Windows, Mac or Linux.",
+    "step2Title": "Install and open the app",
+    "step2Desc": "Run the installer and open the Albion Online Data Client. It runs in the background.",
+    "step3Title": "Launch the game",
+    "step3Desc": "Open Albion Online normally. The client auto-detects and starts collecting data.",
+    "step4Title": "Visit the markets",
+    "step4Desc": "Every time you open the market in any city, prices are captured and shared. Done!",
+    "ctaBtn": "Download Albion Data Client",
+    "ctaNote": "Free, open-source and safe. Compatible with Albion Online's Terms of Service."
   }
 }

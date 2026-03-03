@@ -16,6 +16,7 @@ import { OpportunitiesPage } from './pages/OpportunitiesPage';
 import { KillboardPage } from './pages/KillboardPage';
 import { PricesPage } from './pages/PricesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { DataClientPage } from './pages/DataClientPage';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import { GuestRoute } from './components/routing/GuestRoute';
 
@@ -31,6 +32,7 @@ function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="signup" element={<SignupPage />} />
             <Route path="verify-email" element={<VerifyEmailPage />} />
+            <Route path="data-client" element={<DataClientPage />} />
           </Route>
 
           {/* Rotas protegidas (somente logado) */}

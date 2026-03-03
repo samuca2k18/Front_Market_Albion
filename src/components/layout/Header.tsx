@@ -14,6 +14,7 @@ const navItems = [
   { label: "prices", path: "/prices", protected: true },
   { label: "opportunities", path: "/opportunities", protected: true },
   { label: "killboard", path: "/killboard", protected: true },
+  { label: "contribute", path: "/data-client", protected: false },
 ];
 
 export function Header() {
