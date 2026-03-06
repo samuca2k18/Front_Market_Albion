@@ -139,9 +139,9 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top: Resumo + Ouro + Adicionar item */}
+    <div className="bg-background">
+      <div className="app-container py-8 space-y-10">
+        {/* Top Section: Quick Summary, Gold, and Add Item */}
         <section className="grid gap-6 md:grid-cols-3">
           <QuickSummary
             trackedCount={trackedItems.length}

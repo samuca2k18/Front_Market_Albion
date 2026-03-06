@@ -1,9 +1,39 @@
 // src/pages/dashboard/components/ItemsListSection.tsx
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Trash2, BellRing, Info, ImageOff, AlertTriangle } from "lucide-react";
 
 import type { Item } from "@/api/types";
-import { Card } from "@/components/common/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 import {
   getItemDisplayNameWithEnchantment,
   getItemDisplayNameWithEnchantmentAsync,
@@ -33,14 +63,21 @@ export function ItemsListSection({
 }: ItemsListSectionProps) {
   const { t, i18n } = useTranslation();
   const [displayNames, setDisplayNames] = useState<Record<number, string>>({});
+
+  // Modais
   const [alertModalItem, setAlertModalItem] = useState<{
     item: Item;
     displayName: string;
   } | null>(null);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
   const [alertPriceInput, setAlertPriceInput] = useState("");
   const [alertError, setAlertError] = useState<string | null>(null);
 
-  // Resolve nomes respeitando o idioma atual e cacheando no estado
   useEffect(() => {
     let cancelled = false;
 
@@ -64,7 +101,6 @@ export function ItemsListSection({
             );
             return [item.id, name] as const;
           } catch {
-            // Fallback rápido para não quebrar UI
             const { base, enchant } = splitItemName(baseName);
             const fallback = getItemDisplayNameWithEnchantment(base);
             const finalName = enchant ? `${fallback} @${enchant}` : fallback;
@@ -116,170 +152,168 @@ export function ItemsListSection({
     closeAlertModal();
   };
 
+  const allSelected = trackedItems.length > 0 && selectedItems.size === trackedItems.length;
+
   return (
-    <Card
-      title={t("dashboard.registeredItems")}
-      description={t("dashboard.registeredItemsDesc")}
-    >
-      {trackedItems.length === 0 ? (
-        <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-          {t("dashboard.noItemsYet")}
-          <br />
-          {t("dashboard.addFirstItemHint")}
+    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm flex flex-col h-full">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-xl font-bold tracking-tight">
+              {t("dashboard.registeredItems")}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground mt-1">
+              {t("dashboard.registeredItemsDesc")}
+            </CardDescription>
+          </div>
+          <BellRing className="text-primary w-5 h-5 opacity-50" />
         </div>
-      ) : (
-        <>
-          {/* Controles de seleção */}
-          <div className="mt-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="select-all"
-                checked={
-                  trackedItems.length > 0 &&
-                  selectedItems.size === trackedItems.length
-                }
-                onChange={onSelectAll}
-                className="h-4 w-4 rounded border-border cursor-pointer accent-primary"
-              />
-              <label
-                htmlFor="select-all"
-                className="text-sm text-muted-foreground cursor-pointer"
-              >
-                {selectedItems.size === trackedItems.length
-                  ? t("dashboard.deselectAll")
-                  : t("dashboard.selectAll")}
-              </label>
+      </CardHeader>
+
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        {trackedItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-10 px-4 rounded-xl border border-dashed border-border/40 bg-background/20 text-center animate-pulse">
+            <Info className="w-8 h-8 text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground font-medium">
+              {t("dashboard.noItemsYet")}
+            </p>
+            <p className="text-[11px] text-muted-foreground/60 mt-1 uppercase tracking-widest">
+              {t("dashboard.addFirstItemHint")}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4 sticky top-0 bg-transparent z-10 py-1">
+              <div className="flex items-center gap-2 group cursor-pointer" onClick={onSelectAll}>
+                <Checkbox
+                  id="select-all"
+                  checked={allSelected}
+                  onCheckedChange={onSelectAll}
+                  className="border-border/60 group-hover:border-primary/60 transition-colors"
+                />
+                <Label
+                  htmlFor="select-all"
+                  className="text-xs font-bold text-muted-foreground uppercase tracking-widest cursor-pointer group-hover:text-primary/80 transition-colors"
+                >
+                  {allSelected ? t("dashboard.deselectAll") : t("dashboard.selectAll")}
+                </Label>
+              </div>
+
+              {selectedItems.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowBulkDeleteConfirm(true)}
+                  disabled={isDeleting}
+                  className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-destructive/20 animate-fade-in"
+                >
+                  {isDeleting ? t("dashboard.removing") : t("dashboard.removeSelected", { count: selectedItems.size })}
+                </Button>
+              )}
             </div>
 
-            {selectedItems.size > 0 && (
-              <button
-                type="button"
-                onClick={onDeleteSelected}
-                disabled={isDeleting}
-                className="text-xs rounded-full border border-destructive/30 px-3 py-1.5 text-destructive hover:bg-destructive/10 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isDeleting
-                  ? t("dashboard.removing")
-                  : t("dashboard.removeSelected", {
-                    count: selectedItems.size,
-                  })}
-              </button>
-            )}
-          </div>
+            <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar max-h-[450px]">
+              {trackedItems.map((item) => {
+                const { base } = splitItemName(item.item_name);
+                const displayName = displayNames[item.id] ?? item.display_name ?? getItemDisplayNameWithEnchantment(base);
+                const isSelected = selectedItems.has(item.id);
 
-          <ul className="space-y-2" style={{ maxHeight: '420px', overflowY: 'auto' }}>
-            {trackedItems.map((item) => {
-              const { base } = splitItemName(item.item_name);
-              const displayName =
-                displayNames[item.id] ??
-                item.display_name ??
-                getItemDisplayNameWithEnchantment(base);
-              const isSelected = selectedItems.has(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className={`group flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${isSelected
+                        ? "border-primary/50 bg-primary/10 shadow-inner"
+                        : "border-border/40 bg-background/40 hover:bg-background/80 hover:border-border/80"
+                      }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleSelect(item.id)}
+                        className="border-border/40"
+                      />
 
-              return (
-                <li
-                  key={item.id}
-                  className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors ${isSelected
-                      ? "border-primary/50 bg-primary/10"
-                      : "border-border/70 bg-card/80"
-                    }`}
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => onToggleSelect(item.id)}
-                      className="h-4 w-4 rounded border-border cursor-pointer accent-primary flex-shrink-0"
-                    />
+                      <div className="relative">
+                        <img
+                          src={buildItemImageUrlFromName(item.item_name)}
+                          alt={item.item_name}
+                          className="h-10 w-10 rounded-lg bg-black/40 border border-border/20 group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                          }}
+                        />
+                        <div className="fallback-icon hidden absolute inset-0 flex items-center justify-center bg-muted rounded-lg border border-border/20">
+                          <ImageOff className="w-5 h-5 text-muted-foreground/30" />
+                        </div>
+                      </div>
 
-                    <img
-                      src={buildItemImageUrlFromName(item.item_name)}
-                      alt={item.item_name}
-                      className="h-9 w-9 rounded-md bg-black/40 flex-shrink-0"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://render.albiononline.com/v1/item/T1_BAG.png";
-                      }}
-                    />
-
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="font-medium truncate">
-                        {displayName}
-                      </span>
-
-                      <span className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                        {item.item_name}
-                      </span>
-
-                      {item.created_at && (
-                        <span className="text-[11px] text-muted-foreground mt-0.5">
-                          {t("dashboard.addedAt")}{" "}
-                          {new Date(item.created_at).toLocaleDateString(locale)}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-bold tracking-tight truncate max-w-[120px] sm:max-w-none">
+                          {displayName}
                         </span>
-                      )}
+                        <span className="text-[10px] font-mono font-medium text-muted-foreground/50 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                          {item.item_name}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter mt-0.5">
+                          {item.created_at && `${t("dashboard.addedAt")} ${new Date(item.created_at).toLocaleDateString(locale)}`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full text-primary/70 hover:text-primary hover:bg-primary/10"
+                        onClick={() => {
+                          setAlertModalItem({ item, displayName });
+                          setAlertPriceInput("");
+                          setAlertError(null);
+                        }}
+                        title={t("dashboard.addPriceAlert")}
+                      >
+                        <BellRing className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteConfirmItem({ id: item.id, name: displayName })}
+                        disabled={isDeleting}
+                        title={t("dashboard.removeItem")}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAlertModalItem({ item, displayName });
-                        setAlertPriceInput("");
-                        setAlertError(null);
-                      }}
-                      className="text-[11px] rounded-full border border-primary/40 px-3 py-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {t("dashboard.addPriceAlert")}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => onDeleteSingle(item.id)}
-                      disabled={isDeleting}
-                      className="text-xs rounded-full border border-destructive/30 px-3 py-1 text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={t("dashboard.removeItemButtonTooltip")}
-                    >
-                      {t("dashboard.removeItem")}
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      )}
-
-      {alertModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="glass max-w-sm w-full mx-4 rounded-2xl border border-border/70 bg-background/95 p-5 shadow-xl">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  {t("dashboard.alertModalTitle")}
-                </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t("dashboard.alertModalDescription", {
-                    item: alertModalItem.displayName,
-                  })}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeAlertModal}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                {t("common.close")}
-              </button>
+                );
+              })}
             </div>
+          </>
+        )}
+      </CardContent>
 
-            <div className="space-y-2 mb-3">
-              <label className="text-xs font-medium text-foreground">
+      {/* ADICIONAR ALERTA DIALOG */}
+      <Dialog open={!!alertModalItem} onOpenChange={(open) => !open && closeAlertModal()}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border/60 backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black tracking-tight">{t("dashboard.alertModalTitle")}</DialogTitle>
+            <DialogDescription className="text-muted-foreground font-medium pt-2">
+              {t("dashboard.alertModalDescription", {
+                item: alertModalItem?.displayName,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="price" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {t("dashboard.alertModalPriceLabel")}
-              </label>
-              <input
+              </Label>
+              <Input
+                id="price"
                 type="text"
                 inputMode="decimal"
                 value={alertPriceInput}
@@ -287,33 +321,96 @@ export function ItemsListSection({
                   setAlertPriceInput(e.target.value);
                   if (alertError) setAlertError(null);
                 }}
-                placeholder={(t("dashboard.alertModalPricePlaceholder") as string) || "150000"}
-                className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/60"
+                placeholder={(t("dashboard.alertModalPricePlaceholder") as string) || "150.000"}
+                className="bg-background/50 border-border/40 focus:ring-primary/40 focus:border-primary/60 font-mono"
               />
               {alertError && (
-                <p className="text-[11px] text-destructive">{alertError}</p>
+                <p className="text-[11px] font-bold text-destructive animate-pulse mt-1">
+                  {alertError}
+                </p>
               )}
             </div>
-
-            <div className="flex justify-end gap-2 mt-2">
-              <button
-                type="button"
-                onClick={closeAlertModal}
-                className="text-xs rounded-full border border-border/70 px-3 py-1.5 text-muted-foreground hover:bg-background/80"
-              >
-                {t("common.cancel")}
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmAlert}
-                className="text-xs rounded-full bg-primary px-3 py-1.5 text-primary-foreground hover:bg-primary/90"
-              >
-                {t("dashboard.alertModalConfirm")}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={closeAlertModal} className="font-bold uppercase tracking-widest text-[10px]">
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleConfirmAlert} className="bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">
+              {t("dashboard.alertModalConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* CONFIRMAR EXCLUSÃO ÚNICA */}
+      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => !open && setDeleteConfirmItem(null)}>
+        <AlertDialogContent className="bg-card border-border/60 backdrop-blur-xl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-destructive/10 text-destructive">
+                <AlertTriangle size={20} />
+              </div>
+              <AlertDialogTitle className="text-xl font-black tracking-tight">
+                {t("dashboard.confirmDeleteTitle") || "Remover Item?"}
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              {t("dashboard.confirmDeleteDescription", { item: deleteConfirmItem?.name }) ||
+                `Você tem certeza que deseja parar de rastrear o item "${deleteConfirmItem?.name}"?`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="font-bold uppercase tracking-widest text-[10px] border-border/40">
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-destructive/20"
+              onClick={() => {
+                if (deleteConfirmItem) {
+                  onDeleteSingle(deleteConfirmItem.id);
+                  setDeleteConfirmItem(null);
+                }
+              }}
+            >
+              {t("common.remove") || "Remover"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* CONFIRMAR EXCLUSÃO MÚLTIPLA */}
+      <AlertDialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+        <AlertDialogContent className="bg-card border-border/60 backdrop-blur-xl">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-destructive/10 text-destructive">
+                <Trash2 size={20} />
+              </div>
+              <AlertDialogTitle className="text-xl font-black tracking-tight">
+                {t("dashboard.confirmDeleteMultipleTitle") || "Remover selecionados?"}
+              </AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              {t("dashboard.confirmDeleteMultiple", { count: selectedItems.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="font-bold uppercase tracking-widest text-[10px] border-border/40">
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-destructive/20"
+              onClick={() => {
+                onDeleteSelected();
+                setShowBulkDeleteConfirm(false);
+              }}
+            >
+              {t("common.remove") || "Remover Todos"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -10,24 +10,32 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { LineChart as LineChartIcon, TrendingUp, TrendingDown, Clock, Info } from "lucide-react";
 
 import type { ChartPoint } from "../utils/chartFormatters";
 
 type RangeOption = "1D" | "5D" | "1M" | "6M" | "YTD" | "1A" | "5A" | "MAX";
 
-// ⚠️ seu backend hoje parece limitar em 30 dias
 const BACKEND_MAX_DAYS = 30;
 
 const RANGE_OPTIONS: RangeOption[] = ["1D", "5D", "1M", "6M", "YTD", "1A", "5A", "MAX"];
 const RANGE_LABEL: Record<RangeOption, string> = {
-  "1D": "1 D",
-  "5D": "5 D",
-  "1M": "1 M",
-  "6M": "6 M",
+  "1D": "1D",
+  "5D": "5D",
+  "1M": "1M",
+  "6M": "6M",
   "YTD": "YTD",
-  "1A": "1 A",
-  "5A": "5 A",
-  "MAX": "Máx",
+  "1A": "1A",
+  "5A": "5A",
+  "MAX": "MÁX",
 };
 
 function isLongRange(r: RangeOption) {
@@ -42,14 +50,6 @@ interface PriceHistoryChartProps {
     isError: boolean;
   };
   getItemDisplayName: (name: string) => string;
-
-  /**
-   * Opcional: se você quiser que ao clicar nos botões o dashboard
-   * refaça o fetch com days/resolution diferentes.
-   *
-   * Exemplo de implementação no pai:
-   * onRangeChange={(range) => setRange(range)}
-   */
   onRangeChange?: (range: RangeOption) => void;
 }
 
@@ -63,19 +63,11 @@ export function PriceHistoryChart({
   const { t } = useTranslation();
   const [range, setRange] = useState<RangeOption>("1M");
 
-  // ✅ se seu dashboard ainda não refaz fetch por range, pelo menos
-  // filtramos “visualmente” pegando o final do array.
   const filteredData = useMemo(() => {
     if (!chartData?.length) return [];
-
-    // heurística simples (depende do seu formatter):
-    // se for 1D: pega últimos ~24 pontos
-    // se for 5D: últimos ~120 pontos
-    // se for 1M: últimos ~720 pontos
-    // OBS: isso é apenas visual, o ideal é o backend devolver por range.
     if (range === "1D") return chartData.slice(-24);
     if (range === "5D") return chartData.slice(-120);
-    return chartData; // 1M e demais ficam como veio
+    return chartData;
   }, [chartData, range]);
 
   const stats = useMemo(() => {
@@ -99,212 +91,135 @@ export function PriceHistoryChart({
 
   const handleRange = (r: RangeOption) => {
     setRange(r);
-    onRangeChange?.(r); // se o pai implementar, refaz fetch
+    onRangeChange?.(r);
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
-
     const v = payload[0]?.value;
     return (
-      <div
-        style={{
-          background: "hsl(var(--card))",
-          border: "1px solid hsl(var(--border))",
-          borderRadius: 14,
-          padding: 12,
-          boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
-          minWidth: 210,
-          color: "hsl(var(--foreground))",
-        }}
-      >
-        <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 6 }}>
+      <div className="bg-popover/90 border border-border/60 p-3 rounded-xl backdrop-blur-md shadow-2xl min-w-[180px]">
+        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 border-b border-border/40 pb-1">
           {label}
         </div>
-        <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.2 }}>
-          {Number(v).toLocaleString("pt-BR")}{" "}
-          <span style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--muted-foreground))" }}>
-            silver
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-xl font-black tracking-tighter text-foreground">
+            {Number(v).toLocaleString("pt-BR")}
           </span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase">silver</span>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="mt-6" style={{ minWidth: 0 }}>
-      {/* Header + botões */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-          marginBottom: 10,
-          minWidth: 0,
-        }}
-      >
-        <h3 className="text-sm font-semibold mb-0" style={{ minWidth: 0 }}>
-          {t("dashboard.priceHistory")}{" "}
-          <span className="text-muted-foreground" style={{ display: "inline-block", maxWidth: 520, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {title}
-          </span>
-        </h3>
+    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm overflow-hidden animate-fade-up">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <LineChartIcon className="w-4 h-4 text-primary opacity-70" />
+              {t("dashboard.priceHistory")}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground truncate max-w-[300px] mt-0.5 font-medium">
+              {title}
+            </CardDescription>
+          </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: 6,
-            borderRadius: 999,
-            border: "1px solid hsl(var(--border))",
-            background: "hsla(220, 30%, 10%, 0.55)",
-            backdropFilter: "blur(10px)",
-            overflowX: "auto",
-            maxWidth: "100%",
-            minWidth: 0,
-          }}
-        >
-          {RANGE_OPTIONS.map((opt) => {
-            const active = opt === range;
-            const disabled = isLongRange(opt) && BACKEND_MAX_DAYS <= 30;
+          <div className="flex items-center gap-1 bg-background/40 p-1 rounded-full border border-border/40 overflow-x-auto no-scrollbar">
+            {RANGE_OPTIONS.map((opt) => {
+              const active = opt === range;
+              const disabled = isLongRange(opt) && BACKEND_MAX_DAYS <= 30;
 
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => !disabled && handleRange(opt)}
-                disabled={disabled}
-                title={disabled ? `Backend ainda limita a ${BACKEND_MAX_DAYS} dias.` : ""}
-                style={{
-                  border: "none",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  padding: "8px 12px",
-                  borderRadius: 999,
-                  fontWeight: 900,
-                  fontSize: 13,
-                  whiteSpace: "nowrap",
-                  opacity: disabled ? 0.35 : 1,
-                  background: active ? "hsl(var(--primary))" : "transparent",
-                  color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
-                }}
-              >
-                {RANGE_LABEL[opt]}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => !disabled && handleRange(opt)}
+                  disabled={disabled}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${active
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                      : disabled
+                        ? "opacity-20 cursor-not-allowed"
+                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    }`}
+                  title={disabled ? `Indisponível (max ${BACKEND_MAX_DAYS}d)` : ""}
+                >
+                  {RANGE_LABEL[opt]}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Estados */}
-      {historyQuery.isLoading && (
-        <p className="text-sm text-muted-foreground">{t("dashboard.loadingChart")}</p>
-      )}
-
-      {historyQuery.isError && (
-        <p className="text-sm text-destructive">{t("dashboard.errorLoadingHistory")}</p>
-      )}
-
-      {!historyQuery.isLoading && !historyQuery.isError && filteredData.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t("dashboard.insufficientData")}</p>
-      )}
-
-      {/* Cards de stats */}
-      {!historyQuery.isLoading && !historyQuery.isError && stats && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: 10,
-            marginBottom: 12,
-            minWidth: 0,
-          }}
-        >
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 14,
-              border: "1px solid hsl(var(--border))",
-              background: "hsla(220, 30%, 10%, 0.55)",
-              backdropFilter: "blur(10px)",
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Variação</div>
-            <div
-              style={{
-                marginTop: 4,
-                fontSize: 16,
-                fontWeight: 900,
-                color: stats.isPositive ? "hsl(154 80% 52%)" : "hsl(0 84% 60%)",
-              }}
-            >
-              {stats.isPositive ? "+" : ""}
-              {stats.change.toLocaleString("pt-BR")} silver
-              {stats.percent !== null ? ` (${stats.isPositive ? "+" : ""}${stats.percent}%)` : ""}
+      <CardContent>
+        {/* States / Error / Loading */}
+        <div className="relative min-h-[350px] flex flex-col">
+          {historyQuery.isLoading ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/10 backdrop-blur-[2px] z-10">
+              <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                {t("dashboard.loadingChart")}
+              </p>
             </div>
-          </div>
-
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 14,
-              border: "1px solid hsl(var(--border))",
-              background: "hsla(220, 30%, 10%, 0.55)",
-              backdropFilter: "blur(10px)",
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Mín / Máx</div>
-            <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: "hsl(var(--foreground))" }}>
-              {stats.min.toLocaleString("pt-BR")} • {stats.max.toLocaleString("pt-BR")}
+          ) : historyQuery.isError ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-destructive z-10 bg-destructive/5">
+              <TrendingDown className="w-10 h-10 mb-2 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">{t("dashboard.errorLoadingHistory")}</p>
             </div>
-          </div>
+          ) : filteredData.length === 0 ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground z-10 bg-muted/5">
+              <Info className="w-10 h-10 mb-2 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">{t("dashboard.insufficientData")}</p>
+            </div>
+          ) : null}
 
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 14,
-              border: "1px solid hsl(var(--border))",
-              background: "hsla(220, 30%, 10%, 0.55)",
-              backdropFilter: "blur(10px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 10,
-              minWidth: 0,
-            }}
-          >
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Período</div>
-              <div style={{ marginTop: 4, fontSize: 16, fontWeight: 900, color: "hsl(var(--foreground))" }}>
-                {range}
+          {/* Stats Bar */}
+          {!historyQuery.isLoading && !historyQuery.isError && stats && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+              <div className="bg-background/40 border border-border/20 rounded-xl p-3 flex flex-col shadow-inner">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Variação</span>
+                <div className={`flex items-baseline gap-1.5 font-black tracking-tighter ${stats.isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                  <span className="text-lg">{stats.isPositive ? "+" : ""}{stats.change.toLocaleString("pt-BR")}</span>
+                  <span className="text-[10px] opacity-80 uppercase">Silver</span>
+                  {stats.percent !== null && (
+                    <Badge variant="outline" className={`ml-1 text-[9px] font-black px-1.5 h-4 border-none ${stats.isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+                      {stats.isPositive ? "↑" : "↓"} {stats.percent}%
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-background/40 border border-border/20 rounded-xl p-3 flex flex-col shadow-inner">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Sessão (Mín/Máx)</span>
+                <div className="flex items-center gap-2 font-black tracking-tighter text-foreground overflow-hidden whitespace-nowrap">
+                  <span className="text-lg truncate">{stats.min.toLocaleString("pt-BR")}</span>
+                  <span className="text-muted-foreground/30">•</span>
+                  <span className="text-lg truncate">{stats.max.toLocaleString("pt-BR")}</span>
+                </div>
+              </div>
+
+              <div className="hidden sm:flex bg-background/40 border border-border/20 rounded-xl p-3 flex-col justify-between shadow-inner group overflow-hidden relative">
+                <div className="flex justify-between items-start z-10">
+                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sinal de Tendência</span>
+                  {stats.isPositive ? <TrendingUp size={14} className="text-emerald-400" /> : <TrendingDown size={14} className="text-red-400" />}
+                </div>
+                <div className="text-xl font-black tracking-tighter z-10">
+                  {stats.isPositive ? "ALTA" : "BAIXA"}
+                </div>
+                {stats.isPositive ? (
+                  <TrendingUp className="absolute -right-4 -bottom-4 w-16 h-16 text-emerald-500/5 group-hover:scale-125 transition-transform" />
+                ) : (
+                  <TrendingDown className="absolute -right-4 -bottom-4 w-16 h-16 text-red-500/5 group-hover:scale-125 transition-transform" />
+                )}
               </div>
             </div>
-            <div style={{ fontSize: 22 }}>{stats.isPositive ? "📈" : "📉"}</div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Gráfico */}
-      {!historyQuery.isLoading && !historyQuery.isError && filteredData.length > 0 && (
-        <div
-          style={{
-            width: "100%",
-            minWidth: 0,
-            height: 320,
-            minHeight: 320,
-            borderRadius: 18,
-            border: "1px solid hsl(var(--border))",
-            background: "linear-gradient(140deg, hsla(222, 26%, 12%, 1), hsla(220, 26%, 8%, 1))",
-            boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ width: "100%", height: 270, minHeight: 270, minWidth: 0, padding: "14px 10px 0 10px" }}>
-            <ResponsiveContainer width="100%" height="100%">
+          {/* Main Chart Rendering */}
+          <div className="flex-1 w-full bg-background/20 rounded-2xl border border-border/20 p-4 pt-6 group">
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={filteredData}>
                 <defs>
                   <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
@@ -313,19 +228,20 @@ export function PriceHistoryChart({
                   </linearGradient>
                 </defs>
 
-                <CartesianGrid strokeDasharray="3 3" opacity={0.18} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.1} />
                 <XAxis
                   dataKey="time"
-                  tick={{ fontSize: 10, fill: "hsla(210, 40%, 96%, 0.65)" }}
+                  tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))", fontWeight: 700 }}
                   tickLine={false}
                   axisLine={false}
                   interval="preserveStartEnd"
+                  dy={10}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: "hsla(210, 40%, 96%, 0.65)" }}
+                  tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))", fontWeight: 700 }}
                   tickLine={false}
                   axisLine={false}
-                  width={54}
+                  width={45}
                   tickFormatter={(v) => {
                     const n = Number(v);
                     if (!Number.isFinite(n)) return "";
@@ -334,38 +250,40 @@ export function PriceHistoryChart({
                     return `${n}`;
                   }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
+                />
 
                 <Line
                   type="monotone"
                   dataKey="avg_price"
                   dot={false}
-                  strokeWidth={2.5}
+                  strokeWidth={3}
                   stroke="url(#lineStroke)"
+                  animationDuration={1500}
+                  isAnimationActive={true}
+                  activeDot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
 
-          <div
-            style={{
-              padding: "10px 14px",
-              fontSize: 12,
-              color: "hsla(210, 40%, 96%, 0.7)",
-              borderTop: "1px solid hsla(220, 24%, 22%, 0.7)",
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <span>{filteredData.length} pontos</span>
-            <span style={{ opacity: 0.9 }}>
-              {isLongRange(range) && BACKEND_MAX_DAYS <= 30 ? "Longo indisponível (max 30d)" : ""}
-            </span>
+            <div className="flex justify-between items-center mt-4 px-2">
+              <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
+                <Clock className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  {filteredData.length} pontos de dados
+                </span>
+              </div>
+              {range !== "MAX" && isLongRange(range) && BACKEND_MAX_DAYS <= 30 && (
+                <span className="text-[9px] font-bold text-amber-500/60 uppercase tracking-widest bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">
+                  Longo Prazo Indisponível
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

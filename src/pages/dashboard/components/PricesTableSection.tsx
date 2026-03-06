@@ -1,9 +1,24 @@
 // src/pages/dashboard/components/PricesTableSection.tsx
 import { useTranslation } from "react-i18next";
-import { Clock } from "lucide-react";
+import { Clock, MousePointer2, ThermometerSnowflake, Search } from "lucide-react";
 
 import type { MyItemPrice } from "@/api/types";
-import { Card } from "@/components/common/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { getQualityColor, getQualityLabel } from "@/constants/qualities";
 import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { buildItemImageUrl, splitItemName, type TierFilter } from "../utils/itemFilters";
@@ -40,144 +55,155 @@ export function PricesTableSection({
   const { t } = useTranslation();
 
   return (
-    <Card
-      title={t("dashboard.realtimePrices")}
-      description={t("dashboard.realtimePricesDesc")}
-    >
-      {/* Filtro de Tier */}
-      <TierFilterComponent selectedTier={selectedTier} onChange={onTierChange} />
-
-      {myPricesQueryIsLoading ? (
-        <p className="text-sm text-muted-foreground">
-          {t("dashboard.fetchingPrices")}
-        </p>
-      ) : myPricesQueryIsError ? (
-        <p className="text-sm text-destructive">
-          {t("dashboard.errorLoadingPrices")}
-        </p>
-      ) : myPrices.length === 0 ? (
-        <div className="mt-3 rounded-xl border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground text-center">
-          {t("dashboard.noItemsToMonitor")}
+    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm overflow-hidden mb-6">
+      <CardHeader className="pb-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-xl font-bold tracking-tight">
+              {t("dashboard.realtimePrices")}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground mt-1">
+              {t("dashboard.realtimePricesDesc")}
+            </CardDescription>
+          </div>
+          <div className="bg-primary/10 p-2 rounded-lg">
+            <Search className="w-5 h-5 text-primary opacity-70" />
+          </div>
         </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-border/70">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/60">
-              <tr>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  {t("prices.table.item")}
-                </th>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  {t("prices.table.city")}
-                </th>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  {t("prices.table.price")}
-                </th>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  {t("prices.table.quality")}
-                </th>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  {t("prices.table.enchantment")}
-                </th>
-                <th className="px-3 py-2 text-left font-medium text-xs text-muted-foreground">
-                  <Clock size={12} className="inline mr-1" />
-                  Frescor
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {myPrices.map((item) => {
-                const { base, enchant } = splitItemName(item.item_name);
-                const displayName =
-                  item.display_name ?? getItemDisplayNameWithEnchantment(base);
-                const enchantDisplay = enchant ? `@${enchant}` : "—";
+      </CardHeader>
 
-                return (
-                  <tr
-                    key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
-                    className="cursor-pointer hover:bg-muted/60 transition-colors"
-                    onClick={() => onSelectHistoryItem(item.item_name)}
-                    title={t("dashboard.clickToViewHistory")}
-                  >
-                    <td className="px-3 py-2 align-middle">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={buildItemImageUrl(item)}
-                          alt={item.item_name}
-                          className="h-9 w-9 rounded-md bg-black/40"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "https://render.albiononline.com/v1/item/T1_BAG.png";
-                          }}
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {displayName}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground mt-0.5">
-                            {item.item_name}
-                          </span>
+      <CardContent>
+        <TierFilterComponent selectedTier={selectedTier} onChange={onTierChange} />
+
+        {myPricesQueryIsLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 opacity-40">
+            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
+            <p className="text-[10px] font-bold uppercase tracking-widest">{t("dashboard.fetchingPrices")}</p>
+          </div>
+        ) : myPricesQueryIsError ? (
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive">
+            <p className="text-xs font-medium">{t("dashboard.errorLoadingPrices")}</p>
+          </div>
+        ) : myPrices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 rounded-xl border border-dashed border-border/40 bg-background/20 text-center">
+            <p className="text-sm text-muted-foreground font-medium">
+              {t("dashboard.noItemsToMonitor")}
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border/40 bg-background/20 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted/40 backdrop-blur-md">
+                <TableRow className="hover:bg-transparent border-border/40">
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10">{t("prices.table.item")}</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10">{t("prices.table.city")}</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10">{t("prices.table.price")}</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-center">{t("prices.table.quality")}</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-center">{t("prices.table.enchantment")}</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Clock size={11} className="text-primary/70" />
+                      Frescor
+                    </div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {myPrices.map((item) => {
+                  const { base, enchant } = splitItemName(item.item_name);
+                  const displayName = item.display_name ?? getItemDisplayNameWithEnchantment(base);
+                  const enchantDisplay = enchant ? `@${enchant}` : "—";
+                  const freshness = getFreshnessInfo(item.updated_at);
+
+                  return (
+                    <TableRow
+                      key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
+                      className="cursor-pointer hover:bg-muted/30 transition-all border-border/20 group"
+                      onClick={() => onSelectHistoryItem(item.item_name)}
+                    >
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={buildItemImageUrl(item)}
+                            alt={item.item_name}
+                            className="h-10 w-10 rounded-lg bg-black/40 border border-border/20 group-hover:scale-110 transition-transform"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://render.albiononline.com/v1/item/T1_BAG.png";
+                            }}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-sm tracking-tight truncate max-w-[150px]">
+                              {displayName}
+                            </span>
+                            <span className="text-[10px] font-mono font-medium text-muted-foreground/60 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                              {item.item_name}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </TableCell>
 
-                    <td className="px-3 py-2 align-middle">
-                      <span className="inline-flex items-center rounded-full border border-border/70 bg-background px-2.5 py-0.5 text-xs">
-                        {item.city || "—"}
-                      </span>
-                    </td>
+                      <TableCell className="py-3">
+                        <Badge variant="outline" className="bg-background/40 border-border/40 font-bold uppercase tracking-tighter text-[10px] py-0.5">
+                          {item.city || "—"}
+                        </Badge>
+                      </TableCell>
 
-                    <td className="px-3 py-2 align-middle">
-                      {typeof item.price === "number"
-                        ? `${item.price.toLocaleString(locale)} ${t(
-                          "dashboard.silver",
-                        )}`
-                        : "—"}
-                    </td>
-
-                    <td className="px-3 py-2 align-middle">
-                      <span
-                        style={{
-                          color: getQualityColor(item.quality),
-                          fontWeight: 700,
-                          textShadow:
-                            item.quality === 5 ? "0 0 10px #FF9800" : "none",
-                        }}
-                      >
-                        {getQualityLabel(item.quality)}
-                      </span>
-                    </td>
-
-                    <td className="px-3 py-2 align-middle">
-                      {enchantDisplay}
-                    </td>
-
-                    <td className="px-3 py-2 align-middle">
-                      {(() => {
-                        const f = getFreshnessInfo(item.updated_at);
-                        return (
-                          <span className="inline-flex items-center gap-1.5 text-xs" title={item.updated_at || "Sem data"}>
-                            <span
-                              style={{
-                                width: 8, height: 8, borderRadius: "50%",
-                                backgroundColor: f.color,
-                                boxShadow: f.level === "fresh" ? `0 0 6px ${f.color}` : "none",
-                                display: "inline-block",
-                              }}
-                            />
-                            {f.label}
+                      <TableCell className="py-3">
+                        <div className="flex flex-col">
+                          <span className="font-black text-sm tracking-tighter text-foreground group-hover:text-primary transition-colors">
+                            {typeof item.price === "number" ? item.price.toLocaleString(locale) : "—"}
                           </span>
-                        );
-                      })()}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                          <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-0.5">Silver</span>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="py-3 text-center">
+                        <Badge
+                          variant="secondary"
+                          className="font-black text-[9px] uppercase tracking-widest px-2 shadow-sm"
+                          style={{
+                            backgroundColor: `${getQualityColor(item.quality)}15`,
+                            color: getQualityColor(item.quality),
+                            border: `1px solid ${getQualityColor(item.quality)}30`
+                          }}
+                        >
+                          {getQualityLabel(item.quality)}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="py-3 text-center">
+                        <span className="font-mono text-xs font-bold text-muted-foreground/80">
+                          {enchantDisplay}
+                        </span>
+                      </TableCell>
+
+                      <TableCell className="py-3 text-right">
+                        <div className="flex items-center justify-end gap-2" title={item.updated_at || "Sem data"}>
+                          <div
+                            className="w-2 h-2 rounded-full shadow-sm"
+                            style={{
+                              backgroundColor: freshness.color,
+                              boxShadow: freshness.level === "fresh" ? `0 0 10px ${freshness.color}60` : 'none'
+                            }}
+                          />
+                          <span className="text-xs font-bold tracking-tighter opacity-80">{freshness.label}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <div className="p-3 bg-muted/20 border-t border-border/20 flex items-center justify-center gap-2">
+              <MousePointer2 className="w-3.5 h-3.5 text-muted-foreground/60" />
+              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                {t("dashboard.clickToViewHistory")}
+              </span>
+            </div>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

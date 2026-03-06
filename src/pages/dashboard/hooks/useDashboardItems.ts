@@ -168,10 +168,7 @@ export function useDashboardItems(
 
   const handleDeleteSingle = (id: number) => {
     if (deleteMutation.isPending || deleteMultipleMutation.isPending) return;
-
-    if (confirm(t("dashboard.confirmDelete"))) {
-      deleteMutation.mutate(id);
-    }
+    deleteMutation.mutate(id);
   };
 
   const handleToggleSelect = (id: number) => {
@@ -204,16 +201,8 @@ export function useDashboardItems(
     )
       return;
 
-    const count = selectedItems.size;
-    const message =
-      count === 1
-        ? t("dashboard.confirmDeleteOne")
-        : t("dashboard.confirmDeleteMultiple", { count });
-
-    if (confirm(message)) {
-      const idsToDelete = Array.from(selectedItems);
-      deleteMultipleMutation.mutate(idsToDelete);
-    }
+    const idsToDelete = Array.from(selectedItems);
+    deleteMultipleMutation.mutate(idsToDelete);
   };
 
   return {

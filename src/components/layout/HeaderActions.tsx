@@ -1,10 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut, Settings } from "lucide-react";
 
 export function HeaderActions() {
   const { t } = useTranslation();
@@ -17,58 +26,73 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="hidden md:flex items-center gap-2">
-      {/* Idioma + Região + Notificações */}
-      <div className="flex items-center gap-1.5">
+    <div className="hidden md:flex items-center gap-3">
+      {/* Controles de Localização e Notificações */}
+      <div className="flex items-center gap-2">
         <LanguageSwitcher />
         <RegionSwitcher />
         <NotificationsBell />
       </div>
 
+      <div className="h-6 w-px bg-border/40 mx-1" />
+
       {user ? (
-        <>
-          {/* User Profile */}
-          <HeaderUserMenu user={user} onLogout={handleLogout} />
-        </>
+        <HeaderUserMenu user={user} onLogout={handleLogout} />
       ) : (
-        <>
-          {/* Auth Buttons */}
-          <Button variant="outline" size="sm" asChild>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild className="hover:bg-accent/10">
             <Link to="/login">{t("login.submit")}</Link>
           </Button>
-          <Button variant="hero" size="sm" asChild>
+          <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
             <Link to="/signup">{t("signup.submit")}</Link>
           </Button>
-        </>
+        </div>
       )}
     </div>
   );
 }
 
-// Componente interno
 function HeaderUserMenu({ user, onLogout }: any) {
   const { t } = useTranslation();
   const firstLetter = user?.username?.[0]?.toUpperCase() ?? "A";
 
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <div className="relative h-8 w-8 rounded-full bg-accent/20 flex items-center justify-center text-xs font-semibold text-accent">
-          <span>{firstLetter}</span>
-          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border-2 border-background" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground leading-tight">
-            {t("header.loggedAs")}
-          </span>
-          <span className="text-xs font-medium truncate max-w-[110px]">
-            {user.username}
-          </span>
-        </div>
-      </div>
-      <Button variant="outline" size="sm" onClick={onLogout} className="ml-1 text-xs h-7 px-2">
-        {t("header.logout")}
-      </Button>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-3 p-1 pr-3 rounded-full bg-card/40 border border-border/40 hover:bg-card/80 transition-all outline-none group">
+          <div className="relative h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary border border-primary/30">
+            <span>{firstLetter}</span>
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#090b0e]" />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground leading-none mb-1">
+              {t("header.loggedAs")}
+            </span>
+            <span className="text-xs font-semibold max-w-[100px] truncate">
+              {user.username}
+            </span>
+          </div>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 bg-card border-border/60">
+        <DropdownMenuLabel className="font-bold flex items-center gap-2 py-3 px-4">
+          <User className="w-4 h-4 text-muted-foreground" />
+          {user.username}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-border/60" />
+        <DropdownMenuItem className="py-2.5 px-4 cursor-pointer gap-3 focus:bg-primary/10">
+          <Settings className="w-4 h-4 text-muted-foreground" />
+          <span>Configurações</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-border/60" />
+        <DropdownMenuItem
+          onClick={onLogout}
+          className="py-2.5 px-4 cursor-pointer gap-3 text-red-400 focus:text-red-400 focus:bg-red-400/10"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>{t("header.logout")}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
