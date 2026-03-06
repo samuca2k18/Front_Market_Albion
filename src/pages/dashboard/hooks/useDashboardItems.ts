@@ -6,7 +6,6 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 import { createItem, listItems, deleteItem } from "@/api/items";
 import type { Item, ItemPayload, MyItemPrice } from "@/api/types";
@@ -29,7 +28,6 @@ interface UseDashboardItemsReturn {
 export function useDashboardItems(
   myPricesQueryKey = ["my-items-prices"],
 ): UseDashboardItemsReturn {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());

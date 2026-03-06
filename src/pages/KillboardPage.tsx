@@ -4,9 +4,7 @@ import { Sword, Skull, AlertCircle, Clock, Shield, Users, Loader2 } from "lucide
 import { fetchKillboard } from "@/api/albion";
 import {
     Card,
-    CardContent,
-    CardHeader,
-    CardTitle
+    CardContent
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,7 +130,7 @@ export function KillboardPage() {
                                                 </div>
                                                 <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Fame</div>
                                             </div>
-                                            <Badge variant="ghost" className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest pl-0">
+                                            <Badge variant="outline" className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest pl-0 border-0">
                                                 {getTimeAgo(ev.timestamp)}
                                             </Badge>
                                         </div>

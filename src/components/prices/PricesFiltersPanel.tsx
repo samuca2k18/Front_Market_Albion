@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { FilterGroup } from './FilterGroup';
 import { getQualityLabel } from '../../constants/qualities';
-import type { UsePricesFilterReturn } from "hooks/usePricesFilter";
+import type { UsePricesFilterReturn } from "../../hooks/usePricesFilter";
 import { getItemDisplayNameWithEnchantment, getItemDisplayNameWithEnchantmentAsync } from "../../utils/items";
 import {
   Card,
@@ -36,7 +36,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
     let cancelled = false;
     const load = async () => {
       const entries = await Promise.all(
-        filter.uniqueItems.map(async (itemName) => {
+        filter.uniqueItems.map(async (itemName: string) => {
           try {
             const label = await getItemDisplayNameWithEnchantmentAsync(
               itemName,
@@ -111,7 +111,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
               </SelectTrigger>
               <SelectContent className="bg-card/95 backdrop-blur-xl border-border/60">
                 <SelectItem value="all" className="font-bold">{t('prices.allItems')}</SelectItem>
-                {filter.uniqueItems.map((itemName) => (
+                {filter.uniqueItems.map((itemName: string) => (
                   <SelectItem key={itemName} value={itemName}>
                     {labelsMap[itemName] ?? getItemDisplayNameWithEnchantment(itemName, i18n.language as 'pt-BR' | 'en-US')}
                   </SelectItem>
@@ -147,7 +147,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
         <div className="grid grid-cols-1 gap-8 pt-4 border-t border-border/10">
           <FilterGroup
             title={t('prices.filterByCity')}
-            items={filter.availableCities.map((city) => ({
+            items={filter.availableCities.map((city: string) => ({
               id: city,
               label: city,
             }))}
@@ -159,7 +159,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
 
           <FilterGroup
             title={t('prices.filterByQuality')}
-            items={filter.availableQualities.map((quality) => ({
+            items={filter.availableQualities.map((quality: number) => ({
               id: quality,
               label: getQualityLabel(quality),
             }))}
@@ -172,7 +172,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FilterGroup
               title={t('prices.filterByEnchantment')}
-              items={filter.availableEnchantments.map((enchant) => ({
+              items={filter.availableEnchantments.map((enchant: number) => ({
                 id: enchant,
                 label: enchant === 0 ? t('prices.noEnchantment') : `@${enchant}`,
               }))}
@@ -184,7 +184,7 @@ export function PricesFiltersPanel({ filter }: PricesFiltersPanelProps) {
 
             <FilterGroup
               title={t('dashboard.tier')}
-              items={filter.availableTiers.map((tier) => ({
+              items={filter.availableTiers.map((tier: number | null) => ({
                 id: tier ?? 'none',
                 label: tier === null ? t('dashboard.noTier') : `T${tier}`,
               }))}

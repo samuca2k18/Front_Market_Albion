@@ -13,10 +13,10 @@ import {
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LineChart as LineChartIcon, TrendingUp, TrendingDown, Clock, Info } from "lucide-react";
 
@@ -138,10 +138,10 @@ export function PriceHistoryChart({
                   onClick={() => !disabled && handleRange(opt)}
                   disabled={disabled}
                   className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${active
-                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                      : disabled
-                        ? "opacity-20 cursor-not-allowed"
-                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : disabled
+                      ? "opacity-20 cursor-not-allowed"
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                     }`}
                   title={disabled ? `Indisponível (max ${BACKEND_MAX_DAYS}d)` : ""}
                 >

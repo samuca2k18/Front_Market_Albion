@@ -13,7 +13,6 @@ import {
     Filter,
     CheckCircle2,
     AlertCircle,
-    BadgePercent,
     ArrowUpRight,
     Loader2
 } from "lucide-react";
@@ -22,8 +21,7 @@ import {
     Card,
     CardContent,
     CardHeader,
-    CardTitle,
-    CardDescription
+    CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -256,7 +254,7 @@ export function OpportunitiesPage() {
                                                             <span className="text-2xl font-black tracking-tighter text-emerald-400">
                                                                 +{opt.profit.toLocaleString(locale)}
                                                             </span>
-                                                            <Badge variant="ghost" className="text-primary p-0 space-x-1">
+                                                            <Badge variant="outline" className="text-primary p-0 space-x-1 border-0">
                                                                 <CheckCircle2 size={12} />
                                                                 <span className="text-[9px] font-black uppercase tracking-widest">Calculado</span>
                                                             </Badge>

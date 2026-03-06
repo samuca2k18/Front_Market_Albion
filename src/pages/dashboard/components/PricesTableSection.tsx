@@ -1,6 +1,6 @@
 // src/pages/dashboard/components/PricesTableSection.tsx
 import { useTranslation } from "react-i18next";
-import { Clock, MousePointer2, ThermometerSnowflake, Search } from "lucide-react";
+import { Clock, MousePointer2, Search } from "lucide-react";
 
 import type { MyItemPrice } from "@/api/types";
 import {
