@@ -165,7 +165,7 @@ export function PriceAlertsSection() {
   };
 
   return (
-    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm flex flex-col h-full">
+    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
@@ -216,8 +216,8 @@ export function PriceAlertsSection() {
                 <div
                   key={alert.id}
                   className={`group flex items-start justify-between gap-3 p-3 rounded-xl border transition-all duration-200 ${isPinned
-                      ? "border-primary/40 bg-primary/5 shadow-inner"
-                      : "border-border/40 bg-background/40 hover:bg-background/80"
+                    ? "border-primary/40 bg-primary/5 shadow-inner"
+                    : "border-border/40 bg-background/40 hover:bg-background/80"
                     }`}
                 >
                   <div className="flex flex-col gap-1.5 min-w-0">
@@ -244,8 +244,8 @@ export function PriceAlertsSection() {
                     size="icon"
                     onClick={() => handleTogglePinned(alert.id)}
                     className={`h-8 w-8 rounded-full transition-all ${isPinned
-                        ? "text-primary bg-primary/10 hover:bg-primary/20"
-                        : "text-muted-foreground/40 hover:text-primary hover:bg-primary/10"
+                      ? "text-primary bg-primary/10 hover:bg-primary/20"
+                      : "text-muted-foreground/40 hover:text-primary hover:bg-primary/10"
                       }`}
                     title={isPinned ? (t("dashboard.alertsUnpinTooltip") as string) : (t("dashboard.alertsPinTooltip") as string)}
                   >

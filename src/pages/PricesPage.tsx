@@ -13,6 +13,7 @@ import { EmptyState } from '../components/prices/EmptyState';
 import { usePricesFilter } from '../hooks/usePricesFilter';
 import { Tag, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from '@/components/ui/button';
+import { SEO } from '@/components/SEO';
 
 export const PricesPage = () => {
   const { t, i18n } = useTranslation();
@@ -74,6 +75,7 @@ export const PricesPage = () => {
 
   return (
     <div className="bg-background min-h-screen">
+      <SEO title={t("navigation.prices")} />
       <div className="app-container py-12">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in">

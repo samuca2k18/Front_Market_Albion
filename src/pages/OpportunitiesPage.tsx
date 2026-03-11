@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SEO } from "@/components/SEO";
 
 export function OpportunitiesPage() {
     const { t, i18n } = useTranslation();
@@ -66,6 +67,7 @@ export function OpportunitiesPage() {
 
     return (
         <div className="bg-background min-h-screen">
+            <SEO title={t("navigation.opportunities")} />
             <div className="app-container py-12">
                 {/* Modern Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">

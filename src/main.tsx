@@ -6,19 +6,22 @@ import App from './App';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { RegionProvider } from './context/RegionContext';
+import { HelmetProvider } from 'react-helmet-async';
 
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RegionProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </AuthProvider>
-      </RegionProvider>
+      <HelmetProvider>
+        <RegionProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </AuthProvider>
+        </RegionProvider>
+      </HelmetProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

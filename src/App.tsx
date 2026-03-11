@@ -32,8 +32,10 @@ function App() {
             <Route path="login" element={<LoginPage />} />
             <Route path="signup" element={<SignupPage />} />
             <Route path="verify-email" element={<VerifyEmailPage />} />
-            <Route path="data-client" element={<DataClientPage />} />
           </Route>
+
+          {/* Rota pública (acessível por qualquer um) */}
+          <Route path="data-client" element={<DataClientPage />} />
 
           {/* Rotas protegidas (somente logado) */}
           <Route element={<ProtectedRoute />}>

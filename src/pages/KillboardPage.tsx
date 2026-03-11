@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 const RENDER_URL = "https://render.albiononline.com/v1/item";
 
@@ -30,6 +31,7 @@ export function KillboardPage() {
 
     return (
         <div className="bg-background min-h-screen">
+            <SEO title="Killboard" />
             <div className="app-container py-12">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div className="space-y-2">

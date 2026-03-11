@@ -67,6 +67,10 @@
   }
 
   /* Base global */
+  ::selection {
+    @apply bg-primary/30 text-primary-foreground;
+  }
+
   * {
     /* melhor: borda baseada no tema */
     @apply border-border;
@@ -79,6 +83,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    background: radial-gradient(circle at 50% 0%, hsla(154, 80%, 52%, 0.05), transparent 50%), hsla(222, 47%, 4%, 1);
   }
 }
 

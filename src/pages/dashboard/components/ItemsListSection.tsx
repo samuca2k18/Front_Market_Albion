@@ -1,7 +1,7 @@
 // src/pages/dashboard/components/ItemsListSection.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash2, BellRing, Info, ImageOff, AlertTriangle } from "lucide-react";
+import { Trash2, BellRing, Info } from "lucide-react";
 
 import type { Item } from "@/api/types";
 import {
@@ -13,32 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import {
-  getItemDisplayNameWithEnchantment,
-  getItemDisplayNameWithEnchantmentAsync,
-} from "@/utils/itemNameMapper";
-import { splitItemName, buildItemImageUrlFromName } from "../utils/itemFilters";
+import { AddPriceAlertDialog } from "./AddPriceAlertDialog";
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
+import { ConfirmBulkDeleteDialog } from "./ConfirmBulkDeleteDialog";
+import { ItemAvatar } from "./ItemAvatar";
+
+import { buildItemImageUrlFromName } from "../utils/itemFilters";
 
 interface ItemsListSectionProps {
   trackedItems: Item[];
@@ -49,6 +31,7 @@ interface ItemsListSectionProps {
   onSelectAll: () => void;
   onDeleteSelected: () => void;
   onDeleteSingle: (id: number) => void;
+  getItemDisplayName: (name: string) => string;
 }
 
 export function ItemsListSection({
@@ -60,9 +43,9 @@ export function ItemsListSection({
   onSelectAll,
   onDeleteSelected,
   onDeleteSingle,
+  getItemDisplayName,
 }: ItemsListSectionProps) {
-  const { t, i18n } = useTranslation();
-  const [displayNames, setDisplayNames] = useState<Record<number, string>>({});
+  const { t } = useTranslation();
 
   // Modais
   const [alertModalItem, setAlertModalItem] = useState<{
@@ -75,87 +58,10 @@ export function ItemsListSection({
   } | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  const [alertPriceInput, setAlertPriceInput] = useState("");
-  const [alertError, setAlertError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function resolveNames() {
-      if (trackedItems.length === 0) {
-        setDisplayNames({});
-        return;
-      }
-
-      const entries = await Promise.all(
-        trackedItems.map(async (item) => {
-          const baseName = item.item_name;
-          try {
-            if (item.display_name) {
-              return [item.id, item.display_name] as const;
-            }
-
-            const name = await getItemDisplayNameWithEnchantmentAsync(
-              baseName,
-              i18n.language as "pt-BR" | "en-US",
-            );
-            return [item.id, name] as const;
-          } catch {
-            const { base, enchant } = splitItemName(baseName);
-            const fallback = getItemDisplayNameWithEnchantment(base);
-            const finalName = enchant ? `${fallback} @${enchant}` : fallback;
-            return [item.id, finalName] as const;
-          }
-        }),
-      );
-
-      if (!cancelled) {
-        setDisplayNames(Object.fromEntries(entries));
-      }
-    }
-
-    void resolveNames();
-    return () => {
-      cancelled = true;
-    };
-  }, [trackedItems, i18n.language]);
-
-  const closeAlertModal = () => {
-    setAlertModalItem(null);
-    setAlertPriceInput("");
-    setAlertError(null);
-  };
-
-  const handleConfirmAlert = () => {
-    if (!alertModalItem) return;
-
-    const raw = alertPriceInput.trim();
-    if (!raw) {
-      setAlertError(t("dashboard.invalidAlertPrice") as string);
-      return;
-    }
-
-    const value = Number(raw.replace(/\./g, "").replace(",", "."));
-    if (!Number.isFinite(value) || value <= 0) {
-      setAlertError(t("dashboard.invalidAlertPrice") as string);
-      return;
-    }
-
-    const event = new CustomEvent("dashboard:add-alert", {
-      detail: {
-        itemName: alertModalItem.item.item_name,
-        displayName: alertModalItem.displayName,
-        targetPrice: value,
-      },
-    });
-    window.dispatchEvent(event);
-    closeAlertModal();
-  };
-
   const allSelected = trackedItems.length > 0 && selectedItems.size === trackedItems.length;
 
   return (
-    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm flex flex-col h-full">
+    <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
@@ -214,16 +120,15 @@ export function ItemsListSection({
 
             <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar max-h-[450px]">
               {trackedItems.map((item) => {
-                const { base } = splitItemName(item.item_name);
-                const displayName = displayNames[item.id] ?? item.display_name ?? getItemDisplayNameWithEnchantment(base);
+                const displayName = item.display_name ?? getItemDisplayName(item.item_name);
                 const isSelected = selectedItems.has(item.id);
 
                 return (
                   <div
                     key={item.id}
                     className={`group flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${isSelected
-                        ? "border-primary/50 bg-primary/10 shadow-inner"
-                        : "border-border/40 bg-background/40 hover:bg-background/80 hover:border-border/80"
+                      ? "border-primary/50 bg-primary/10 shadow-inner"
+                      : "border-border/40 bg-background/40 hover:bg-background/80 hover:border-border/80"
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -233,21 +138,11 @@ export function ItemsListSection({
                         className="border-border/40"
                       />
 
-                      <div className="relative">
-                        <img
-                          src={buildItemImageUrlFromName(item.item_name)}
-                          alt={item.item_name}
-                          className="h-10 w-10 rounded-lg bg-black/40 border border-border/20 group-hover:scale-105 transition-transform"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
-                          }}
-                        />
-                        <div className="fallback-icon hidden absolute inset-0 flex items-center justify-center bg-muted rounded-lg border border-border/20">
-                          <ImageOff className="w-5 h-5 text-muted-foreground/30" />
-                        </div>
-                      </div>
+                      <ItemAvatar
+                        src={buildItemImageUrlFromName(item.item_name)}
+                        alt={item.item_name}
+                        imageClassName="group-hover:scale-105"
+                      />
 
                       <div className="flex flex-col min-w-0">
                         <span className="text-sm font-bold tracking-tight truncate max-w-[120px] sm:max-w-none">
@@ -269,8 +164,6 @@ export function ItemsListSection({
                         className="h-8 w-8 rounded-full text-primary/70 hover:text-primary hover:bg-primary/10"
                         onClick={() => {
                           setAlertModalItem({ item, displayName });
-                          setAlertPriceInput("");
-                          setAlertError(null);
                         }}
                         title={t("dashboard.addPriceAlert")}
                       >
@@ -296,121 +189,40 @@ export function ItemsListSection({
       </CardContent>
 
       {/* ADICIONAR ALERTA DIALOG */}
-      <Dialog open={!!alertModalItem} onOpenChange={(open) => !open && closeAlertModal()}>
-        <DialogContent className="sm:max-w-[425px] bg-card border-border/60 backdrop-blur-xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black tracking-tight">{t("dashboard.alertModalTitle")}</DialogTitle>
-            <DialogDescription className="text-muted-foreground font-medium pt-2">
-              {t("dashboard.alertModalDescription", {
-                item: alertModalItem?.displayName,
-              })}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="price" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {t("dashboard.alertModalPriceLabel")}
-              </Label>
-              <Input
-                id="price"
-                type="text"
-                inputMode="decimal"
-                value={alertPriceInput}
-                onChange={(e) => {
-                  setAlertPriceInput(e.target.value);
-                  if (alertError) setAlertError(null);
-                }}
-                placeholder={(t("dashboard.alertModalPricePlaceholder") as string) || "150.000"}
-                className="bg-background/50 border-border/40 focus:ring-primary/40 focus:border-primary/60 font-mono"
-              />
-              {alertError && (
-                <p className="text-[11px] font-bold text-destructive animate-pulse mt-1">
-                  {alertError}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={closeAlertModal} className="font-bold uppercase tracking-widest text-[10px]">
-              {t("common.cancel")}
-            </Button>
-            <Button onClick={handleConfirmAlert} className="bg-primary hover:bg-primary/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">
-              {t("dashboard.alertModalConfirm")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddPriceAlertDialog
+        isOpen={!!alertModalItem}
+        onOpenChange={(open) => {
+          if (!open) setAlertModalItem(null);
+        }}
+        itemName={alertModalItem?.item.item_name || ""}
+        itemDisplayName={alertModalItem?.displayName || ""}
+      />
 
       {/* CONFIRMAR EXCLUSÃO ÚNICA */}
-      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => !open && setDeleteConfirmItem(null)}>
-        <AlertDialogContent className="bg-card border-border/60 backdrop-blur-xl">
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-full bg-destructive/10 text-destructive">
-                <AlertTriangle size={20} />
-              </div>
-              <AlertDialogTitle className="text-xl font-black tracking-tight">
-                {t("dashboard.confirmDeleteTitle") || "Remover Item?"}
-              </AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="text-muted-foreground font-medium">
-              {t("dashboard.confirmDeleteDescription", { item: deleteConfirmItem?.name }) ||
-                `Você tem certeza que deseja parar de rastrear o item "${deleteConfirmItem?.name}"?`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4">
-            <AlertDialogCancel className="font-bold uppercase tracking-widest text-[10px] border-border/40">
-              {t("common.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-destructive/20"
-              onClick={() => {
-                if (deleteConfirmItem) {
-                  onDeleteSingle(deleteConfirmItem.id);
-                  setDeleteConfirmItem(null);
-                }
-              }}
-            >
-              {t("common.remove") || "Remover"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        isOpen={!!deleteConfirmItem}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmItem(null);
+        }}
+        itemName={deleteConfirmItem?.name || ""}
+        onConfirm={() => {
+          if (deleteConfirmItem) {
+            onDeleteSingle(deleteConfirmItem.id);
+            setDeleteConfirmItem(null);
+          }
+        }}
+      />
 
       {/* CONFIRMAR EXCLUSÃO MÚLTIPLA */}
-      <AlertDialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
-        <AlertDialogContent className="bg-card border-border/60 backdrop-blur-xl">
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-full bg-destructive/10 text-destructive">
-                <Trash2 size={20} />
-              </div>
-              <AlertDialogTitle className="text-xl font-black tracking-tight">
-                {t("dashboard.confirmDeleteMultipleTitle") || "Remover selecionados?"}
-              </AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="text-muted-foreground font-medium">
-              {t("dashboard.confirmDeleteMultiple", { count: selectedItems.size })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4">
-            <AlertDialogCancel className="font-bold uppercase tracking-widest text-[10px] border-border/40">
-              {t("common.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-destructive/20"
-              onClick={() => {
-                onDeleteSelected();
-                setShowBulkDeleteConfirm(false);
-              }}
-            >
-              {t("common.remove") || "Remover Todos"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmBulkDeleteDialog
+        isOpen={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        selectedCount={selectedItems.size}
+        onConfirm={() => {
+          onDeleteSelected();
+          setShowBulkDeleteConfirm(false);
+        }}
+      />
     </Card>
   );
 }

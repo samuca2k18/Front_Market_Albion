@@ -140,10 +140,10 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute top-full mt-2 w-full bg-card/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl p-2 z-[100] max-h-[380px] overflow-y-auto animate-fade-in custom-scrollbar"
+          className="absolute top-full mt-2 w-full bg-[#050910]/95 backdrop-blur-xl border border-primary/40 rounded-2xl shadow-[0_0_30px_rgba(34,197,94,0.15)] p-2 z-[100] max-h-[380px] overflow-y-auto animate-fade-in custom-scrollbar"
         >
           {isLoading && (
-            <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 p-4 text-sm text-primary">
               <Loader2 className="w-4 h-4 animate-spin" />
               {t("search.loading")}
             </div>
@@ -173,13 +173,13 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
                 key={product.unique_name}
                 type="button"
                 className={`flex items-center gap-3 w-full p-2.5 rounded-xl text-left transition-all duration-200 ${active
-                    ? "bg-primary/10 border-primary/20 translate-x-1"
-                    : "bg-transparent border-transparent hover:bg-white/5"
+                  ? "bg-primary/20 border-primary/40 translate-x-1"
+                  : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/10"
                   } border`}
                 onClick={() => handleSelect(product)}
                 onMouseEnter={() => setActiveIndex(index)}
               >
-                <div className="h-10 w-10 bg-black/40 rounded-lg flex-shrink-0 border border-white/5 p-1">
+                <div className="h-10 w-10 bg-black/60 rounded-lg flex-shrink-0 border border-white/10 p-1">
                   <img
                     src={`https://render.albiononline.com/v1/item/${encodeURIComponent(product.unique_name ?? "")}.png`}
                     alt={label}
