@@ -11,7 +11,7 @@ describe('LandingPage', () => {
     )
 
     expect(
-      screen.getByText(/controle total dos preços do mercado/i)
+      screen.getByText(/domine a economia de/i)
     ).toBeInTheDocument()
   })
 
