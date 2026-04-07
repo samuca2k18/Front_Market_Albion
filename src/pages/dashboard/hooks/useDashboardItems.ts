@@ -7,7 +7,7 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 
-import { createItem, listItems, deleteItem } from "@/api/items";
+import { createItem, listItems, deleteItem, reorderItems } from "@/api/items";
 import type { Item, ItemPayload, MyItemPrice } from "@/api/types";
 import type { ApiErrorShape } from "@/api/client";
 import { splitItemName } from "../utils/itemFilters";
@@ -17,6 +17,7 @@ interface UseDashboardItemsReturn {
   createMutation: UseMutationResult<void, ApiErrorShape, ItemPayload>;
   deleteMutation: UseMutationResult<void, ApiErrorShape, number>;
   deleteMultipleMutation: UseMutationResult<void, ApiErrorShape, number[]>;
+  reorderMutation: UseMutationResult<void, ApiErrorShape, { id: number, sort_order: number }[]>;
   selectedItems: Set<number>;
   isDeleting: boolean;
   handleDeleteSingle: (id: number) => void;
@@ -159,6 +160,42 @@ export function useDashboardItems(
     },
   });
 
+  const reorderMutation = useMutation<
+    void,
+    ApiErrorShape,
+    { id: number; sort_order: number }[],
+    { previousItems: Item[] }
+  >({
+    mutationFn: async (payload) => {
+      await reorderItems(payload);
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ["items"] });
+      const previousItems = queryClient.getQueryData<Item[]>(["items"]) ?? [];
+
+      // Update local state optimistically
+      queryClient.setQueryData<Item[]>(["items"], (old) => {
+        if (!old) return [];
+        const newItems = [...old];
+        payload.forEach(({ id, sort_order }) => {
+          const item = newItems.find((i) => i.id === id);
+          if (item) item.sort_order = sort_order;
+        });
+        return newItems.sort((a, b) => a.sort_order - b.sort_order);
+      });
+
+      return { previousItems };
+    },
+    onError: (_err, _payload, context) => {
+      if (context?.previousItems) {
+        queryClient.setQueryData(["items"], context.previousItems);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+    },
+  });
+
   const isDeleting =
     deleteMutation.isPending || deleteMultipleMutation.isPending;
 
@@ -208,6 +245,7 @@ export function useDashboardItems(
     createMutation,
     deleteMutation,
     deleteMultipleMutation,
+    reorderMutation,
     selectedItems,
     isDeleting,
     handleDeleteSingle,

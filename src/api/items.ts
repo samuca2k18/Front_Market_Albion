@@ -27,3 +27,11 @@ export async function deleteItem(id: number): Promise<void> {
     throw parseApiError(error);
   }
 }
+
+export async function reorderItems(items: { id: number; sort_order: number }[]): Promise<void> {
+  try {
+    await api.put('/items/reorder', items);
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}

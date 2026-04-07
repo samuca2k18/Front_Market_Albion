@@ -7,13 +7,16 @@ import { HeaderActions } from "./HeaderActions";
 import { MobileMenuToggle } from "./MobileMenuToggle";
 import { MobileMenu } from "./MobileMenu";
 import { BanditEventIndicator } from "./BanditEventIndicator";
+import { GlobalSearchTrigger } from "../search/GlobalSearch";
 import "./layout.css";
 
 const navItems = [
   { label: "dashboard", path: "/dashboard", protected: true },
   { label: "prices", path: "/prices", protected: true },
   { label: "opportunities", path: "/opportunities", protected: true },
+  { label: "crafting", path: "/crafting", protected: true },
   { label: "killboard", path: "/killboard", protected: true },
+  { label: "items", path: "/items", protected: false },
   { label: "contribute", path: "/data-client", protected: false },
 ];
 
@@ -38,11 +41,12 @@ export function Header() {
           <HeaderNav items={availableItems} />
         )}
 
-        {/* Bandit Event Indicator */}
-        <BanditEventIndicator />
-
-        {/* Right Actions */}
-        <HeaderActions />
+        <div className="hidden md:flex items-center gap-2 rounded-2xl border border-border/40 bg-background/25 p-1.5 backdrop-blur-sm">
+          <GlobalSearchTrigger />
+          <span className="h-5 w-px bg-border/45" />
+          <BanditEventIndicator />
+          <HeaderActions />
+        </div>
 
         {/* Mobile Menu Toggle */}
         {hasNavigation && (

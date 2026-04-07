@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
+import { ThemeToggle } from "../common/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings } from "lucide-react";
+import type { User as AuthUser } from "@/api/types";
 
 export function HeaderActions() {
   const { t } = useTranslation();
@@ -26,24 +28,29 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="hidden md:flex items-center gap-3">
-      {/* Controles de Localização e Notificações */}
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
+        <ThemeToggle />
         <LanguageSwitcher />
         <RegionSwitcher />
         <NotificationsBell />
       </div>
 
-      <div className="h-6 w-px bg-border/40 mx-1" />
+      <div className="h-6 w-px bg-border/50 mx-1" />
 
       {user ? (
         <HeaderUserMenu user={user} onLogout={handleLogout} />
       ) : (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="hover:bg-accent/10">
+          <Button variant="ghost" size="sm" asChild className="rounded-xl hover:bg-accent/10">
             <Link to="/login">{t("login.submit")}</Link>
           </Button>
-          <Button variant="default" size="sm" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
+          <Button
+            variant="default"
+            size="sm"
+            asChild
+            className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+          >
             <Link to="/signup">{t("signup.submit")}</Link>
           </Button>
         </div>
@@ -52,15 +59,20 @@ export function HeaderActions() {
   );
 }
 
-function HeaderUserMenu({ user, onLogout }: any) {
+interface HeaderUserMenuProps {
+  user: AuthUser;
+  onLogout: () => void;
+}
+
+function HeaderUserMenu({ user, onLogout }: HeaderUserMenuProps) {
   const { t } = useTranslation();
   const firstLetter = user?.username?.[0]?.toUpperCase() ?? "A";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-3 p-1 pr-3 rounded-full bg-card/40 border border-border/40 hover:bg-card/80 transition-all outline-none group">
-          <div className="relative h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary border border-primary/30">
+        <button className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl bg-card/45 border border-border/45 hover:bg-card/80 transition-all outline-none group backdrop-blur-sm">
+          <div className="relative h-8 w-8 rounded-xl bg-primary/18 flex items-center justify-center text-xs font-bold text-primary border border-primary/30">
             <span>{firstLetter}</span>
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#090b0e]" />
           </div>
@@ -74,7 +86,7 @@ function HeaderUserMenu({ user, onLogout }: any) {
           </div>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-card border-border/60">
+      <DropdownMenuContent align="end" className="w-56 bg-card/95 border-border/60 backdrop-blur-xl">
         <DropdownMenuLabel className="font-bold flex items-center gap-2 py-3 px-4">
           <User className="w-4 h-4 text-muted-foreground" />
           {user.username}
@@ -82,7 +94,7 @@ function HeaderUserMenu({ user, onLogout }: any) {
         <DropdownMenuSeparator className="bg-border/60" />
         <DropdownMenuItem className="py-2.5 px-4 cursor-pointer gap-3 focus:bg-primary/10">
           <Settings className="w-4 h-4 text-muted-foreground" />
-          <span>Configurações</span>
+          <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/60" />
         <DropdownMenuItem

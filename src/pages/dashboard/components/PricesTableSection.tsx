@@ -1,4 +1,4 @@
-// src/pages/dashboard/components/PricesTableSection.tsx
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, MousePointer2, Search } from "lucide-react";
 
@@ -25,6 +25,7 @@ import { buildItemImageUrl, splitItemName, type TierFilter } from "../utils/item
 import { TierFilter as TierFilterComponent } from "./TierFilter";
 import { ItemAvatar } from "./ItemAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { LiveUpdate } from "../hooks/useLivePrices";
 
 function getFreshnessInfo(dateStr?: string) {
   if (!dateStr || dateStr.startsWith("0001")) return { color: "#666", label: "—", level: "unknown" };
@@ -43,6 +44,9 @@ interface PricesTableSectionProps {
   selectedTier: TierFilter;
   onTierChange: (tier: TierFilter) => void;
   onSelectHistoryItem: (itemName: string) => void;
+  onReorderItem?: (draggedItemName: string, targetItemName: string) => void;
+  liveUpdates?: Record<string, LiveUpdate>;
+  nowTs: number;
 }
 
 export function PricesTableSection({
@@ -53,8 +57,42 @@ export function PricesTableSection({
   selectedTier,
   onTierChange,
   onSelectHistoryItem,
+  onReorderItem,
+  liveUpdates,
+  nowTs,
 }: PricesTableSectionProps) {
   const { t } = useTranslation();
+  const [draggedItem, setDraggedItem] = React.useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, itemName: string) => {
+    setDraggedItem(itemName);
+    e.dataTransfer.effectAllowed = 'move';
+    // Small delay to prevent the dragged element from disappearing
+    setTimeout(() => {
+      if (e.target instanceof HTMLElement) {
+        e.target.style.opacity = '0.5';
+      }
+    }, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetItemName: string) => {
+    e.preventDefault();
+    if (draggedItem && draggedItem !== targetItemName && onReorderItem) {
+      onReorderItem(draggedItem, targetItemName);
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    setDraggedItem(null);
+    if (e.target instanceof HTMLElement) {
+      e.target.style.opacity = '1';
+    }
+  };
 
   return (
     <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm overflow-hidden mb-6">
@@ -191,11 +229,31 @@ export function PricesTableSection({
                   const enchantDisplay = enchant ? `@${enchant}` : "—";
                   const freshness = getFreshnessInfo(item.updated_at);
 
+                  const dragKey = item.item_name;
+                  const liveUpdate =
+                    liveUpdates?.[`${item.item_name}-${item.city}`] ??
+                    liveUpdates?.[`${splitItemName(item.item_name).base}-${item.city}`];
+                  const hasRecentFlash = liveUpdate && (nowTs - liveUpdate.timestamp < 3000);
+                  const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : "—";
+                  
+                  const baseRowClasses = `cursor-move transition-all border-border/20 group`;
+                  let highlightClasses = "hover:bg-muted/30";
+                  if (hasRecentFlash) {
+                    highlightClasses = liveUpdate.variation_pct >= 0 
+                      ? "bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)] border-emerald-500/50 relative z-10" 
+                      : "bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.3)] border-red-500/50 relative z-10";
+                  }
+
                   return (
                     <TableRow
-                      key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
-                      className="cursor-pointer hover:bg-muted/30 transition-all border-border/20 group"
+                      key={`${dragKey}-${item.city}-${item.quality}-${item.enchantment}`}
+                      className={`${baseRowClasses} ${highlightClasses} ${draggedItem === dragKey ? 'opacity-50 border-primary border-dashed' : ''}`}
                       onClick={() => onSelectHistoryItem(item.item_name)}
+                      draggable={hasRecentFlash ? false : true} // disable dragging during a flash
+                      onDragStart={(e) => handleDragStart(e, dragKey)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, dragKey)}
+                      onDragEnd={handleDragEnd}
                     >
                       <TableCell className="py-3">
                         <div className="flex items-center gap-3">
@@ -223,8 +281,12 @@ export function PricesTableSection({
 
                       <TableCell className="py-3">
                         <div className="flex flex-col">
-                          <span className="font-black text-sm tracking-tighter text-foreground group-hover:text-primary transition-colors">
-                            {typeof item.price === "number" ? item.price.toLocaleString(locale) : "—"}
+                          <span className={`font-black text-sm tracking-tighter transition-colors ${
+                            hasRecentFlash && liveUpdate.variation_pct >= 0 ? "text-emerald-400" :
+                            hasRecentFlash && liveUpdate.variation_pct < 0 ? "text-red-400" :
+                            "text-foreground group-hover:text-primary"
+                          }`}>
+                            {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : "—"}
                           </span>
                           <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-0.5">Silver</span>
                         </div>
@@ -277,11 +339,31 @@ export function PricesTableSection({
                 const enchantDisplay = enchant ? `@${enchant}` : "—";
                 const freshness = getFreshnessInfo(item.updated_at);
 
+                const dragKey = item.item_name;
+                const liveUpdate =
+                  liveUpdates?.[`${item.item_name}-${item.city}`] ??
+                  liveUpdates?.[`${splitItemName(item.item_name).base}-${item.city}`];
+                const hasRecentFlash = liveUpdate && (nowTs - liveUpdate.timestamp < 3000);
+                const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : "—";
+                
+                const baseMobileClasses = "flex flex-col p-4 rounded-xl border transition-all cursor-move group space-y-3";
+                let mobileHighlightClasses = "border-border/40 bg-background/40 hover:bg-muted/30";
+                if (hasRecentFlash) {
+                  mobileHighlightClasses = liveUpdate.variation_pct >= 0 
+                    ? "bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)] border-emerald-500/50" 
+                    : "bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.3)] border-red-500/50";
+                }
+
                 return (
                   <div
-                    key={`${item.item_name}-${item.city}-${item.quality}-${item.enchantment}`}
-                    className="flex flex-col p-4 rounded-xl border border-border/40 bg-background/40 hover:bg-muted/30 transition-all cursor-pointer group space-y-3"
-                    onClick={() => onSelectHistoryItem(item.item_name)}
+                    key={`${dragKey}-${item.city}-${item.quality}-${item.enchantment}`}
+                    className={`${baseMobileClasses} ${mobileHighlightClasses} ${draggedItem === dragKey ? 'opacity-50 border-primary border-dashed' : ''}`}
+                    onClick={() => onSelectHistoryItem(dragKey)}
+                    draggable={hasRecentFlash ? false : true}
+                    onDragStart={(e) => handleDragStart(e, dragKey)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, dragKey)}
+                    onDragEnd={handleDragEnd}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col shrink-0">
@@ -298,8 +380,12 @@ export function PricesTableSection({
                         </div>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className="font-black text-lg tracking-tighter text-foreground group-hover:text-primary transition-colors">
-                          {typeof item.price === "number" ? item.price.toLocaleString(locale) : "—"}
+                        <span className={`font-black text-lg tracking-tighter transition-colors ${
+                            hasRecentFlash && liveUpdate.variation_pct >= 0 ? "text-emerald-400" :
+                            hasRecentFlash && liveUpdate.variation_pct < 0 ? "text-red-400" :
+                            "text-foreground group-hover:text-primary"
+                          }`}>
+                          {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : "—"}
                         </span>
                         <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-1">Silver</span>
                       </div>

@@ -36,8 +36,9 @@ export interface ItemPayload {
 export interface Item {
   id: number;
   item_name: string;
-  display_name?: string;
-  created_at?: string;
+  display_name: string | null;
+  created_at: string;
+  sort_order: number;
 }
 
 // === Albion API (resposta de /albion/prices) ===

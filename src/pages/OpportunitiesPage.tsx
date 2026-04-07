@@ -174,8 +174,28 @@ export function OpportunitiesPage() {
                             <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
                                 {filteredData.map((opt, idx) => {
                                     const profitIsGood = opt.roi > 30;
+                                    const profitIsMedium = opt.roi > 15 && opt.roi <= 30;
+                                    const borderColor = profitIsGood
+                                        ? "border-emerald-500/40 hover:border-emerald-400/60 hover:shadow-emerald-500/10"
+                                        : profitIsMedium
+                                            ? "border-blue-500/30 hover:border-blue-400/50 hover:shadow-blue-500/10"
+                                            : "border-border/60 hover:border-primary/40";
                                     return (
-                                        <Card key={`${opt.item_id}-${idx}`} className="group relative overflow-hidden bg-card/40 border-border/60 hover:border-primary/40 hover:bg-card/70 transition-all duration-300 shadow-xl backdrop-blur-sm">
+                                        <Card
+                                            key={`${opt.item_id}-${idx}`}
+                                            className={`group relative overflow-hidden bg-card/40 ${borderColor} hover:bg-card/70 transition-all duration-300 shadow-xl backdrop-blur-sm animate-fade-up hover:shadow-2xl`}
+                                            style={{ animationDelay: `${Math.min(idx * 0.06, 0.6)}s` }}
+                                        >
+                                            {/* ROI gradient strip on left */}
+                                            <div
+                                                className={`absolute left-0 top-0 bottom-0 w-1 ${
+                                                    profitIsGood
+                                                        ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+                                                        : profitIsMedium
+                                                            ? "bg-gradient-to-b from-blue-400 to-blue-600"
+                                                            : "bg-gradient-to-b from-primary/40 to-primary/10"
+                                                }`}
+                                            />
                                             {profitIsGood && (
                                                 <div className="absolute top-0 right-0 p-1 pointer-events-none z-10">
                                                     <div className="bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg uppercase tracking-widest shadow-lg">Premium Route</div>
@@ -190,7 +210,11 @@ export function OpportunitiesPage() {
                                                         </CardTitle>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-[10px] font-mono font-medium text-muted-foreground/60">{opt.item_id}</span>
-                                                            <Badge variant="outline" className="text-[9px] font-black h-4 px-1.5 border-border/40 uppercase">
+                                                            <Badge variant="outline" className={`text-[9px] font-black h-4 px-1.5 uppercase ${
+                                                                profitIsGood ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" :
+                                                                profitIsMedium ? "border-blue-500/40 text-blue-400 bg-blue-500/10" :
+                                                                "border-border/40"
+                                                            }`}>
                                                                 ROI {opt.roi}%
                                                             </Badge>
                                                             <Badge
@@ -229,8 +253,10 @@ export function OpportunitiesPage() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex flex-col items-center justify-center opacity-20 z-0">
-                                                        <ArrowRight size={24} className="text-primary animate-pulse" />
+                                                    <div className="flex flex-col items-center justify-center opacity-30 z-0">
+                                                        <div className="w-8 h-px bg-gradient-to-r from-emerald-400 to-amber-400 mb-1" />
+                                                        <ArrowRight size={20} className="text-primary" />
+                                                        <div className="w-8 h-px bg-gradient-to-r from-emerald-400 to-amber-400 mt-1" />
                                                     </div>
 
                                                     {/* Sell Station */}
@@ -253,7 +279,9 @@ export function OpportunitiesPage() {
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Lucro Líquido Estimado</span>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-2xl font-black tracking-tighter text-emerald-400">
+                                                            <span className={`text-2xl font-black tracking-tighter ${
+                                                                profitIsGood ? "text-emerald-400" : profitIsMedium ? "text-blue-400" : "text-primary"
+                                                            }`}>
                                                                 +{opt.profit.toLocaleString(locale)}
                                                             </span>
                                                             <Badge variant="outline" className="text-primary p-0 space-x-1 border-0">

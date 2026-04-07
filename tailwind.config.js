@@ -50,6 +50,34 @@ export default {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			}
+  		},
+  		keyframes: {
+  			'fade-up': {
+  				from: { opacity: '0', transform: 'translateY(20px)' },
+  				to: { opacity: '1', transform: 'translateY(0)' }
+  			},
+  			'fade-in': {
+  				from: { opacity: '0' },
+  				to: { opacity: '1' }
+  			},
+  			'float': {
+  				'0%, 100%': { transform: 'translateY(0px)' },
+  				'50%': { transform: 'translateY(-10px)' }
+  			},
+  			'pulse-slow': {
+  				'0%, 100%': { opacity: '1' },
+  				'50%': { opacity: '0.7' }
+  			},
+  			'shimmer': {
+  				'0%': { 'background-position': '-200% 0' },
+  				'100%': { 'background-position': '200% 0' }
+  			}
+  		},
+  		animation: {
+  			'fade-up': 'fade-up 0.5s ease-out forwards',
+  			'fade-in': 'fade-in 0.3s ease-out',
+  			'float': 'float 6s ease-in-out infinite',
+  			'pulse-slow': 'pulse-slow 4s ease-in-out infinite',
   		}
   	}
   },

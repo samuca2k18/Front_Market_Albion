@@ -15,17 +15,17 @@ export function HeaderNav({ items }: HeaderNavProps) {
   const { t } = useTranslation();
 
   return (
-    <nav className="hidden md:flex items-center gap-4 text-[13px] font-medium">
+    <nav className="hidden md:flex items-center gap-1.5 rounded-2xl border border-border/40 bg-background/30 p-1 backdrop-blur-sm">
       {items.map((item) => (
         <NavLink
           key={item.path}
           to={item.path}
           className={({ isActive }) =>
             [
-              "relative inline-flex items-center text-sm transition-colors",
+              "relative inline-flex items-center rounded-xl px-3 py-1.5 text-[12px] font-semibold tracking-tight transition-all duration-200",
               isActive
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-primary/15 text-primary shadow-[0_8px_20px_rgba(34,197,94,0.14)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5",
             ].join(" ")
           }
         >
@@ -33,7 +33,7 @@ export function HeaderNav({ items }: HeaderNavProps) {
             <>
               {t(`header.${item.label}`)}
               {isActive && (
-                <span className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full bg-primary" />
+                <span className="absolute -bottom-0.5 left-2 right-2 h-px rounded-full bg-primary/70" />
               )}
             </>
           )}

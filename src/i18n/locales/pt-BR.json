@@ -12,6 +12,12 @@
     "close": "Fechar",
     "save": "Salvar"
   },
+  "navigation": {
+    "dashboard": "Painel",
+    "prices": "Preços",
+    "opportunities": "Oportunidades",
+    "killboard": "Killboard"
+  },
   "languages": {
     "pt": "Português",
     "en": "English"
@@ -21,6 +27,7 @@
     "prices": "Preços",
     "opportunities": "Oportunidades",
     "killboard": "Killboard",
+    "items": "Catálogo",
     "contribute": "Contribuir",
     "tagline": "Market Intelligence",
     "loggedAs": "Logado como",
@@ -41,6 +48,11 @@
     "marketFocus": "Foco em leitura de mercado",
     "copyright": "Albion Market Intelligence",
     "disclaimer": "Não afiliado oficialmente à Sandbox Interactive. Albion Online é marca de seus respectivos detentores."
+  },
+  "opportunities": {
+    "title": "Oportunidades de Mercado",
+    "subtitle": "Encontre as melhores margens de lucro de itens entre diferentes cidades.",
+    "emptyMessage": "Tente diminuir o filtro de lucro ou adicione mais itens ao seu rastreador."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -120,6 +132,7 @@
     "filterByEnchantment": "Filtrar por encantamento",
     "noEnchantment": "Nenhum encantamento encontrado",
     "noResults": "Nenhum item encontrado com os filtros atuais.",
+    "noResultsDesc": "Tente ajustar seus filtros para encontrar o que procura.",
     "item": "Item",
     "price": "Preço",
     "quality": "Qualidade",

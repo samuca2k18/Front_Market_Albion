@@ -9,6 +9,7 @@ import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { useDashboardItems } from "./hooks/useDashboardItems";
 import { useDashboardPrices } from "./hooks/useDashboardPrices";
 import { usePriceHistory } from "./hooks/usePriceHistory";
+import { useLivePrices } from "./hooks/useLivePrices";
 import { useRegion } from "@/context/RegionContext";
 
 import { QuickSummary } from "./components/QuickSummary";
@@ -41,11 +42,6 @@ export function DashboardPage() {
         ? "en-US"
         : i18n.language || "en-US";
 
-  // Quando muda idioma, limpa cache para recarregar nomes
-  useEffect(() => {
-    setItemNamesCache(new Map());
-  }, [i18n.language]);
-
   const { region } = useRegion();
 
   // Hooks de dados
@@ -57,15 +53,47 @@ export function DashboardPage() {
     handleDeleteSingle,
     handleToggleSelect,
     handleSelectAll,
+    reorderMutation,
     handleDeleteSelected,
   } = useDashboardItems();
+
+  const findTrackedIndexByItemName = (targetName: string) => {
+    const normalizedTarget = targetName.toUpperCase();
+    const exactIndex = trackedItems.findIndex(
+      (item) => item.item_name.toUpperCase() === normalizedTarget,
+    );
+    if (exactIndex !== -1) return exactIndex;
+
+    const baseTarget = targetName.split("@")[0].toUpperCase();
+    return trackedItems.findIndex(
+      (item) => item.item_name.split("@")[0].toUpperCase() === baseTarget,
+    );
+  };
+
+  const handleReorderItem = (draggedItemName: string, targetItemName: string) => {
+    const draggedIdx = findTrackedIndexByItemName(draggedItemName);
+    const targetIdx = findTrackedIndexByItemName(targetItemName);
+
+    if (draggedIdx === -1 || targetIdx === -1 || draggedIdx === targetIdx) return;
+
+    const newItems = [...trackedItems];
+    const [removed] = newItems.splice(draggedIdx, 1);
+    newItems.splice(targetIdx, 0, removed);
+
+    const payload = newItems.map((item, index) => ({
+      id: item.id,
+      sort_order: index + 1,
+    }));
+
+    reorderMutation.mutate(payload);
+  };
 
   const {
     myPricesQuery,
     myPrices,
     selectedTier,
     setSelectedTier,
-  } = useDashboardPrices();
+  } = useDashboardPrices(trackedItems);
 
   const arbitrageQuery = useQuery({
     queryKey: ["arbitrage-summary", region],
@@ -80,6 +108,11 @@ export function DashboardPage() {
     chartData,
   } = usePriceHistory(locale);
 
+  const { updates: liveUpdates, nowTs, recentUpdateCount } = useLivePrices(
+    trackedItems.map((item) => item.item_name),
+    myPrices.map((entry) => entry.city),
+  );
+
   // Cache de nomes traduzidos
   useEffect(() => {
     const fetchNames = async () => {
@@ -90,7 +123,9 @@ export function DashboardPage() {
         ]),
       );
 
-      const missing = bases.filter((b) => !itemNamesCache.has(b));
+      const missing = bases.filter(
+        (base) => !itemNamesCache.has(`${i18n.language}:${base}`),
+      );
       if (missing.length === 0) return;
 
       const results = await Promise.all(
@@ -121,7 +156,9 @@ export function DashboardPage() {
       if (valid.length > 0) {
         setItemNamesCache((prev) => {
           const next = new Map(prev);
-          valid.forEach(({ base, name }) => next.set(base, name));
+          valid.forEach(({ base, name }) => {
+            next.set(`${i18n.language}:${base}`, name);
+          });
           return next;
         });
       }
@@ -134,7 +171,7 @@ export function DashboardPage() {
 
   const getItemDisplayName = (name: string): string => {
     const { base, enchant } = splitItemName(name);
-    const cached = itemNamesCache.get(base);
+    const cached = itemNamesCache.get(`${i18n.language}:${base}`);
     const display = cached ?? getItemDisplayNameWithEnchantment(base);
     return enchant ? `${display} @${enchant}` : display;
   };
@@ -149,6 +186,7 @@ export function DashboardPage() {
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
             opportunityCount={arbitrageQuery.data?.length || 0}
+            liveBumpsCount={recentUpdateCount}
           />
 
           <GoldPriceCard region={region} />
@@ -184,9 +222,10 @@ export function DashboardPage() {
               locale={locale}
               selectedTier={selectedTier}
               onTierChange={setSelectedTier}
-              onSelectHistoryItem={(itemName) =>
-                setSelectedHistoryItem(itemName)
-              }
+              onSelectHistoryItem={(itemName) => setSelectedHistoryItem(itemName)}
+              onReorderItem={handleReorderItem}
+              liveUpdates={liveUpdates}
+              nowTs={nowTs}
             />
 
             <PriceHistoryChart

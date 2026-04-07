@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   Tooltip,
@@ -98,7 +98,7 @@ export function PriceHistoryChart({
     if (!active || !payload?.length) return null;
     const v = payload[0]?.value;
     return (
-      <div className="bg-popover/90 border border-border/60 p-3 rounded-xl backdrop-blur-md shadow-2xl min-w-[180px]">
+      <div className="bg-popover/95 border border-primary/20 p-3 rounded-xl backdrop-blur-xl shadow-2xl min-w-[180px]">
         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 border-b border-border/40 pb-1">
           {label}
         </div>
@@ -220,11 +220,16 @@ export function PriceHistoryChart({
           {/* Main Chart Rendering */}
           <div className="flex-1 w-full bg-background/20 rounded-2xl border border-border/20 p-4 pt-6 group">
             <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={filteredData}>
+              <AreaChart data={filteredData}>
                 <defs>
                   <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
                     <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={1} />
+                  </linearGradient>
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                    <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.08} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -255,17 +260,17 @@ export function PriceHistoryChart({
                   cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
 
-                <Line
+                <Area
                   type="monotone"
                   dataKey="avg_price"
-                  dot={false}
                   strokeWidth={3}
                   stroke="url(#lineStroke)"
+                  fill="url(#areaFill)"
                   animationDuration={1500}
                   isAnimationActive={true}
-                  activeDot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                  activeDot={{ r: 5, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
 
             <div className="flex justify-between items-center mt-4 px-2">

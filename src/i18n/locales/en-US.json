@@ -12,6 +12,12 @@
     "close": "Close",
     "save": "Save"
   },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "prices": "Prices",
+    "opportunities": "Opportunities",
+    "killboard": "Killboard"
+  },
   "languages": {
     "pt": "Português",
     "en": "English"
@@ -21,6 +27,7 @@
     "prices": "Prices",
     "opportunities": "Opportunities",
     "killboard": "Killboard",
+    "items": "Catalog",
     "contribute": "Contribute",
     "tagline": "Market Intelligence",
     "loggedAs": "Logged as",
@@ -41,6 +48,11 @@
     "marketFocus": "Market reading focus",
     "copyright": "Albion Market Intelligence",
     "disclaimer": "Not officially affiliated with Sandbox Interactive. Albion Online is a trademark of its respective owners."
+  },
+  "opportunities": {
+    "title": "Market Opportunities",
+    "subtitle": "Find the best profit margins for items across different cities.",
+    "emptyMessage": "Try lowering the profit filter or add more items to your tracker."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -120,6 +132,7 @@
     "filterByEnchantment": "Filter by enchantment",
     "noEnchantment": "No enchantment found",
     "noResults": "No items found with current filters.",
+    "noResultsDesc": "Try adjusting your filters to find what you are looking for.",
     "item": "Item",
     "price": "Price",
     "quality": "Quality",
