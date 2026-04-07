@@ -1,41 +1,62 @@
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import { LandingPage } from '../pages/LandingPage'
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { vi } from "vitest";
+import { LandingPage } from "../pages/LandingPage";
 
-describe('LandingPage', () => {
-  it('renderiza o título principal', () => {
-    render(
+vi.mock("../api/albion", () => ({
+  fetchGoldPrices: vi.fn().mockResolvedValue({
+    current: { price: 123456, timestamp: "2026-01-01T00:00:00Z" },
+    previous: { price: 123000, timestamp: "2025-12-31T23:55:00Z" },
+    variation: 456,
+    all: [],
+    region: "europe",
+  }),
+  fetchAlbionPrices: vi.fn().mockResolvedValue({
+    items: {},
+    all_data: [],
+  }),
+}));
+
+function renderLandingPage() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <LandingPage />
       </MemoryRouter>
-    )
+    </QueryClientProvider>,
+  );
+}
 
-    expect(
-      screen.getByText(/domine a economia de/i)
-    ).toBeInTheDocument()
-  })
+describe("LandingPage", () => {
+  it("renderiza o titulo principal", () => {
+    renderLandingPage();
 
-  it('renderiza o botão "Começar agora"', () => {
-    render(
-      <MemoryRouter>
-        <LandingPage />
-      </MemoryRouter>
-    )
+    expect(screen.getByText(/domine a economia de/i)).toBeInTheDocument();
+  });
 
-    const btn = screen.getByRole('link', { name: /começar agora/i })
-    expect(btn).toBeInTheDocument()
-    expect(btn).toHaveAttribute('href', '/signup')
-  })
+  it("renderiza o botao de cadastro", () => {
+    renderLandingPage();
 
-  it('renderiza as 3 features da landing page', () => {
-    render(
-      <MemoryRouter>
-        <LandingPage />
-      </MemoryRouter>
-    )
+    const button = screen.getByRole("link", { name: /come[çc]ar agora/i });
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveAttribute("href", "/signup");
+  });
 
-    expect(screen.getByText('Monitoramento inteligente')).toBeInTheDocument()
-    expect(screen.getByText('Filtros profissionais')).toBeInTheDocument()
-    expect(screen.getByText('Login seguro')).toBeInTheDocument()
-  })
-})
+  it("renderiza as 3 features da landing page", () => {
+    renderLandingPage();
+
+    expect(screen.getByText("Monitoramento inteligente")).toBeInTheDocument();
+    expect(screen.getByText("Filtros profissionais")).toBeInTheDocument();
+    expect(screen.getByText("Login seguro")).toBeInTheDocument();
+  });
+});
