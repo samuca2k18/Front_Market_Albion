@@ -9,6 +9,7 @@ import { MobileMenu } from "./MobileMenu";
 import { BanditEventIndicator } from "./BanditEventIndicator";
 import { GlobalSearchTrigger } from "../search/GlobalSearch";
 import "./layout.css";
+import "./styles/premium-design.css";
 
 const navItems = [
   { label: "dashboard", path: "/dashboard", protected: true },
@@ -31,7 +32,7 @@ export function Header() {
   const hasNavigation = availableItems.length > 0;
 
   return (
-    <header className="app-header sticky top-0 z-40">
+    <header className="glass-header sticky top-0 z-40 transition-all duration-300">
       <div className="app-header-inner flex items-center justify-between">
         {/* Brand */}
         <HeaderBrand onMobileMenuClick={() => setIsMenuOpen(false)} />
@@ -40,8 +41,7 @@ export function Header() {
         {hasNavigation && (
           <HeaderNav items={availableItems} />
         )}
-
-        <div className="hidden md:flex items-center gap-2 rounded-2xl border border-border/40 bg-background/25 p-1.5 backdrop-blur-sm">
+        <div className="hidden md:flex items-center gap-2 floating-nav p-1.5 backdrop-blur-sm shadow-inner shadow-white/5">
           <GlobalSearchTrigger />
           <span className="h-5 w-px bg-border/45" />
           <BanditEventIndicator />

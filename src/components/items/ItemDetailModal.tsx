@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAlbionPrices } from "@/api/albion";
 import { useRegion } from "@/context/RegionContext";
 import { fetchItemDetail, getOpenAlbionUniqueName, type ItemType, type OpenAlbionItem } from "@/api/openalbion";
+import { useTranslation } from "react-i18next";
 import {
   Zap,
   MapPin,
@@ -22,15 +23,7 @@ interface ItemDetailModalProps {
   onClose: () => void;
 }
 
-function getTierColor(tier: string): string {
-  const t = parseFloat(tier);
-  if (t <= 3) return "text-gray-400 border-gray-400/30 bg-gray-500/10";
-  if (t <= 4) return "text-green-400 border-green-400/30 bg-green-500/10";
-  if (t <= 5) return "text-blue-400 border-blue-400/30 bg-blue-500/10";
-  if (t <= 6) return "text-purple-400 border-purple-400/30 bg-purple-500/10";
-  if (t <= 7) return "text-amber-400 border-amber-400/30 bg-amber-500/10";
-  return "text-red-400 border-red-400/30 bg-red-500/10";
-}
+const PLACEHOLDER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23222"/><path d="M18 46l14-28 14 28H18z" fill="%23555"/></svg>`;
 
 const CITIES = [
   "Bridgewatch",
@@ -42,8 +35,19 @@ const CITIES = [
   "Brecilien",
 ];
 
+function getTierColor(tier: string): string {
+  const t = parseFloat(tier);
+  if (t <= 3) return "text-gray-400 border-gray-400/30 bg-gray-500/10";
+  if (t <= 4) return "text-green-400 border-green-400/30 bg-green-500/10";
+  if (t <= 5) return "text-blue-400 border-blue-400/30 bg-blue-500/10";
+  if (t <= 6) return "text-purple-400 border-purple-400/30 bg-purple-500/10";
+  if (t <= 7) return "text-amber-400 border-amber-400/30 bg-amber-500/10";
+  return "text-red-400 border-red-400/30 bg-red-500/10";
+}
+
 export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProps) {
   const { region } = useRegion();
+  const { t } = useTranslation();
   const tierColor = getTierColor(item.tier);
 
   const uniqueName = getOpenAlbionUniqueName(item);
@@ -132,8 +136,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
                     alt={item.name}
                     className="w-16 h-16 object-contain"
                     onError={(e) => {
-                      e.currentTarget.src =
-                        "https://render.albiononline.com/v1/item/T1_BAG.png";
+                      e.currentTarget.src = PLACEHOLDER_SVG;
                     }}
                   />
                 </div>
@@ -179,7 +182,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
                 <Star className="w-3 h-3 text-primary" />
-                Informações do Item
+                {t("itemDatabase.statsItems")}
               </h3>
               <div className="grid grid-cols-3 gap-3">
                 <Card className="bg-background/40 border-border/20 p-3 text-center rounded-xl">
@@ -250,7 +253,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
             <div>
               <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
                 <MapPin className="w-3 h-3 text-primary" />
-                Preços por Cidade
+                {t("prices.table.city")}
               </h3>
 
               {!uniqueName ? (
@@ -305,7 +308,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
                               </span>
                               {isCheapest && (
                                 <Badge className="ml-2 text-[8px] font-black bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-1.5 h-4">
-                                  MELHOR
+                                  {t("common.confirm").toUpperCase()}
                                 </Badge>
                               )}
                             </div>
@@ -333,7 +336,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
           {/* Footer */}
           <div className="p-4 border-t border-border/20 flex items-center justify-between">
             <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">
-              Dados via OpenAlbion + Albion Data API
+              {t("itemDatabase.title")} + Albion Data API
             </span>
             <Button
               variant="ghost"
@@ -341,7 +344,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
               onClick={onClose}
               className="text-xs font-bold uppercase tracking-widest"
             >
-              Fechar
+              {t("common.close")}
             </Button>
           </div>
         </div>

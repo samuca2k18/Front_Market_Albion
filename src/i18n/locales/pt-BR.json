@@ -113,7 +113,12 @@
     "alertsPin": "Priorizar",
     "alertsPinned": "Prioritário",
     "alertsPinTooltip": "Priorizar este alerta",
-    "alertsUnpinTooltip": "Remover prioridade deste alerta"
+    "alertsUnpinTooltip": "Remover prioridade deste alerta",
+    "freshnessColumn": "Frescor",
+    "freshnessUnknown": "-",
+    "freshnessNoDate": "Sem data",
+    "freshnessMinutes": "{{value}}min",
+    "freshnessHours": "{{value}}h"
   },
   "prices": {
     "title": "Preços dos meus itens",
@@ -218,5 +223,77 @@
     "step4Desc": "Toda vez que você abrir o mercado de uma cidade, os preços são capturados e enviados. Pronto!",
     "ctaBtn": "Baixar Albion Data Client",
     "ctaNote": "Gratuito, open-source e seguro. Compatível com os TOS do Albion Online."
+  },
+  "crafting": {
+    "title": "Calculadora de Crafting",
+    "subtitle": "Receita, custo de materiais e lucro por cidade com foco e diarios.",
+    "searchCardTitle": "Buscar Consumivel",
+    "searchPlaceholder": "Ex: potion, stew, T6_POTION",
+    "emptyStateTitle": "Nenhum item selecionado",
+    "emptyStateDescription": "Escolha um consumivel para calcular custo e retorno por cidade.",
+    "loadingMessage": "Processando receita e mercado...",
+    "noRecipeFound": "Nenhuma receita encontrada para este item no OpenAlbion.",
+    "calculationError": "Nao foi possivel calcular os valores.",
+    "yieldBaseBadge": "Yield base: {{value}}x",
+    "noUniqueName": "sem unique_name",
+    "labels": {
+      "cityBuy": "Cidade de compra (materiais)",
+      "citySell": "Cidade de venda (produto)",
+      "focusReturnPct": "Retorno com foco (%)",
+      "journalBonusPct": "Economia de diario (%)",
+      "marketTaxPct": "Taxa de venda (%)",
+      "craftingFee": "Taxa fixa de craft (Ag)"
+    },
+    "materialTreeTitle": "Arvore de Materiais ({{city}})",
+    "unitPricePerUnit": "{{value}} Ag/un",
+    "noCityPrice": "sem preco na cidade",
+    "financialResultTitle": "Resultado Financeiro",
+    "metrics": {
+      "baseMaterialCost": "Custo base dos materiais",
+      "focusAdjustedCost": "Custo apos foco",
+      "saleUnitPrice": "Preco de venda ({{city}})",
+      "journalSavings": "Economia de diarios",
+      "netRevenue": "Receita liquida (apos taxa)",
+      "craftingFee": "Taxa fixa de craft",
+      "estimatedProfit": "Lucro estimado",
+      "roiPrefix": "ROI"
+    },
+    "regionNotice": "Regiao ativa: {{region}}. Materiais: {{cityBuy}} — Venda: {{citySell}}."
+  },
+  "itemDatabase": {
+    "title": "Item Database",
+    "subtitle": "Explore armas, armaduras, acessorios e consumiveis do Albion Online",
+    "statsItems": "Itens",
+    "statsType": "Tipo",
+    "searchLabel": "Buscar",
+    "searchPlaceholder": "Nome do item...",
+    "tierLabel": "Tier",
+    "tierAll": "Todos",
+    "categoryLabel": "Categorias",
+    "categoryAll": "Todas",
+    "itemsFound": "{{count}} itens encontrados",
+    "emptyMessage": "Nenhum item encontrado.",
+    "tabs": {
+      "weapon": "Armas",
+      "armor": "Armaduras",
+      "accessory": "Acessorios",
+      "consumable": "Consumiveis"
+    }
+  },
+  "comparison": {
+    "title": "Comparacao ({{count}}/{{max}})",
+    "emptyTitle": "Nenhum item selecionado",
+    "emptyDescription": "Use o botao '+' para adicionar itens.",
+    "bestPriceChartTitle": "Melhor Preco por Item",
+    "priceLabel": "Preco",
+    "loadingPrices": "Carregando precos atuais...",
+    "hide": "Ocultar",
+    "remove": "Remover da comparacao",
+    "add": "Adicionar a comparacao",
+    "compareButton": "Comparar",
+    "noPrice": "sem preco",
+    "ipValue": "{{value}} IP",
+    "bestPriceInline": "{{price}} ({{city}})"
   }
 }
+

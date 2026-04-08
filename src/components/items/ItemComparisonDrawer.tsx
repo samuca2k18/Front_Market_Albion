@@ -1,12 +1,12 @@
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { BarChart3, Coins, Layers3, X, Zap } from "lucide-react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
-  ResponsiveContainer,
   Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
@@ -26,7 +26,7 @@ interface ItemComparisonDrawerProps {
   onRemoveItem: (item: OpenAlbionItem) => void;
 }
 
-const COLORS = ["#22c55e", "#3b82f6", "#f59e0b"];
+const COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))"];
 
 function shortLabel(raw: string): string {
   if (raw.length <= 18) return raw;
@@ -39,10 +39,14 @@ export function ItemComparisonDrawer({
   onClose,
   onRemoveItem,
 }: ItemComparisonDrawerProps) {
+  const { t, i18n } = useTranslation();
   const { region } = useRegion();
+
+  const numberLocale = i18n.language.startsWith("pt") ? "pt-BR" : "en-US";
 
   useEffect(() => {
     if (!isOpen) return;
+
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -73,6 +77,7 @@ export function ItemComparisonDrawer({
   const bestByItem = useMemo(() => {
     const map = new Map<string, { price: number; city: string }>();
     const rows = priceQuery.data?.all_data ?? [];
+
     for (const row of rows) {
       if (!row.item_id || row.sell_price_min <= 0) continue;
       const current = map.get(row.item_id);
@@ -80,6 +85,7 @@ export function ItemComparisonDrawer({
         map.set(row.item_id, { price: row.sell_price_min, city: row.city });
       }
     }
+
     return map;
   }, [priceQuery.data]);
 
@@ -93,21 +99,23 @@ export function ItemComparisonDrawer({
     };
   });
 
+  const chartMinWidth = Math.max(360, chartData.length * 140);
+
   if (!isOpen) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-50 animate-fade-in bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="fixed top-0 right-0 z-50 h-full w-full sm:w-[520px] bg-background border-l border-border/40 shadow-2xl transition-transform duration-300 ease-in-out">
-        <div className="h-full flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b border-border/20 bg-muted/5">
-            <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              Comparacao ({items.length}/3)
+      <div className="fixed right-0 top-0 z-50 h-full w-full border-l border-border/40 glass-header shadow-2xl transition-transform duration-300 ease-in-out sm:w-[520px]">
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-border/20 bg-muted/5 p-4">
+            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-foreground">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              {t("comparison.title", { count: items.length, max: 3 })}
             </h2>
             <Button
               variant="ghost"
@@ -115,16 +123,20 @@ export function ItemComparisonDrawer({
               className="text-muted-foreground"
               onClick={onClose}
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+          <div className="custom-scrollbar flex-1 space-y-5 overflow-y-auto p-4">
             {items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center h-full opacity-50">
-                <Layers3 className="w-12 h-12 mb-4" />
-                <p className="font-bold text-sm uppercase tracking-widest">Nenhum item selecionado</p>
-                <p className="text-xs text-muted-foreground mt-2">Use o botao "+" para adicionar itens.</p>
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center opacity-50">
+                <Layers3 className="mb-4 h-12 w-12" />
+                <p className="text-sm font-bold uppercase tracking-widest">
+                  {t("comparison.emptyTitle")}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("comparison.emptyDescription")}
+                </p>
               </div>
             ) : (
               <>
@@ -134,43 +146,49 @@ export function ItemComparisonDrawer({
                     return (
                       <Card
                         key={item.id}
-                        className="p-3 rounded-2xl border border-border/40 bg-card/40"
+                        className="premium-card p-3"
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-1.5 h-10 rounded-full"
-                            style={{ backgroundColor: COLORS[index] }}
+                            className="h-10 w-1.5 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
                           />
-                          <div className="bg-black/40 p-1.5 rounded-xl">
+                          <div className="rounded-xl bg-black/40 p-1.5">
                             <img
                               src={getItemImageUrl(item.name)}
                               alt=""
-                              className="w-8 h-8 object-contain"
+                              className="h-8 w-8 object-contain"
                             />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black truncate">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-black">
                               {getItemDisplayNameWithEnchantment(item.name)}
                             </p>
-                            <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground font-mono">
+                            <div className="flex flex-wrap items-center gap-3 font-mono text-[10px] text-muted-foreground">
                               <span className="inline-flex items-center gap-1">
-                                <Zap className="w-3 h-3 text-amber-500" />
-                                {item.item_power} IP
+                                <Zap className="h-3 w-3 text-amber-500" />
+                                {t("comparison.ipValue", { value: item.item_power })}
                               </span>
                               <span>T{item.tier}</span>
                               <span className="inline-flex items-center gap-1">
-                                <Coins className="w-3 h-3 text-emerald-500" />
-                                {best ? `${best.price.toLocaleString("pt-BR")} (${best.city})` : "sem preco"}
+                                <Coins className="h-3 w-3 text-emerald-500" />
+                                {best
+                                  ? t("comparison.bestPriceInline", {
+                                      price: best.price.toLocaleString(numberLocale),
+                                      city: best.city,
+                                    })
+                                  : t("comparison.noPrice")}
                               </span>
                             </div>
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10"
+                            className="text-red-400/50 hover:bg-red-400/10 hover:text-red-400"
                             onClick={() => onRemoveItem(item)}
+                            title={t("comparison.remove")}
                           >
-                            <X className="w-4 h-4" />
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       </Card>
@@ -178,13 +196,19 @@ export function ItemComparisonDrawer({
                   })}
                 </div>
 
-                <Card className="bg-card/40 border-border/40 rounded-3xl p-4">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 text-center">
-                    Melhor Preco por Item
+                <Card className="rounded-3xl border-border/40 bg-card/40 p-4">
+                  <h3 className="mb-3 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {t("comparison.bestPriceChartTitle")}
                   </h3>
-                  <div className="w-full h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData} margin={{ top: 10, right: 8, left: -8, bottom: 24 }}>
+
+                  <div className="w-full overflow-x-auto pb-2">
+                    <div style={{ minWidth: `${chartMinWidth}px`, height: 280 }}>
+                      <BarChart
+                        width={chartMinWidth}
+                        height={280}
+                        data={chartData}
+                        margin={{ top: 10, right: 16, left: 0, bottom: 24 }}
+                      >
                         <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
                         <XAxis
                           dataKey="name"
@@ -192,14 +216,25 @@ export function ItemComparisonDrawer({
                           angle={-20}
                           textAnchor="end"
                           height={50}
-                          tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: 700 }}
+                          tick={{
+                            fill: "rgba(255,255,255,0.55)",
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}
                         />
                         <YAxis
-                          tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: 700 }}
-                          tickFormatter={(v) => Number(v).toLocaleString("pt-BR")}
+                          tick={{
+                            fill: "rgba(255,255,255,0.55)",
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}
+                          tickFormatter={(v) => Number(v).toLocaleString(numberLocale)}
                         />
                         <RechartsTooltip
-                          formatter={(value: number) => [`${Number(value).toLocaleString("pt-BR")} Ag`, "Preco"]}
+                          formatter={(value: number) => [
+                            `${Number(value).toLocaleString(numberLocale)} Ag`,
+                            t("comparison.priceLabel"),
+                          ]}
                           labelFormatter={(label) => {
                             const row = chartData.find((entry) => entry.name === label);
                             return row?.fullName ?? label;
@@ -212,24 +247,29 @@ export function ItemComparisonDrawer({
                         />
                         <Bar dataKey="price" radius={[8, 8, 0, 0]}>
                           {chartData.map((row, index) => (
-                            <Cell key={`${row.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                            <Cell
+                              key={`${row.name}-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
                           ))}
                         </Bar>
                       </BarChart>
-                    </ResponsiveContainer>
+                    </div>
                   </div>
                 </Card>
 
                 {priceQuery.isLoading && (
-                  <p className="text-[11px] text-muted-foreground text-center">Carregando precos atuais...</p>
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    {t("comparison.loadingPrices")}
+                  </p>
                 )}
               </>
             )}
           </div>
 
-          <div className="p-4 border-t border-border/20">
+          <div className="border-t border-border/20 p-4">
             <Button variant="outline" className="w-full" onClick={onClose}>
-              Ocultar
+              {t("comparison.hide")}
             </Button>
           </div>
         </div>

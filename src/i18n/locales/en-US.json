@@ -113,7 +113,12 @@
     "alertsPin": "Pin",
     "alertsPinned": "Pinned",
     "alertsPinTooltip": "Pin this alert",
-    "alertsUnpinTooltip": "Unpin this alert"
+    "alertsUnpinTooltip": "Unpin this alert",
+    "freshnessColumn": "Freshness",
+    "freshnessUnknown": "-",
+    "freshnessNoDate": "No date",
+    "freshnessMinutes": "{{value}}min",
+    "freshnessHours": "{{value}}h"
   },
   "prices": {
     "title": "My Item Prices",
@@ -218,5 +223,76 @@
     "step4Desc": "Every time you open the market in any city, prices are captured and shared. Done!",
     "ctaBtn": "Download Albion Data Client",
     "ctaNote": "Free, open-source and safe. Compatible with Albion Online's Terms of Service."
+  },
+  "crafting": {
+    "title": "Crafting Calculator",
+    "subtitle": "Recipe, material cost and city-based profit with focus and journals.",
+    "searchCardTitle": "Search Consumable",
+    "searchPlaceholder": "Ex: potion, stew, T6_POTION",
+    "emptyStateTitle": "No item selected",
+    "emptyStateDescription": "Choose a consumable to calculate cost and return by city.",
+    "loadingMessage": "Processing recipe and market data...",
+    "noRecipeFound": "No recipe found for this item on OpenAlbion.",
+    "calculationError": "Could not calculate the values.",
+    "yieldBaseBadge": "Base yield: {{value}}x",
+    "noUniqueName": "no unique_name",
+    "labels": {
+      "cityBuy": "Buy city (materials)",
+      "citySell": "Sell city (product)",
+      "focusReturnPct": "Focus return (%)",
+      "journalBonusPct": "Journal savings (%)",
+      "marketTaxPct": "Sale tax (%)",
+      "craftingFee": "Fixed crafting fee (Ag)"
+    },
+    "materialTreeTitle": "Material Tree ({{city}})",
+    "unitPricePerUnit": "{{value}} Ag/unit",
+    "noCityPrice": "no price in city",
+    "financialResultTitle": "Financial Result",
+    "metrics": {
+      "baseMaterialCost": "Base material cost",
+      "focusAdjustedCost": "Cost after focus",
+      "saleUnitPrice": "Sale price ({{city}})",
+      "journalSavings": "Journal savings",
+      "netRevenue": "Net revenue (after tax)",
+      "craftingFee": "Fixed crafting fee",
+      "estimatedProfit": "Estimated profit",
+      "roiPrefix": "ROI"
+    },
+    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}."
+  },
+  "itemDatabase": {
+    "title": "Item Database",
+    "subtitle": "Explore weapons, armor, accessories and consumables from Albion Online",
+    "statsItems": "Items",
+    "statsType": "Type",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Item name...",
+    "tierLabel": "Tier",
+    "tierAll": "All",
+    "categoryLabel": "Categories",
+    "categoryAll": "All",
+    "itemsFound": "{{count}} items found",
+    "emptyMessage": "No items found.",
+    "tabs": {
+      "weapon": "Weapons",
+      "armor": "Armor",
+      "accessory": "Accessories",
+      "consumable": "Consumables"
+    }
+  },
+  "comparison": {
+    "title": "Comparison ({{count}}/{{max}})",
+    "emptyTitle": "No item selected",
+    "emptyDescription": "Use the '+' button to add items.",
+    "bestPriceChartTitle": "Best Price per Item",
+    "priceLabel": "Price",
+    "loadingPrices": "Loading latest prices...",
+    "hide": "Hide",
+    "remove": "Remove from comparison",
+    "add": "Add to comparison",
+    "compareButton": "Compare",
+    "noPrice": "no price",
+    "ipValue": "{{value}} IP",
+    "bestPriceInline": "{{price}} ({{city}})"
   }
 }

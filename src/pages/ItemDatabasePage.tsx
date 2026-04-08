@@ -10,6 +10,7 @@ import {
   type ItemType,
   type OpenAlbionItem,
 } from "@/api/openalbion";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   Card,
   CardContent,
@@ -32,17 +33,13 @@ import {
   Zap,
   Plus,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
-const TYPE_TABS: { type: ItemType; label: string; icon: LucideIcon }[] = [
-  { type: "weapon", label: "Armas", icon: Sword },
-  { type: "armor", label: "Armaduras", icon: Shield },
-  { type: "accessory", label: "Acessórios", icon: Backpack },
-  { type: "consumable", label: "Consumíveis", icon: FlaskConical },
-];
+
+// TYPE_TABS is now generated inside the component with i18n (see TYPE_TABS_I18N)
+
 
 const TIER_OPTIONS = [
-  { value: 0, label: "Todos" },
+  { value: 0, key: "tierAll" },
   { value: 3, label: "T3" },
   { value: 4, label: "T4" },
   { value: 5, label: "T5" },
@@ -61,6 +58,8 @@ function getTierColor(tier: string): string {
   return "text-red-400 border-red-400/30 bg-red-500/10";
 }
 
+// Generic SVG placeholder — used instead of a wrong random item icon on broken images
+const PLACEHOLDER_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="8" fill="%23222"/><path d="M14 34l10-20 10 20H14z" fill="%23555"/></svg>`;
 
 function ItemCard({ 
   item, 
@@ -71,6 +70,7 @@ function ItemCard({
   onCompare: (item: OpenAlbionItem, e: React.MouseEvent) => void;
   isCompared: boolean;
 }) {
+  const { t } = useTranslation();
   const tierColor = getTierColor(item.tier);
 
   return (
@@ -86,8 +86,7 @@ function ItemCard({
                 className="w-12 h-12 object-contain"
                 loading="lazy"
                 onError={(e) => {
-                  e.currentTarget.src =
-                    "https://render.albiononline.com/v1/item/T1_BAG.png";
+                  e.currentTarget.src = PLACEHOLDER_SVG;
                 }}
               />
             </div>
@@ -120,7 +119,7 @@ function ItemCard({
               size="icon"
               className={`w-7 h-7 shrink-0 ${isCompared ? 'bg-primary' : 'hover:border-primary hover:text-primary'}`}
               onClick={(e) => onCompare(item, e)}
-              title={isCompared ? "Remover da comparação" : "Adicionar à comparação"}
+              title={isCompared ? t("comparison.remove") : t("comparison.add")}
             >
               <Plus className={`w-4 h-4 ${isCompared ? 'rotate-45' : ''} transition-transform`} />
             </Button>
@@ -132,14 +131,23 @@ function ItemCard({
 }
 
 export function ItemDatabasePage() {
-  useTranslation();
+  const { t } = useTranslation();
   const [activeType, setActiveType] = useState<ItemType>("weapon");
   const [selectedTier, setSelectedTier] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
   const [detailItem, setDetailItem] = useState<OpenAlbionItem | null>(null);
   const [comparisonList, setComparisonList] = useState<OpenAlbionItem[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Build TYPE_TABS dynamically with i18n
+  const TYPE_TABS_I18N = [
+    { type: "weapon" as ItemType, label: t("itemDatabase.tabs.weapon"), icon: Sword },
+    { type: "armor" as ItemType, label: t("itemDatabase.tabs.armor"), icon: Shield },
+    { type: "accessory" as ItemType, label: t("itemDatabase.tabs.accessory"), icon: Backpack },
+    { type: "consumable" as ItemType, label: t("itemDatabase.tabs.consumable"), icon: FlaskConical },
+  ];
 
   const toggleCompare = (item: OpenAlbionItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -180,10 +188,10 @@ export function ItemDatabasePage() {
   const items = itemsQuery.data?.data || [];
   const categories = categoriesQuery.data?.data || [];
 
-  // Filter by search
-  const filteredItems = searchQuery
+  // Filter by debounced search — avoids re-rendering on every keystroke
+  const filteredItems = debouncedSearch
     ? items.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        item.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
       )
     : items;
 
@@ -200,11 +208,10 @@ export function ItemDatabasePage() {
               </div>
               <div>
                 <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-1">
-                  Item Database
+                  {t("itemDatabase.title")}
                 </h1>
                 <p className="text-muted-foreground font-medium">
-                  Explore armas, armaduras, acessórios e consumíveis do Albion
-                  Online
+                  {t("itemDatabase.subtitle")}
                 </p>
               </div>
             </div>
@@ -215,7 +222,7 @@ export function ItemDatabasePage() {
             <div className="flex items-center gap-4 px-4">
               <div className="text-center">
                 <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                  Itens
+                  {t("itemDatabase.statsItems")}
                 </div>
                 <div className="text-xl font-black tracking-tighter text-foreground">
                   {items.length}
@@ -224,10 +231,10 @@ export function ItemDatabasePage() {
               <div className="h-8 w-px bg-border/40" />
               <div className="text-center">
                 <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                  Tipo
+                  {t("itemDatabase.statsType")}
                 </div>
                 <div className="text-sm font-bold text-primary capitalize">
-                  {TYPE_TABS.find((t) => t.type === activeType)?.label}
+                  {TYPE_TABS_I18N.find((tab) => tab.type === activeType)?.label}
                 </div>
               </div>
             </div>
@@ -236,7 +243,7 @@ export function ItemDatabasePage() {
 
         {/* Type Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {TYPE_TABS.map((tab) => (
+          {TYPE_TABS_I18N.map((tab) => (
             <Button
               key={tab.type}
               variant={activeType === tab.type ? "default" : "ghost"}
@@ -265,14 +272,14 @@ export function ItemDatabasePage() {
               <CardHeader className="pb-3 border-b border-border/20">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <Search size={14} className="text-primary" />
-                  Buscar
+                  {t("itemDatabase.searchLabel")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Nome do item..."
+                  placeholder={t("itemDatabase.searchPlaceholder")}
                   className="h-10 bg-background/40 border-border/40 focus:border-primary/50"
                 />
               </CardContent>
@@ -283,7 +290,7 @@ export function ItemDatabasePage() {
               <CardHeader className="pb-3 border-b border-border/20">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <Filter size={14} className="text-primary" />
-                  Tier
+                  {t("itemDatabase.tierLabel")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
@@ -302,7 +309,7 @@ export function ItemDatabasePage() {
                           : "bg-background/40 border-border/40 hover:bg-background/60"
                       }`}
                     >
-                      {tier.label}
+                      {'key' in tier ? t(`itemDatabase.${tier.key}`) : tier.label}
                     </Button>
                   ))}
                 </div>
@@ -314,7 +321,7 @@ export function ItemDatabasePage() {
               <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-lg rounded-2xl">
                 <CardHeader className="pb-3 border-b border-border/20">
                   <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                    Categorias
+                    {t("itemDatabase.categoryLabel")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -326,7 +333,7 @@ export function ItemDatabasePage() {
                         : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
                     }`}
                   >
-                    Todas
+                    {t("itemDatabase.categoryAll")}
                   </button>
                   {categories.map((cat) => (
                     <div key={cat.id}>
@@ -364,7 +371,7 @@ export function ItemDatabasePage() {
           <main className="lg:col-span-4">
             <div className="flex items-center justify-between mb-4 px-1">
               <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 italic">
-                {filteredItems.length} itens encontrados
+                {t("itemDatabase.itemsFound", { count: filteredItems.length })}
               </p>
             </div>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
@@ -375,7 +382,7 @@ export function ItemDatabasePage() {
               ) : filteredItems.length === 0 ? (
                 <div className="col-span-full py-12 text-center border-2 border-dashed border-border/40 rounded-3xl bg-card/20">
                   <p className="text-muted-foreground font-bold">
-                    Nenhum item encontrado.
+                    {t("itemDatabase.emptyMessage")}
                   </p>
                 </div>
               ) : (
@@ -412,7 +419,7 @@ export function ItemDatabasePage() {
           <div className="bg-black/20 w-6 h-6 rounded-full flex items-center justify-center font-black text-xs">
             {comparisonList.length}
           </div>
-          <span className="font-bold text-sm tracking-tighter">Comparar</span>
+          <span className="font-bold text-sm tracking-tighter">{t("comparison.compareButton")}</span>
         </button>
       )}
 

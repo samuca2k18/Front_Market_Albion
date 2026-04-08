@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Clock, MousePointer2, Search } from "lucide-react";
+import type { TFunction } from "i18next";
 
 import type { MyItemPrice } from "@/api/types";
 import {
@@ -27,13 +28,45 @@ import { ItemAvatar } from "./ItemAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LiveUpdate } from "../hooks/useLivePrices";
 
-function getFreshnessInfo(dateStr?: string) {
-  if (!dateStr || dateStr.startsWith("0001")) return { color: "#666", label: "—", level: "unknown" };
+function getFreshnessInfo(dateStr: string | undefined, t: TFunction) {
+  if (!dateStr || dateStr.startsWith("0001")) {
+    return {
+      color: "#666",
+      label: t("dashboard.freshnessUnknown"),
+      level: "unknown",
+      tooltip: t("dashboard.freshnessNoDate"),
+    };
+  }
+
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const hours = diffMs / (1000 * 60 * 60);
-  if (hours < 1) return { color: "#22c55e", label: `${Math.round(hours * 60)}min`, level: "fresh" };
-  if (hours < 6) return { color: "#eab308", label: `${Math.round(hours)}h`, level: "stale" };
-  return { color: "#ef4444", label: `${Math.round(hours)}h`, level: "old" };
+
+  if (hours < 1) {
+    const minutes = Math.max(1, Math.round(hours * 60));
+    return {
+      color: "#22c55e",
+      label: t("dashboard.freshnessMinutes", { value: minutes }),
+      level: "fresh",
+      tooltip: dateStr,
+    };
+  }
+
+  const roundedHours = Math.max(1, Math.round(hours));
+  if (hours < 6) {
+    return {
+      color: "#eab308",
+      label: t("dashboard.freshnessHours", { value: roundedHours }),
+      level: "stale",
+      tooltip: dateStr,
+    };
+  }
+
+  return {
+    color: "#ef4444",
+    label: t("dashboard.freshnessHours", { value: roundedHours }),
+    level: "old",
+    tooltip: dateStr,
+  };
 }
 
 interface PricesTableSectionProps {
@@ -127,7 +160,7 @@ export function PricesTableSection({
                   <TableHead className="text-[10px] font-black uppercase tracking-widest h-10">{t("prices.table.price")}</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-center">{t("prices.table.quality")}</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-center">{t("prices.table.enchantment")}</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-right">Frescor</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-right">{t("dashboard.freshnessColumn")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -217,7 +250,7 @@ export function PricesTableSection({
                   <TableHead className="text-[10px] font-black uppercase tracking-widest h-10 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Clock size={11} className="text-primary/70" />
-                      Frescor
+                      {t("dashboard.freshnessColumn")}
                     </div>
                   </TableHead>
                 </TableRow>
@@ -226,15 +259,15 @@ export function PricesTableSection({
                 {myPrices.map((item) => {
                   const { base, enchant } = splitItemName(item.item_name);
                   const displayName = item.display_name ?? getItemDisplayNameWithEnchantment(base);
-                  const enchantDisplay = enchant ? `@${enchant}` : "—";
-                  const freshness = getFreshnessInfo(item.updated_at);
+                  const enchantDisplay = enchant ? `@${enchant}` : t("dashboard.freshnessUnknown");
+                  const freshness = getFreshnessInfo(item.updated_at, t);
 
                   const dragKey = item.item_name;
                   const liveUpdate =
                     liveUpdates?.[`${item.item_name}-${item.city}`] ??
                     liveUpdates?.[`${splitItemName(item.item_name).base}-${item.city}`];
                   const hasRecentFlash = liveUpdate && (nowTs - liveUpdate.timestamp < 3000);
-                  const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : "—";
+                  const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : t("dashboard.freshnessUnknown");
                   
                   const baseRowClasses = `cursor-move transition-all border-border/20 group`;
                   let highlightClasses = "hover:bg-muted/30";
@@ -275,7 +308,7 @@ export function PricesTableSection({
 
                       <TableCell className="py-3">
                         <Badge variant="outline" className="bg-background/40 border-border/40 font-bold uppercase tracking-tighter text-[10px] py-0.5">
-                          {item.city || "—"}
+                          {item.city || t("dashboard.freshnessUnknown")}
                         </Badge>
                       </TableCell>
 
@@ -286,9 +319,9 @@ export function PricesTableSection({
                             hasRecentFlash && liveUpdate.variation_pct < 0 ? "text-red-400" :
                             "text-foreground group-hover:text-primary"
                           }`}>
-                            {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : "—"}
+                            {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : t("dashboard.freshnessUnknown")}
                           </span>
-                          <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-0.5">Silver</span>
+                          <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-0.5">{t("dashboard.silver")}</span>
                         </div>
                       </TableCell>
 
@@ -313,7 +346,7 @@ export function PricesTableSection({
                       </TableCell>
 
                       <TableCell className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-2" title={item.updated_at || "Sem data"}>
+                        <div className="flex items-center justify-end gap-2" title={freshness.tooltip}>
                           <div
                             className="w-2 h-2 rounded-full shadow-sm"
                             style={{
@@ -336,15 +369,15 @@ export function PricesTableSection({
               {myPrices.map((item) => {
                 const { base, enchant } = splitItemName(item.item_name);
                 const displayName = item.display_name ?? getItemDisplayNameWithEnchantment(base);
-                const enchantDisplay = enchant ? `@${enchant}` : "—";
-                const freshness = getFreshnessInfo(item.updated_at);
+                const enchantDisplay = enchant ? `@${enchant}` : t("dashboard.freshnessUnknown");
+                const freshness = getFreshnessInfo(item.updated_at, t);
 
                 const dragKey = item.item_name;
                 const liveUpdate =
                   liveUpdates?.[`${item.item_name}-${item.city}`] ??
                   liveUpdates?.[`${splitItemName(item.item_name).base}-${item.city}`];
                 const hasRecentFlash = liveUpdate && (nowTs - liveUpdate.timestamp < 3000);
-                const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : "—";
+                const displayPrice = liveUpdate ? liveUpdate.new_price : typeof item.price === "number" ? item.price : t("dashboard.freshnessUnknown");
                 
                 const baseMobileClasses = "flex flex-col p-4 rounded-xl border transition-all cursor-move group space-y-3";
                 let mobileHighlightClasses = "border-border/40 bg-background/40 hover:bg-muted/30";
@@ -367,8 +400,8 @@ export function PricesTableSection({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col shrink-0">
-                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{item.city || "—"}</span>
-                        <div className="flex items-center gap-2" title={item.updated_at || "Sem data"}>
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{item.city || t("dashboard.freshnessUnknown")}</span>
+                        <div className="flex items-center gap-2" title={freshness.tooltip}>
                           <div
                             className="w-2 h-2 rounded-full shadow-sm"
                             style={{
@@ -385,9 +418,9 @@ export function PricesTableSection({
                             hasRecentFlash && liveUpdate.variation_pct < 0 ? "text-red-400" :
                             "text-foreground group-hover:text-primary"
                           }`}>
-                          {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : "—"}
+                          {typeof displayPrice === "number" ? displayPrice.toLocaleString(locale) : t("dashboard.freshnessUnknown")}
                         </span>
-                        <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-1">Silver</span>
+                        <span className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest -mt-1">{t("dashboard.silver")}</span>
                       </div>
                     </div>
 

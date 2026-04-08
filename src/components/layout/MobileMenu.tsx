@@ -10,6 +10,7 @@ import { GlobalSearchTrigger } from "../search/GlobalSearch";
 
 interface NavItem {
   label: string;
+  labelFallback?: string;
   path: string;
   protected: boolean;
 }
@@ -59,7 +60,9 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
                 ].join(" ")
               }
             >
-              {t(`header.${item.label}`)}
+              {t(`header.${item.label}`, {
+                defaultValue: item.labelFallback ?? item.label,
+              })}
             </NavLink>
           ))}
         </nav>

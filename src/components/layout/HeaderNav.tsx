@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 interface NavItem {
   label: string;
+  labelFallback?: string;
   path: string;
   protected: boolean;
 }
@@ -31,7 +32,9 @@ export function HeaderNav({ items }: HeaderNavProps) {
         >
           {({ isActive }) => (
             <>
-              {t(`header.${item.label}`)}
+              {t(`header.${item.label}`, {
+                defaultValue: item.labelFallback ?? item.label,
+              })}
               {isActive && (
                 <span className="absolute -bottom-0.5 left-2 right-2 h-px rounded-full bg-primary/70" />
               )}
