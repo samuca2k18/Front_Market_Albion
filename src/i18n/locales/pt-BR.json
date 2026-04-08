@@ -72,6 +72,9 @@
     "noItemsToMonitor": "Adicione itens para começar a monitorar os preços!",
     "fetchingPrices": "Buscando preços nas cidades...",
     "errorLoadingItems": "Erro ao carregar itens.",
+    "loadingItems": "Carregando itens cadastrados...",
+    "couldNotLoadItems": "Não foi possível carregar seus itens cadastrados.",
+    "retryLoadItems": "Tentar novamente",
     "errorLoadingPrices": "Erro ao carregar preços.",
     "loadingChart": "Carregando gráfico...",
     "errorLoadingHistory": "Não foi possível carregar o histórico deste item.",
@@ -296,4 +299,3 @@
     "bestPriceInline": "{{price}} ({{city}})"
   }
 }
-

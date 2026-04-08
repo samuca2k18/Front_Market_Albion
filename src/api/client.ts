@@ -4,7 +4,11 @@ import axios, { AxiosError } from 'axios';
 const DEFAULT_API_URL = 'https://market-albion-online.onrender.com';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || DEFAULT_API_URL;
+  (
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    DEFAULT_API_URL
+  ).replace(/\/$/, '');
 
 export const STORAGE_KEYS = {
   token: 'albion_market_token',

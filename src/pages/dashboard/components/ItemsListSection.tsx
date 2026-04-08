@@ -1,7 +1,7 @@
 // src/pages/dashboard/components/ItemsListSection.tsx
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash2, BellRing, Info } from "lucide-react";
+import { Trash2, BellRing, Info, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 import type { Item } from "@/api/types";
 import {
@@ -24,6 +24,8 @@ import { buildItemImageUrlFromName } from "../utils/itemFilters";
 
 interface ItemsListSectionProps {
   trackedItems: Item[];
+  isItemsLoading: boolean;
+  itemsErrorMessage: string | null;
   selectedItems: Set<number>;
   locale: string;
   isDeleting: boolean;
@@ -31,11 +33,14 @@ interface ItemsListSectionProps {
   onSelectAll: () => void;
   onDeleteSelected: () => void;
   onDeleteSingle: (id: number) => void;
+  onRetryLoadItems: () => void;
   getItemDisplayName: (name: string) => string;
 }
 
 export function ItemsListSection({
   trackedItems,
+  isItemsLoading,
+  itemsErrorMessage,
   selectedItems,
   locale,
   isDeleting,
@@ -43,6 +48,7 @@ export function ItemsListSection({
   onSelectAll,
   onDeleteSelected,
   onDeleteSingle,
+  onRetryLoadItems,
   getItemDisplayName,
 }: ItemsListSectionProps) {
   const { t } = useTranslation();
@@ -77,7 +83,33 @@ export function ItemsListSection({
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col min-h-0">
-        {trackedItems.length === 0 ? (
+        {isItemsLoading ? (
+          <div className="flex flex-col items-center justify-center py-10 px-4 rounded-xl border border-border/40 bg-background/20 text-center">
+            <Loader2 className="w-8 h-8 text-primary/70 mb-3 animate-spin" />
+            <p className="text-sm text-muted-foreground font-medium">
+              {t("dashboard.loadingItems")}
+            </p>
+          </div>
+        ) : itemsErrorMessage ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-10 px-4 rounded-xl border border-destructive/40 bg-destructive/5 text-center">
+            <AlertCircle className="w-8 h-8 text-destructive/70" />
+            <p className="text-sm text-destructive font-semibold">
+              {t("dashboard.couldNotLoadItems")}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-[280px]">
+              {itemsErrorMessage}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetryLoadItems}
+              className="gap-2"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              {t("dashboard.retryLoadItems")}
+            </Button>
+          </div>
+        ) : trackedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4 rounded-xl border border-dashed border-border/40 bg-background/20 text-center animate-pulse">
             <Info className="w-8 h-8 text-muted-foreground/40 mb-3" />
             <p className="text-sm text-muted-foreground font-medium">

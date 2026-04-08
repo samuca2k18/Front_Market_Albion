@@ -1,5 +1,5 @@
 // src/api/productService.ts
-import axios from "axios";
+import { api, parseApiError } from "./client";
 
 export interface Product {
   unique_name: string;
@@ -7,10 +7,6 @@ export interface Product {
   name_en: string;
   matched?: string;
 }
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
 
 /**
  * Normaliza os dados do produto retornados pela API
@@ -81,7 +77,6 @@ export async function searchProducts(
     // Normaliza cada produto
     return data.map((rawProduct) => normalizeProduct(rawProduct));
   } catch (error) {
-    console.error("Erro ao buscar produtos:", error);
-    throw error;
+    throw parseApiError(error);
   }
 }

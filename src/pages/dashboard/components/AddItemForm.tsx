@@ -40,11 +40,10 @@ export function AddItemForm({ createMutation }: AddItemFormProps) {
         <div className="space-y-3">
           <SearchAutocomplete
             onSelectProduct={(product: Product) => {
-              const internal =
-                product.unique_name ?? (product as any).UniqueName;
+              const internal = product.unique_name;
               if (!internal || createMutation.isPending) return;
 
-              const isPT = i18n.language === "pt-BR";
+              const isPT = i18n.language.toLowerCase().startsWith("pt");
               const label = isPT
                 ? product.name_pt || product.name_en || internal
                 : product.name_en || product.name_pt || internal;

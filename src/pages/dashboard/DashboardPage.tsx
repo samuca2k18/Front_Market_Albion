@@ -47,6 +47,10 @@ export function DashboardPage() {
   // Hooks de dados
   const {
     trackedItems,
+    itemsQueryIsLoading,
+    itemsQueryIsError,
+    itemsQueryErrorMessage,
+    refetchItems,
     createMutation,
     selectedItems,
     isDeleting,
@@ -200,6 +204,8 @@ export function DashboardPage() {
           <div className="lg:col-span-1 space-y-6">
             <ItemsListSection
               trackedItems={trackedItems}
+              isItemsLoading={itemsQueryIsLoading}
+              itemsErrorMessage={itemsQueryIsError ? itemsQueryErrorMessage : null}
               selectedItems={selectedItems}
               locale={locale}
               isDeleting={isDeleting}
@@ -207,6 +213,7 @@ export function DashboardPage() {
               onSelectAll={handleSelectAll}
               onDeleteSelected={handleDeleteSelected}
               onDeleteSingle={handleDeleteSingle}
+              onRetryLoadItems={refetchItems}
               getItemDisplayName={getItemDisplayName}
             />
 

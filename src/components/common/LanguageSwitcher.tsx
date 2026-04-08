@@ -1,5 +1,4 @@
 // src/components/common/LanguageSwitcher.tsx
-import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../hooks/useLanguage';
 import {
   DropdownMenu,
@@ -11,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
-  const { isPortuguese } = useLanguage();
+  const { isPortuguese, setLanguage } = useLanguage();
 
   const currentLang = isPortuguese ? 'PT' : 'EN';
   const currentFlag = isPortuguese ? '🇧🇷' : '🇺🇸';
@@ -29,14 +27,14 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32 bg-card border-border/60">
         <DropdownMenuItem
-          onClick={() => i18n.changeLanguage('pt-BR')}
+          onClick={() => setLanguage('pt-BR')}
           className="flex items-center gap-3 cursor-pointer py-2"
         >
           <span className="text-base">🇧🇷</span>
           <span className="text-sm font-medium">Português</span>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => i18n.changeLanguage('en-US')}
+          onClick={() => setLanguage('en-US')}
           className="flex items-center gap-3 cursor-pointer py-2"
         >
           <span className="text-base">🇺🇸</span>

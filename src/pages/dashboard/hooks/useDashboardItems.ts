@@ -14,6 +14,10 @@ import { splitItemName } from "../utils/itemFilters";
 
 interface UseDashboardItemsReturn {
   trackedItems: Item[];
+  itemsQueryIsLoading: boolean;
+  itemsQueryIsError: boolean;
+  itemsQueryErrorMessage: string | null;
+  refetchItems: () => void;
   createMutation: UseMutationResult<void, ApiErrorShape, ItemPayload>;
   deleteMutation: UseMutationResult<void, ApiErrorShape, number>;
   deleteMultipleMutation: UseMutationResult<void, ApiErrorShape, number[]>;
@@ -34,12 +38,18 @@ export function useDashboardItems(
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   // Itens cadastrados pelo usuário
-  const itemsQuery = useQuery<Item[]>({
+  const itemsQuery = useQuery<Item[], ApiErrorShape>({
     queryKey: ["items"],
     queryFn: listItems,
+    retry: 1,
   });
 
   const trackedItems = itemsQuery.data ?? [];
+  const itemsQueryErrorMessage = itemsQuery.error?.message ?? null;
+
+  const refetchItems = () => {
+    void itemsQuery.refetch();
+  };
 
   // === MUTATIONS ===
 
@@ -242,6 +252,10 @@ export function useDashboardItems(
 
   return {
     trackedItems,
+    itemsQueryIsLoading: itemsQuery.isLoading,
+    itemsQueryIsError: itemsQuery.isError,
+    itemsQueryErrorMessage,
+    refetchItems,
     createMutation,
     deleteMutation,
     deleteMultipleMutation,
