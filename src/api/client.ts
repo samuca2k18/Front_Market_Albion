@@ -22,6 +22,16 @@ export const api = axios.create({
   timeout: 30000,
 });
 
+const PROTECTED_ROUTE_PREFIXES = [
+  '/dashboard',
+  '/prices',
+  '/opportunities',
+  '/crafting',
+  '/killboard',
+  '/tracker',
+  '/meta-market',
+  '/guild-hub',
+];
 // ── Injeta access token em toda requisição ────────────────────────────────
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(STORAGE_KEYS.token);
@@ -107,13 +117,18 @@ api.interceptors.response.use(
   },
 );
 
-/** Remove a sessão e redireciona para /login */
+/** Remove a sessão e redireciona para /login apenas em rotas protegidas. */
 function _clearSessionAndRedirect() {
   localStorage.removeItem(STORAGE_KEYS.token);
   localStorage.removeItem(STORAGE_KEYS.refreshToken);
   localStorage.removeItem(STORAGE_KEYS.user);
-  // Evita loop se já estiver na página de login
-  if (!window.location.pathname.includes('/login')) {
+
+  const pathname = window.location.pathname.toLowerCase();
+  const isProtectedPath = PROTECTED_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+
+  if (isProtectedPath && !pathname.includes('/login')) {
     window.location.href = '/login';
   }
 }
