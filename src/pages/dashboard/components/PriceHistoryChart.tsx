@@ -219,7 +219,7 @@ export function PriceHistoryChart({
 
           {/* Main Chart Rendering */}
           <div className="flex-1 w-full bg-background/20 rounded-2xl border border-border/20 p-4 pt-6 group">
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={280} minWidth={0}>
               <AreaChart data={filteredData}>
                 <defs>
                   <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">

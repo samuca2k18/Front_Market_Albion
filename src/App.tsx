@@ -17,6 +17,9 @@ import { KillboardPage } from './pages/KillboardPage';
 import { PricesPage } from './pages/PricesPage';
 import { CraftingPage } from './pages/CraftingPage';
 import { ItemDatabasePage } from './pages/ItemDatabasePage';
+import { TrackerPage } from './pages/TrackerPage';
+import { MetaMarketPage } from './pages/MetaMarketPage';
+import { GuildHubPage } from './pages/GuildHubPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { DataClientPage } from './pages/DataClientPage';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
@@ -53,6 +56,9 @@ function App() {
               <Route path="opportunities" element={<OpportunitiesPage />} />
               <Route path="crafting" element={<CraftingPage />} />
               <Route path="killboard" element={<KillboardPage />} />
+              <Route path="tracker" element={<TrackerPage />} />
+              <Route path="meta-market" element={<MetaMarketPage />} />
+              <Route path="guild-hub" element={<GuildHubPage />} />
             </Route>
 
             {/* 404 */}

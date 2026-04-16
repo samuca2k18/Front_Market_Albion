@@ -60,6 +60,19 @@ function formatLastTriggered(alert: PriceAlert): string {
   }
 }
 
+interface DashboardAddAlertEventDetail {
+  itemName: string;
+  displayName?: string;
+  city?: string | null;
+  quality?: number | null;
+  cooldownMinutes?: number;
+  ruleType?: "target" | "manual_percent" | "ai_percent";
+  targetPrice?: number;
+  expectedPrice?: number;
+  percentBelow?: number;
+  useAiExpected?: boolean;
+}
+
 export function PriceAlertsSection() {
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -91,21 +104,44 @@ export function PriceAlertsSection() {
     }
 
     function handleAddAlert(event: Event) {
-      const detail = (event as CustomEvent<{
-        itemName: string;
-        displayName?: string;
-        targetPrice: number;
-      }>).detail;
-      if (!detail) return;
+      const detail = (event as CustomEvent<DashboardAddAlertEventDetail>).detail;
+      if (!detail?.itemName) return;
 
       void (async () => {
         try {
           setIsCreating(true);
-          const created = await createPriceAlert({
+          const basePayload = {
             item_id: detail.itemName,
             display_name: detail.displayName,
-            target_price: detail.targetPrice,
-          });
+            city: detail.city ?? null,
+            quality: detail.quality ?? null,
+            cooldown_minutes: detail.cooldownMinutes ?? 60,
+          };
+
+          const ruleType = detail.ruleType ?? "target";
+          const created = await createPriceAlert(
+            ruleType === "manual_percent"
+              ? {
+                  ...basePayload,
+                  expected_price: detail.expectedPrice ?? null,
+                  percent_below: detail.percentBelow ?? 20,
+                  use_ai_expected: false,
+                }
+              : ruleType === "ai_percent"
+                ? {
+                    ...basePayload,
+                    target_price: null,
+                    expected_price: null,
+                    percent_below: detail.percentBelow ?? 20,
+                    use_ai_expected: true,
+                  }
+                : {
+                    ...basePayload,
+                    target_price: detail.targetPrice ?? null,
+                    use_ai_expected: false,
+                  },
+          );
+
           if (!cancelled) {
             setAlerts((prev) => [created, ...prev]);
           }

@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -19,16 +19,27 @@
     "killboard": "Killboard"
   },
   "languages": {
-    "pt": "Português",
+    "pt": "PortuguÃªs",
     "en": "English"
   },
   "header": {
     "dashboard": "Dashboard",
     "prices": "Prices",
     "opportunities": "Opportunities",
+    "crafting": "Crafting",
     "killboard": "Killboard",
+    "tracker": "Tracker",
+    "metaMarket": "Meta x Market",
+    "guildHub": "Guild Hub",
     "items": "Catalog",
     "contribute": "Contribute",
+    "more": "More",
+    "sections": {
+      "market": "Market",
+      "combat": "PvP",
+      "resources": "Resources",
+      "other": "Other"
+    },
     "tagline": "Market Intelligence",
     "loggedAs": "Logged as",
     "logout": "Logout",
@@ -46,6 +57,7 @@
     "albionAPI": "Albion Online Data API",
     "periodicUpdate": "Periodic updates",
     "marketFocus": "Market reading focus",
+    "version": "Version {{version}}",
     "copyright": "Albion Market Intelligence",
     "disclaimer": "Not officially affiliated with Sandbox Interactive. Albion Online is a trademark of its respective owners."
   },
@@ -79,7 +91,7 @@
     "loadingChart": "Loading chart...",
     "errorLoadingHistory": "Could not load history for this item.",
     "insufficientData": "Insufficient historical data for this item.",
-    "priceHistory": "Price History —",
+    "priceHistory": "Price History â€”",
     "tier": "Tier",
     "allTiers": "All",
     "noTier": "No Tier",
@@ -261,7 +273,7 @@
       "estimatedProfit": "Estimated profit",
       "roiPrefix": "ROI"
     },
-    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}."
+    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} â€” Sell: {{citySell}}."
   },
   "itemDatabase": {
     "title": "Item Database",
@@ -299,3 +311,5 @@
     "bestPriceInline": "{{price}} ({{city}})"
   }
 }
+
+

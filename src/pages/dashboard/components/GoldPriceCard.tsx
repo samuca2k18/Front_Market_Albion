@@ -105,7 +105,7 @@ export function GoldPriceCard({ region = "europe" }: GoldPriceCardProps) {
 
                 {/* Sparkline chart */}
                 <div className="h-20 w-full mb-4 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={80} minWidth={0}>
                         <AreaChart data={chartData}>
                             <defs>
                                 <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">

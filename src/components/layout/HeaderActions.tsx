@@ -28,28 +28,26 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex items-center gap-2 rounded-2xl border border-border/40 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 rounded-2xl border border-border/40 bg-background/35 px-2 py-1.5 backdrop-blur-md">
         <ThemeToggle />
         <LanguageSwitcher />
         <RegionSwitcher />
         <NotificationsBell />
       </div>
 
-      <div className="h-6 w-px bg-border/50 mx-1" />
-
       {user ? (
         <HeaderUserMenu user={user} onLogout={handleLogout} />
       ) : (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild className="rounded-xl hover:bg-accent/10">
+        <div className="flex items-center gap-1 rounded-2xl border border-border/45 bg-background/40 p-1 backdrop-blur-md">
+          <Button variant="ghost" size="sm" asChild className="rounded-xl hover:bg-accent/10 h-8 px-3 text-xs font-semibold">
             <Link to="/login">{t("login.submit")}</Link>
           </Button>
           <Button
             variant="default"
             size="sm"
             asChild
-            className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+            className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 h-8 px-3 text-xs"
           >
             <Link to="/signup">{t("signup.submit")}</Link>
           </Button>
@@ -71,16 +69,16 @@ function HeaderUserMenu({ user, onLogout }: HeaderUserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-3 p-1.5 pr-3 rounded-2xl bg-card/45 border border-border/45 hover:bg-card/80 transition-all outline-none group backdrop-blur-sm">
+        <button className="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl bg-card/45 border border-border/45 hover:bg-card/80 transition-all outline-none group backdrop-blur-sm">
           <div className="relative h-8 w-8 rounded-xl bg-primary/18 flex items-center justify-center text-xs font-bold text-primary border border-primary/30">
             <span>{firstLetter}</span>
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#090b0e]" />
           </div>
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-start max-w-[110px]">
             <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground leading-none mb-1">
               {t("header.loggedAs")}
             </span>
-            <span className="text-xs font-semibold max-w-[100px] truncate">
+            <span className="text-xs font-semibold truncate w-full">
               {user.username}
             </span>
           </div>
