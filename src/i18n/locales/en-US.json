@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -19,7 +19,7 @@
     "killboard": "Killboard"
   },
   "languages": {
-    "pt": "PortuguÃªs",
+    "pt": "Português",
     "en": "English"
   },
   "header": {
@@ -91,7 +91,7 @@
     "loadingChart": "Loading chart...",
     "errorLoadingHistory": "Could not load history for this item.",
     "insufficientData": "Insufficient historical data for this item.",
-    "priceHistory": "Price History â€”",
+    "priceHistory": "Price History —",
     "tier": "Tier",
     "allTiers": "All",
     "noTier": "No Tier",
@@ -273,7 +273,7 @@
       "estimatedProfit": "Estimated profit",
       "roiPrefix": "ROI"
     },
-    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} â€” Sell: {{citySell}}."
+    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}."
   },
   "itemDatabase": {
     "title": "Item Database",
@@ -311,5 +311,3 @@
     "bestPriceInline": "{{price}} ({{city}})"
   }
 }
-
-

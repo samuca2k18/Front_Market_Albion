@@ -43,7 +43,7 @@ export function HeaderNav({ items }: HeaderNavProps) {
   const secondaryActive = secondaryItems.some((item) => isPathActive(item.path));
 
   return (
-    <nav className="flex min-w-0 items-center gap-1.5 rounded-2xl border border-border/40 bg-background/30 p-1 backdrop-blur-sm overflow-x-auto">
+    <nav className="flex min-w-0 items-center gap-1.5 rounded-2xl border border-border/40 bg-background/30 p-1 backdrop-blur-sm overflow-hidden">
       {navItemsToRender.map((item) => (
         <NavLink
           key={item.path}

@@ -33,6 +33,7 @@ export function Header() {
     item.protected ? !!token : true
   );
   const hasNavigation = availableItems.length > 0;
+  const showDesktopTopNav = hasNavigation && !token;
 
   return (
     <header className="glass-header sticky top-0 z-40 transition-all duration-300">
@@ -43,7 +44,7 @@ export function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        {hasNavigation && (
+        {showDesktopTopNav && (
           <div className="hidden md:block min-w-0 flex-1">
             <HeaderNav items={availableItems} />
           </div>

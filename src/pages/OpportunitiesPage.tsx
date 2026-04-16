@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -211,7 +211,7 @@ export function OpportunitiesPage() {
 
                 <div className="space-y-3">
                   <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
-                    Lucro mÃ­nimo por viagem
+                    Lucro mínimo por viagem
                   </Label>
                   <div className="relative group">
                     <Input
@@ -229,7 +229,7 @@ export function OpportunitiesPage() {
                   <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex gap-3">
                     <AlertCircle size={16} className="text-destructive mt-0.5 shrink-0" />
                     <p className="text-[11px] leading-relaxed font-medium text-destructive">
-                      Origem e destino nÃ£o podem ser iguais.
+                      Origem e destino não podem ser iguais.
                     </p>
                   </div>
                 )}
@@ -237,7 +237,7 @@ export function OpportunitiesPage() {
                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-3">
                   <AlertCircle size={16} className="text-primary mt-0.5 shrink-0" />
                   <p className="text-[11px] leading-relaxed font-medium text-primary/80">
-                    O peso do item tenta usar dados reais. Quando nÃ£o existe dado na API, usa heurÃ­stica/fallback.
+                    O peso do item tenta usar dados reais. Quando não existe dado na API, usa heurística/fallback.
                   </p>
                 </div>
               </CardContent>
@@ -256,10 +256,10 @@ export function OpportunitiesPage() {
               <div className="flex flex-col items-center justify-center py-20 px-6 rounded-3xl border-2 border-dashed border-destructive/20 bg-destructive/5 text-center shadow-inner">
                 <AlertCircle className="w-16 h-16 text-destructive/40 mb-4" />
                 <h3 className="text-xl font-black tracking-tight mb-2 uppercase text-destructive/80">
-                  Erro na anÃ¡lise
+                  Erro na análise
                 </h3>
                 <p className="text-muted-foreground mb-6 max-w-sm">
-                  NÃ£o foi possÃ­vel conectar ao servidor de dados para calcular as arbitragens.
+                  Não foi possível conectar ao servidor de dados para calcular as arbitragens.
                 </p>
                 <Button
                   variant="destructive"
@@ -460,3 +460,4 @@ export function OpportunitiesPage() {
     </div>
   );
 }
+
