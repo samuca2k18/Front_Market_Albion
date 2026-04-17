@@ -6,11 +6,22 @@ import { HeaderNav } from "./HeaderNav";
 import { HeaderActions } from "./HeaderActions";
 import { MobileMenuToggle } from "./MobileMenuToggle";
 import { MobileMenu } from "./MobileMenu";
+import { BanditEventIndicator } from "./BanditEventIndicator";
+import { GlobalSearchTrigger } from "../search/GlobalSearch";
 import "./layout.css";
+import "./styles/premium-design.css";
 
 const navItems = [
   { label: "dashboard", path: "/dashboard", protected: true },
   { label: "prices", path: "/prices", protected: true },
+  { label: "opportunities", path: "/opportunities", protected: true },
+  { label: "crafting", path: "/crafting", protected: true },
+  { label: "killboard", path: "/killboard", protected: true },
+  { label: "tracker", path: "/tracker", protected: true },
+  { label: "metaMarket", path: "/meta-market", protected: true },
+  { label: "guildHub", path: "/guild-hub", protected: true },
+  { label: "items", path: "/items", protected: false },
+  { label: "contribute", path: "/data-client", protected: false },
 ];
 
 export function Header() {
@@ -22,27 +33,41 @@ export function Header() {
     item.protected ? !!token : true
   );
   const hasNavigation = availableItems.length > 0;
+  const showDesktopTopNav = hasNavigation && !token;
 
   return (
-    <header className="app-header sticky top-0 z-40">
-      <div className="app-header-inner flex items-center justify-between">
+    <header className="glass-header sticky top-0 z-40 transition-all duration-300">
+      <div className="app-header-inner flex items-center gap-3">
         {/* Brand */}
-        <HeaderBrand onMobileMenuClick={() => setIsMenuOpen(false)} />
+        <div className="shrink-0">
+          <HeaderBrand onMobileMenuClick={() => setIsMenuOpen(false)} />
+        </div>
 
         {/* Desktop Navigation */}
-        {hasNavigation && (
-          <HeaderNav items={availableItems} />
+        {showDesktopTopNav && (
+          <div className="hidden md:block min-w-0 flex-1">
+            <HeaderNav items={availableItems} />
+          </div>
         )}
 
-        {/* Right Actions */}
-        <HeaderActions />
+        <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
+          <div className="rounded-2xl border border-border/45 bg-background/40 p-1.5 backdrop-blur-md">
+            <GlobalSearchTrigger />
+          </div>
+          <div className="rounded-2xl border border-border/45 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
+            <BanditEventIndicator />
+          </div>
+          <HeaderActions />
+        </div>
 
         {/* Mobile Menu Toggle */}
         {hasNavigation && (
-          <MobileMenuToggle
-            isOpen={isMenuOpen}
-            onToggle={() => setIsMenuOpen(!isMenuOpen)}
-          />
+          <div className="ml-auto md:hidden">
+            <MobileMenuToggle
+              isOpen={isMenuOpen}
+              onToggle={() => setIsMenuOpen(!isMenuOpen)}
+            />
+          </div>
         )}
       </div>
 

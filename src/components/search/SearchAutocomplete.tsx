@@ -6,10 +6,12 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { Search, X, Loader2, AlertCircle, PackageSearch } from "lucide-react";
 import type { Product } from "../../api/productService";
 import { searchProducts } from "../../api/productService";
 import { useDebounce } from "../../hooks/useDebounce";
-import "./SearchAutocomplete.css";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface SearchAutocompleteProps {
   onSelectProduct?: (product: Product) => void;
@@ -34,25 +36,19 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
 
   const results = Array.isArray(data) ? data : [];
 
-  // Helper para obter o nome no idioma atual
   const getLabel = (product: Product): string => {
     const isPortuguese = i18n.language === "pt-BR";
-
-    if (isPortuguese) {
-      return product.name_pt || product.name_en || product.unique_name;
-    } else {
-      return product.name_en || product.name_pt || product.unique_name;
-    }
+    return isPortuguese
+      ? product.name_pt || product.name_en || product.unique_name
+      : product.name_en || product.name_pt || product.unique_name;
   };
 
-  // Sufixo de encantamento baseado no código interno (@1..@4 -> ".1"..".4")
   const getEnchantSuffix = (uniqueName?: string): string => {
     if (!uniqueName) return "";
     const match = uniqueName.match(/@([1-4])/);
     return match ? `.${match[1]}` : "";
   };
 
-  // Fecha ao clicar fora
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -63,25 +59,16 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Reseta o índice ao mudar os resultados ou fechar
   useEffect(() => {
     setActiveIndex(-1);
-    if (results.length > 0 && query.length >= 2) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
+    setIsOpen(results.length > 0 && query.length >= 2);
   }, [results, query]);
 
-  // Scroll active item into view
   useEffect(() => {
     if (activeIndex !== -1 && dropdownRef.current) {
       const activeElement = dropdownRef.current.children[activeIndex] as HTMLElement;
       if (activeElement) {
-        activeElement.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth"
-        });
+        activeElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
       }
     }
   }, [activeIndex]);
@@ -89,13 +76,9 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   const handleSelect = (product: Product) => {
     const label = getLabel(product);
     const suffix = getEnchantSuffix(product.unique_name);
-
-    // Mostra no input o nome amigável
     setQuery(label + suffix);
     setIsOpen(false);
     setActiveIndex(-1);
-
-    // Passa o produto normalizado para o pai
     onSelectProduct?.(product);
   };
 
@@ -104,14 +87,12 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
       setIsOpen(false);
       return;
     }
-
     if (!isOpen && results.length > 0) {
       if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
         setIsOpen(true);
         return;
       }
     }
-
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActiveIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
@@ -129,85 +110,97 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   };
 
   return (
-    <div className="search-wrapper" ref={wrapperRef}>
-      <div className="search-input-container">
-        <div className="search-input-inner">
-          <input
-            type="text"
-            placeholder={t("search.placeholder")}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => results.length > 0 && setIsOpen(true)}
-            onKeyDown={handleKeyDown}
-          />
-          {query && (
-            <button
-              className="search-clear-btn"
-              onClick={() => {
-                setQuery("");
-                setIsOpen(false);
-              }}
-              title={t("common.clear")}
-            >
-              ×
-            </button>
-          )}
-        </div>
+    <div className="relative w-full" ref={wrapperRef}>
+      <div className="relative group">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+        <Input
+          type="text"
+          placeholder={t("search.placeholder")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => results.length > 0 && setIsOpen(true)}
+          onKeyDown={handleKeyDown}
+          className="pl-10 pr-10 h-11 bg-background/40 border-border/40 focus:ring-primary/30 rounded-xl"
+        />
+        {query && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full hover:bg-white/5 opacity-50 hover:opacity-100"
+            onClick={() => {
+              setQuery("");
+              setIsOpen(false);
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {isOpen && (
-        <div className="search-dropdown" ref={dropdownRef}>
+        <div
+          ref={dropdownRef}
+          className="absolute top-full mt-2 w-full bg-[#050910]/95 backdrop-blur-xl border border-primary/40 rounded-2xl shadow-[0_0_30px_rgba(34,197,94,0.15)] p-2 z-[100] max-h-[380px] overflow-y-auto animate-fade-in custom-scrollbar"
+        >
           {isLoading && (
-            <div className="search-loading">{t("search.loading")}</div>
+            <div className="flex items-center gap-2 p-4 text-sm text-primary">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {t("search.loading")}
+            </div>
           )}
 
           {isError && (
-            <div className="search-error">{t("search.error")}</div>
+            <div className="flex items-center gap-2 p-4 text-sm text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              {t("search.error")}
+            </div>
           )}
 
-          {!isLoading &&
-            !isError &&
-            results.length === 0 &&
-            debouncedQuery.length >= 2 && (
-              <div className="search-empty">{t("search.noResults")}</div>
-            )}
+          {!isLoading && !isError && results.length === 0 && debouncedQuery.length >= 2 && (
+            <div className="flex flex-col items-center justify-center p-8 text-sm text-muted-foreground/60 text-center">
+              <PackageSearch className="w-8 h-8 mb-2 opacity-20" />
+              {t("search.noResults")}
+            </div>
+          )}
 
-          {!isLoading &&
-            !isError &&
-            results.map((product: Product, index) => {
-              const label = getLabel(product);
-              const suffix = getEnchantSuffix(product.unique_name);
-              if (!product.unique_name) return null;
+          {!isLoading && !isError && results.map((product: Product, index) => {
+            const label = getLabel(product);
+            const suffix = getEnchantSuffix(product.unique_name);
+            const active = index === activeIndex;
 
-              const imgUrl = `https://render.albiononline.com/v1/item/${encodeURIComponent(
-                product.unique_name,
-              )}.png`;
-
-              return (
-                <button
-                  key={product.unique_name}
-                  type="button"
-                  className={`search-result-card ${index === activeIndex ? "active" : ""}`}
-                  onClick={() => handleSelect(product)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                >
+            return (
+              <button
+                key={product.unique_name}
+                type="button"
+                className={`flex items-center gap-3 w-full p-2.5 rounded-xl text-left transition-all duration-200 ${active
+                  ? "bg-primary/20 border-primary/40 translate-x-1"
+                  : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/10"
+                  } border`}
+                onClick={() => handleSelect(product)}
+                onMouseEnter={() => setActiveIndex(index)}
+              >
+                <div className="h-10 w-10 bg-black/60 rounded-lg flex-shrink-0 border border-white/10 p-1">
                   <img
-                    src={imgUrl}
+                    src={`https://render.albiononline.com/v1/item/${encodeURIComponent(product.unique_name ?? "")}.png`}
                     alt={label}
-                    className="search-item-image"
+                    className="w-full h-full object-contain"
                     onError={(e) => {
-                      e.currentTarget.src =
-                        "https://render.albiononline.com/v1/item/T1_BAG.png";
+                      e.currentTarget.src = "https://render.albiononline.com/v1/item/T1_BAG.png";
                     }}
                   />
+                </div>
 
-                  <div className="search-item-content">
-                    <span className="search-item-label">{label}{suffix}</span>
-                    <span className="search-item-internal">{product.unique_name}</span>
-                  </div>
-                </button>
-              );
-            })}
+                <div className="flex flex-col min-w-0">
+                  <span className={`text-sm font-bold tracking-tight ${active ? "text-primary" : "text-foreground"}`}>
+                    {label}{suffix}
+                  </span>
+                  <span className="text-[10px] font-mono font-medium text-muted-foreground/50 truncate">
+                    {product.unique_name}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

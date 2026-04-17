@@ -2,15 +2,14 @@ name: "⚛️ Frontend CI"
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
-    name: Rodar testes do Frontend
+    name: Run frontend checks
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4

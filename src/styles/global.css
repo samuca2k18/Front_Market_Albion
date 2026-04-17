@@ -1,4 +1,32 @@
 :root {
+  /* Albion Heritage Palette (HSL) */
+  --primary: 155 85% 55%;         /* Emerald Green */
+  --primary-foreground: 155 85% 5%;
+  --secondary: 198 100% 56%;       /* Frost Blue */
+  --secondary-foreground: 198 100% 95%;
+  --accent: 42 100% 62%;          /* Gold Amber */
+  --accent-foreground: 42 100% 5%;
+  
+  --background: 220 33% 4%;       /* Deepest Night */
+  --foreground: 220 10% 95%;
+  
+  --card: 220 33% 7%;
+  --card-foreground: 220 10% 95%;
+  
+  --popover: 220 33% 5%;
+  --popover-foreground: 220 10% 95%;
+  
+  --border: 220 33% 15%;
+  --input: 220 33% 12%;
+  --ring: 155 85% 55%;
+
+  /* Effects */
+  --glass-bg: rgba(7, 17, 30, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(12px);
+  --radius: 1rem;
+  
+  /* Legacy Vars (Backwards compatibility) */
   --color-primary: #2ee89a;
   --color-secondary: #1fb2ff;
   --color-white: #e8efff;
@@ -8,38 +36,17 @@
   --color-danger: #ff6b6b;
   --color-success: #38ef7d;
   --color-warning: #ffd93d;
+}
+
+/* Preferência de movimento reduzido (acessibilidade) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  
-  /* Reset básico */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: radial-gradient(120% 90% at 50% 0%, rgba(47, 232, 154, 0.06), transparent 45%), linear-gradient(135deg, #050910 0%, #0b1322 50%, #050910 100%);
-    color: var(--color-white);
-    line-height: 1.5;
-    min-height: 100vh;
-  }
-  
-  /* Preferência de movimento reduzido (acessibilidade) */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
+}
   

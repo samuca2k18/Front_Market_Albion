@@ -9,6 +9,7 @@ import { getItemDisplayNameWithEnchantment } from "@/utils/itemNameMapper";
 import { useDashboardItems } from "./hooks/useDashboardItems";
 import { useDashboardPrices } from "./hooks/useDashboardPrices";
 import { usePriceHistory } from "./hooks/usePriceHistory";
+import { useLivePrices } from "./hooks/useLivePrices";
 import { useRegion } from "@/context/RegionContext";
 
 import { QuickSummary } from "./components/QuickSummary";
@@ -20,12 +21,13 @@ import { ItemsListSection } from "./components/ItemsListSection";
 import { PricesTableSection } from "./components/PricesTableSection";
 import { PriceHistoryChart } from "./components/PriceHistoryChart";
 import { PriceAlertsSection } from "./components/PriceAlertsSection";
+import { SEO } from "@/components/SEO";
 
 import { splitItemName } from "./utils/itemFilters";
 
 
 export function DashboardPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
 
   const [itemNamesCache, setItemNamesCache] = useState<Map<string, string>>(
@@ -40,31 +42,62 @@ export function DashboardPage() {
         ? "en-US"
         : i18n.language || "en-US";
 
-  // Quando muda idioma, limpa cache para recarregar nomes
-  useEffect(() => {
-    setItemNamesCache(new Map());
-  }, [i18n.language]);
-
   const { region } = useRegion();
 
   // Hooks de dados
   const {
     trackedItems,
+    itemsQueryIsLoading,
+    itemsQueryIsError,
+    itemsQueryErrorMessage,
+    refetchItems,
     createMutation,
     selectedItems,
     isDeleting,
     handleDeleteSingle,
     handleToggleSelect,
     handleSelectAll,
+    reorderMutation,
     handleDeleteSelected,
   } = useDashboardItems();
+
+  const findTrackedIndexByItemName = (targetName: string) => {
+    const normalizedTarget = targetName.toUpperCase();
+    const exactIndex = trackedItems.findIndex(
+      (item) => item.item_name.toUpperCase() === normalizedTarget,
+    );
+    if (exactIndex !== -1) return exactIndex;
+
+    const baseTarget = targetName.split("@")[0].toUpperCase();
+    return trackedItems.findIndex(
+      (item) => item.item_name.split("@")[0].toUpperCase() === baseTarget,
+    );
+  };
+
+  const handleReorderItem = (draggedItemName: string, targetItemName: string) => {
+    const draggedIdx = findTrackedIndexByItemName(draggedItemName);
+    const targetIdx = findTrackedIndexByItemName(targetItemName);
+
+    if (draggedIdx === -1 || targetIdx === -1 || draggedIdx === targetIdx) return;
+
+    const newItems = [...trackedItems];
+    const [removed] = newItems.splice(draggedIdx, 1);
+    newItems.splice(targetIdx, 0, removed);
+
+    const payload = newItems.map((item, index) => ({
+      id: item.id,
+      sort_order: index + 1,
+    }));
+
+    reorderMutation.mutate(payload);
+  };
 
   const {
     myPricesQuery,
     myPrices,
     selectedTier,
     setSelectedTier,
-  } = useDashboardPrices();
+  } = useDashboardPrices(trackedItems);
 
   const arbitrageQuery = useQuery({
     queryKey: ["arbitrage-summary", region],
@@ -79,6 +112,11 @@ export function DashboardPage() {
     chartData,
   } = usePriceHistory(locale);
 
+  const { updates: liveUpdates, nowTs, recentUpdateCount } = useLivePrices(
+    trackedItems.map((item) => item.item_name),
+    myPrices.map((entry) => entry.city),
+  );
+
   // Cache de nomes traduzidos
   useEffect(() => {
     const fetchNames = async () => {
@@ -89,7 +127,9 @@ export function DashboardPage() {
         ]),
       );
 
-      const missing = bases.filter((b) => !itemNamesCache.has(b));
+      const missing = bases.filter(
+        (base) => !itemNamesCache.has(`${i18n.language}:${base}`),
+      );
       if (missing.length === 0) return;
 
       const results = await Promise.all(
@@ -120,7 +160,9 @@ export function DashboardPage() {
       if (valid.length > 0) {
         setItemNamesCache((prev) => {
           const next = new Map(prev);
-          valid.forEach(({ base, name }) => next.set(base, name));
+          valid.forEach(({ base, name }) => {
+            next.set(`${i18n.language}:${base}`, name);
+          });
           return next;
         });
       }
@@ -133,20 +175,22 @@ export function DashboardPage() {
 
   const getItemDisplayName = (name: string): string => {
     const { base, enchant } = splitItemName(name);
-    const cached = itemNamesCache.get(base);
+    const cached = itemNamesCache.get(`${i18n.language}:${base}`);
     const display = cached ?? getItemDisplayNameWithEnchantment(base);
     return enchant ? `${display} @${enchant}` : display;
   };
 
   return (
-    <div className="min-h-screen bg-background relative">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top: Resumo + Ouro + Adicionar item */}
+    <div className="bg-background">
+      <SEO title={t("navigation.dashboard")} />
+      <div className="app-container py-8 space-y-10">
+        {/* Top Section: Quick Summary, Gold, and Add Item */}
         <section className="grid gap-6 md:grid-cols-3">
           <QuickSummary
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
             opportunityCount={arbitrageQuery.data?.length || 0}
+            liveBumpsCount={recentUpdateCount}
           />
 
           <GoldPriceCard region={region} />
@@ -155,11 +199,13 @@ export function DashboardPage() {
         </section>
 
         {/* Bottom: lista + preços / gráfico + alertas */}
-        <section className="grid gap-6 lg:grid-cols-3">
+        <section className="grid gap-6 lg:grid-cols-3 items-start pb-8">
           {/* Itens cadastrados */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <ItemsListSection
               trackedItems={trackedItems}
+              isItemsLoading={itemsQueryIsLoading}
+              itemsErrorMessage={itemsQueryIsError ? itemsQueryErrorMessage : null}
               selectedItems={selectedItems}
               locale={locale}
               isDeleting={isDeleting}
@@ -167,11 +213,11 @@ export function DashboardPage() {
               onSelectAll={handleSelectAll}
               onDeleteSelected={handleDeleteSelected}
               onDeleteSingle={handleDeleteSingle}
+              onRetryLoadItems={refetchItems}
+              getItemDisplayName={getItemDisplayName}
             />
 
-            <div className="mt-6">
-              <PriceAlertsSection />
-            </div>
+            <PriceAlertsSection />
           </div>
 
           {/* Preços em tempo real + histórico */}
@@ -183,9 +229,10 @@ export function DashboardPage() {
               locale={locale}
               selectedTier={selectedTier}
               onTierChange={setSelectedTier}
-              onSelectHistoryItem={(itemName) =>
-                setSelectedHistoryItem(itemName)
-              }
+              onSelectHistoryItem={(itemName) => setSelectedHistoryItem(itemName)}
+              onReorderItem={handleReorderItem}
+              liveUpdates={liveUpdates}
+              nowTs={nowTs}
             />
 
             <PriceHistoryChart

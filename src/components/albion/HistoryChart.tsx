@@ -379,7 +379,7 @@ export function HistoryChart({ itemId, city }: HistoryChartProps) {
           }}
         >
           <div style={{ width: '100%', height: 310, padding: '14px 10px 0 10px' }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={chartData} margin={{ top: 12, right: 18, left: 6, bottom: 0 }}>
                 <defs>
                   <linearGradient id="priceStroke" x1="0" y1="0" x2="1" y2="0">
