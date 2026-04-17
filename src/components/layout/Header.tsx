@@ -51,10 +51,10 @@ export function Header() {
         )}
 
         <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
-          <div className="rounded-2xl border border-border/45 bg-background/40 p-1.5 backdrop-blur-md">
+          <div className="rounded-lg border border-border/30 bg-card/50 p-1.5 backdrop-blur-sm">
             <GlobalSearchTrigger />
           </div>
-          <div className="rounded-2xl border border-border/45 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
+          <div className="rounded-lg border border-border/30 bg-card/50 px-2.5 py-1.5 backdrop-blur-sm">
             <BanditEventIndicator />
           </div>
           <HeaderActions />

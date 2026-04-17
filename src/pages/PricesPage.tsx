@@ -50,9 +50,9 @@ export const PricesPage = () => {
   // Tela de carregamento
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] opacity-50">
-        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-        <p className="text-sm font-black uppercase tracking-widest animate-pulse">{t('common.loading')}</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-10 h-10 animate-spin text-primary/70 mb-3" />
+        <p className="text-sm font-medium text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
   }
@@ -60,13 +60,13 @@ export const PricesPage = () => {
   // Tela de erro
   if (error) {
     return (
-      <div className="app-container py-20 flex flex-col items-center justify-center text-center">
-        <div className="bg-destructive/10 p-6 rounded-3xl mb-6 border border-destructive/20 shadow-xl">
-          <AlertCircle className="w-16 h-16 text-destructive/60" />
+      <div className="app-container py-16 flex flex-col items-center justify-center text-center">
+        <div className="bg-destructive/10 p-5 rounded-xl mb-5 border border-destructive/20">
+          <AlertCircle className="w-12 h-12 text-destructive/70" />
         </div>
-        <h2 className="text-2xl font-black tracking-tight uppercase mb-2">{t('prices.errorLoading')}</h2>
-        <p className="text-muted-foreground mb-8 text-sm max-w-sm">{error}</p>
-        <Button variant="destructive" onClick={() => refetch()} className="font-bold uppercase tracking-widest px-8">
+        <h2 className="text-xl font-semibold mb-2">{t('prices.errorLoading')}</h2>
+        <p className="text-muted-foreground mb-6 text-sm max-w-sm">{error}</p>
+        <Button variant="destructive" onClick={() => refetch()} className="font-medium px-6">
           Tentar Novamente
         </Button>
       </div>
@@ -76,27 +76,27 @@ export const PricesPage = () => {
   return (
     <div className="bg-background min-h-screen">
       <SEO title={t("navigation.prices")} />
-      <div className="app-container py-12">
+      <div className="app-container py-8">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 animate-fade-in">
-          <div className="space-y-2">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8 animate-fade-in">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-3 rounded-2xl border border-primary/20 shadow-lg shadow-primary/10">
-                <Tag className="w-8 h-8 text-primary" />
+              <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/15">
+                <Tag className="w-6 h-6 text-primary" />
               </div>
-              <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">
+              <h1 className="text-2xl sm:text-3xl font-bold">
                 {t('prices.title')}
               </h1>
             </div>
-            <p className="text-muted-foreground font-medium pl-1">
+            <p className="text-sm text-muted-foreground pl-1">
               {t('prices.subtitle')}
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-2 rounded-2xl shadow-xl">
-            <div className="px-4 text-center">
-              <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Monitorado</div>
-              <div className="text-xl font-black tracking-tighter text-foreground">{rawItems.length}</div>
+          <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm border border-border/40 p-2 rounded-lg">
+            <div className="px-3 text-center">
+              <div className="text-[10px] font-medium text-muted-foreground/70">Total Monitorado</div>
+              <div className="text-lg font-bold text-foreground">{rawItems.length}</div>
             </div>
           </div>
         </div>
@@ -108,14 +108,14 @@ export const PricesPage = () => {
             description={t('dashboard.startAdding')}
           />
         ) : (
-          <div className="space-y-8 animate-fade-up">
+          <div className="space-y-6 animate-fade-up">
             {/* Filtros */}
             <PricesFiltersPanel filter={filter} />
 
             {/* Resultado Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between px-2">
-                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 italic">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-xs font-medium text-muted-foreground/60">
                   {filter.resultCount === 0
                     ? t('prices.noResults')
                     : t('common.showing', {

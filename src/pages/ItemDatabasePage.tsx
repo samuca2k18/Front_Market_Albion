@@ -74,16 +74,16 @@ function ItemCard({
   const tierColor = getTierColor(item.tier);
 
   return (
-    <Card className="group bg-card/30 border-border/40 hover:border-primary/40 hover:bg-card/60 transition-all duration-300 overflow-hidden cursor-pointer shadow-lg hover:shadow-xl hover:shadow-primary/5 relative">
-      <CardContent className="p-4">
+    <Card className="group bg-card/50 border-border/40 hover:border-border/60 hover:bg-card/70 transition-colors overflow-hidden cursor-pointer relative">
+      <CardContent className="p-3.5">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="relative shrink-0">
-            <div className="bg-black/40 p-2 rounded-xl border border-border/30 group-hover:scale-110 group-hover:border-primary/30 transition-all duration-300">
+            <div className="bg-card/80 p-1.5 rounded-lg border border-border/30 group-hover:border-border/50 transition-colors">
               <img
                 src={item.icon}
                 alt={item.name}
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 object-contain"
                 loading="lazy"
                 onError={(e) => {
                   e.currentTarget.src = PLACEHOLDER_SVG;
@@ -91,7 +91,7 @@ function ItemCard({
               />
             </div>
             <Badge
-              className={`absolute -top-1 -right-1 text-[9px] font-black px-1 h-4 border ${tierColor}`}
+              className={`absolute -top-1 -right-1 text-[9px] font-semibold px-1 h-4 border ${tierColor}`}
             >
               T{item.tier}
             </Badge>
@@ -99,13 +99,13 @@ function ItemCard({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+            <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
               {item.name}
             </h3>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center gap-1">
-                <Zap className="w-3 h-3 text-amber-500" />
-                <span className="text-[10px] font-bold text-muted-foreground">
+                <Zap className="w-3 h-3 text-amber-400/80" />
+                <span className="text-[10px] font-medium text-muted-foreground/70">
                   {item.item_power} IP
                 </span>
               </div>
@@ -113,11 +113,11 @@ function ItemCard({
           </div>
 
           {/* Hover actions */}
-          <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 ml-auto">
+          <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
             <Button
               variant={isCompared ? "default" : "outline"}
               size="icon"
-              className={`w-7 h-7 shrink-0 ${isCompared ? 'bg-primary' : 'hover:border-primary hover:text-primary'}`}
+              className={`w-7 h-7 shrink-0 ${isCompared ? 'bg-primary' : 'hover:border-primary/50 hover:text-primary'}`}
               onClick={(e) => onCompare(item, e)}
               title={isCompared ? t("comparison.remove") : t("comparison.add")}
             >
@@ -198,19 +198,19 @@ export function ItemDatabasePage() {
   return (
     <div className="bg-background min-h-screen">
       <SEO title="Item Database" />
-      <div className="app-container py-12">
+      <div className="app-container py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-4 rounded-3xl shadow-lg shadow-primary/15 border border-primary/20">
-                <Star className="w-8 h-8 text-primary" />
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/15">
+                <Star className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold">
                   {t("itemDatabase.title")}
                 </h1>
-                <p className="text-muted-foreground font-medium">
+                <p className="text-sm text-muted-foreground">
                   {t("itemDatabase.subtitle")}
                 </p>
               </div>
@@ -218,22 +218,22 @@ export function ItemDatabasePage() {
           </div>
 
           {/* Stats */}
-          <Card className="bg-card/40 border-border/40 backdrop-blur-md p-2 rounded-2xl shadow-xl">
-            <div className="flex items-center gap-4 px-4">
+          <Card className="bg-card/50 border-border/40 backdrop-blur-sm p-2 rounded-lg">
+            <div className="flex items-center gap-3 px-3">
               <div className="text-center">
-                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <div className="text-[10px] font-medium text-muted-foreground/70">
                   {t("itemDatabase.statsItems")}
                 </div>
-                <div className="text-xl font-black tracking-tighter text-foreground">
+                <div className="text-lg font-bold text-foreground">
                   {items.length}
                 </div>
               </div>
-              <div className="h-8 w-px bg-border/40" />
+              <div className="h-6 w-px bg-border/40" />
               <div className="text-center">
-                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                <div className="text-[10px] font-medium text-muted-foreground/70">
                   {t("itemDatabase.statsType")}
                 </div>
-                <div className="text-sm font-bold text-primary capitalize">
+                <div className="text-sm font-semibold text-primary capitalize">
                   {TYPE_TABS_I18N.find((tab) => tab.type === activeType)?.label}
                 </div>
               </div>
@@ -242,7 +242,7 @@ export function ItemDatabasePage() {
         </div>
 
         {/* Type Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-6">
           {TYPE_TABS_I18N.map((tab) => (
             <Button
               key={tab.type}
@@ -252,10 +252,10 @@ export function ItemDatabasePage() {
                 setSelectedCategoryId(undefined);
                 setSearchQuery("");
               }}
-              className={`rounded-xl font-bold uppercase tracking-widest text-xs gap-2 h-10 transition-all ${
+              className={`rounded-lg font-medium text-xs gap-2 h-9 transition-colors ${
                 activeType === tab.type
-                  ? "shadow-lg shadow-primary/20"
-                  : "hover:bg-card/40"
+                  ? "shadow-sm"
+                  : "hover:bg-muted"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -264,37 +264,37 @@ export function ItemDatabasePage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Sidebar Filters */}
-          <aside className="lg:col-span-1 space-y-6">
+          <aside className="lg:col-span-1 space-y-4">
             {/* Search */}
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-lg rounded-2xl">
-              <CardHeader className="pb-3 border-b border-border/20">
-                <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Search size={14} className="text-primary" />
+            <Card className="bg-card/60 border-border/40 backdrop-blur-sm rounded-lg">
+              <CardHeader className="pb-2 border-b border-border/20">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                  <Search size={13} className="text-primary/70" />
                   {t("itemDatabase.searchLabel")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-3">
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t("itemDatabase.searchPlaceholder")}
-                  className="h-10 bg-background/40 border-border/40 focus:border-primary/50"
+                  className="h-9 bg-background/50 border-border/40"
                 />
               </CardContent>
             </Card>
 
             {/* Tier Filter */}
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-lg rounded-2xl">
-              <CardHeader className="pb-3 border-b border-border/20">
-                <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Filter size={14} className="text-primary" />
+            <Card className="bg-card/60 border-border/40 backdrop-blur-sm rounded-lg">
+              <CardHeader className="pb-2 border-b border-border/20">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                  <Filter size={13} className="text-primary/70" />
                   {t("itemDatabase.tierLabel")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="flex flex-wrap gap-2">
+              <CardContent className="pt-3">
+                <div className="flex flex-wrap gap-1.5">
                   {TIER_OPTIONS.map((tier) => (
                     <Button
                       key={tier.value}
@@ -303,10 +303,10 @@ export function ItemDatabasePage() {
                       }
                       size="sm"
                       onClick={() => setSelectedTier(tier.value)}
-                      className={`rounded-lg text-[10px] font-black uppercase tracking-widest h-8 ${
+                      className={`rounded-md text-[10px] font-medium h-7 px-2 ${
                         selectedTier === tier.value
                           ? ""
-                          : "bg-background/40 border-border/40 hover:bg-background/60"
+                          : "bg-background/50 border-border/40 hover:bg-background/70"
                       }`}
                     >
                       {'key' in tier ? t(`itemDatabase.${tier.key}`) : tier.label}
@@ -318,19 +318,19 @@ export function ItemDatabasePage() {
 
             {/* Categories */}
             {categories.length > 0 && (
-              <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-lg rounded-2xl">
-                <CardHeader className="pb-3 border-b border-border/20">
-                  <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+              <Card className="bg-card/60 border-border/40 backdrop-blur-sm rounded-lg">
+                <CardHeader className="pb-2 border-b border-border/20">
+                  <CardTitle className="text-xs font-medium text-muted-foreground">
                     {t("itemDatabase.categoryLabel")}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
+                <CardContent className="pt-3 space-y-1 max-h-[280px] overflow-y-auto custom-scrollbar">
                   <button
                     onClick={() => setSelectedCategoryId(undefined)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       !selectedCategoryId
-                        ? "bg-primary/10 text-primary border border-primary/20"
-                        : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
+                        ? "bg-primary/10 text-primary border border-primary/15"
+                        : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                     }`}
                   >
                     {t("itemDatabase.categoryAll")}
@@ -339,10 +339,10 @@ export function ItemDatabasePage() {
                     <div key={cat.id}>
                       <button
                         onClick={() => setSelectedCategoryId(cat.id)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                        className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                           selectedCategoryId === cat.id
-                            ? "bg-primary/10 text-primary border border-primary/20"
-                            : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
+                            ? "bg-primary/10 text-primary border border-primary/15"
+                            : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
                         }`}
                       >
                         {cat.name}
@@ -351,10 +351,10 @@ export function ItemDatabasePage() {
                         <button
                           key={sub.id}
                           onClick={() => setSelectedCategoryId(sub.id)}
-                          className={`w-full text-left pl-6 pr-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                          className={`w-full text-left pl-5 pr-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
                             selectedCategoryId === sub.id
                               ? "bg-primary/10 text-primary"
-                              : "text-muted-foreground/60 hover:text-foreground hover:bg-background/40"
+                              : "text-muted-foreground/60 hover:text-foreground hover:bg-background/50"
                           }`}
                         >
                           {sub.name}
@@ -369,19 +369,19 @@ export function ItemDatabasePage() {
 
           {/* Items Grid */}
           <main className="lg:col-span-4">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 italic">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-xs font-medium text-muted-foreground/60">
                 {t("itemDatabase.itemsFound", { count: filteredItems.length })}
               </p>
             </div>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
               {itemsQuery.isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+                  <Skeleton key={i} className="h-24 w-full rounded-lg" />
                 ))
               ) : filteredItems.length === 0 ? (
-                <div className="col-span-full py-12 text-center border-2 border-dashed border-border/40 rounded-3xl bg-card/20">
-                  <p className="text-muted-foreground font-bold">
+                <div className="col-span-full py-10 text-center border border-dashed border-border/40 rounded-lg bg-card/30">
+                  <p className="text-sm text-muted-foreground">
                     {t("itemDatabase.emptyMessage")}
                   </p>
                 </div>
@@ -414,12 +414,12 @@ export function ItemDatabasePage() {
       {comparisonList.length > 0 && !isDrawerOpen && (
         <button
           onClick={() => setIsDrawerOpen(true)}
-          className="fixed bottom-6 right-6 z-40 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full shadow-2xl flex items-center gap-3 transition-transform hover:scale-105 animate-bounce px-4"
+          className="fixed bottom-6 right-6 z-40 bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 px-4 rounded-lg shadow-lg flex items-center gap-2.5 transition-colors"
         >
-          <div className="bg-black/20 w-6 h-6 rounded-full flex items-center justify-center font-black text-xs">
+          <div className="bg-black/15 w-5 h-5 rounded-full flex items-center justify-center font-semibold text-xs">
             {comparisonList.length}
           </div>
-          <span className="font-bold text-sm tracking-tighter">{t("comparison.compareButton")}</span>
+          <span className="font-medium text-sm">{t("comparison.compareButton")}</span>
         </button>
       )}
 

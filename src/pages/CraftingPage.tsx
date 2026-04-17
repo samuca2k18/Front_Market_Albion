@@ -170,36 +170,36 @@ export function CraftingPage() {
       : null;
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 lg:space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight lg:text-4xl">
-          <Hammer className="h-8 w-8 text-primary" />
+    <div className="space-y-6 animate-fade-in pb-16">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="flex items-center gap-3 text-2xl sm:text-3xl font-bold">
+          <Hammer className="h-6 w-6 text-primary" />
           {t("crafting.title")}
         </h1>
-        <p className="font-medium text-muted-foreground">{t("crafting.subtitle")}</p>
+        <p className="text-sm text-muted-foreground">{t("crafting.subtitle")}</p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-4">
-          <Card className="overflow-hidden rounded-3xl border-border/40 bg-card/40 shadow-xl backdrop-blur-md">
-            <CardHeader className="border-b border-border/20 bg-muted/10 pb-4">
-              <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
-                <Search className="h-4 w-4 text-primary" />
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="space-y-4 lg:col-span-4">
+          <Card className="overflow-hidden rounded-lg border-border/40 bg-card/60 backdrop-blur-sm">
+            <CardHeader className="border-b border-border/20 pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                <Search className="h-4 w-4 text-primary/70" />
                 {t("crafting.searchCardTitle")}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-4">
+            <CardContent className="space-y-3 p-4">
               <Input
                 placeholder={t("crafting.searchPlaceholder")}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="border-border/40 bg-background/60 font-mono text-sm"
+                className="border-border/40 bg-background/50 text-sm"
               />
 
-              <div className="custom-scrollbar max-h-[440px] space-y-2 overflow-y-auto pr-2">
+              <div className="custom-scrollbar max-h-[420px] space-y-2 overflow-y-auto pr-1">
                 {consumablesQuery.isLoading
                   ? Array.from({ length: 6 }).map((_, index) => (
-                      <Skeleton key={index} className="h-16 w-full rounded-2xl" />
+                      <Skeleton key={index} className="h-14 w-full rounded-lg" />
                     ))
                   : filteredConsumables.map((item) => {
                       const uniqueName = getOpenAlbionUniqueName(item);
@@ -207,24 +207,24 @@ export function CraftingPage() {
                         <button
                           key={item.id}
                           onClick={() => setSelectedConsumableId(item.id)}
-                          className={`flex w-full items-center gap-3 rounded-2xl border p-3 transition-all ${
+                          className={`flex w-full items-center gap-3 rounded-lg border p-2.5 transition-colors ${
                             selectedConsumableId === item.id
-                              ? "border-primary/40 bg-primary/10 shadow-sm"
-                              : "border-border/20 bg-background/40 hover:bg-background/80"
+                              ? "border-primary/30 bg-primary/8"
+                              : "border-border/25 bg-background/50 hover:bg-background/70"
                           }`}
                         >
-                          <div className="rounded-xl bg-black/30 p-1.5">
+                          <div className="rounded-md bg-card/80 p-1">
                             <img
                               src={getItemImageUrl(uniqueName || item.name)}
                               alt=""
-                              className="h-8 w-8 object-contain"
+                              className="h-7 w-7 object-contain"
                             />
                           </div>
                           <div className="min-w-0 flex-1 text-left">
-                            <p className="truncate text-sm font-black">
+                            <p className="truncate text-sm font-semibold">
                               {getItemDisplayNameWithEnchantment(item.name)}
                             </p>
-                            <p className="truncate font-mono text-[10px] text-muted-foreground">
+                            <p className="truncate font-mono text-[10px] text-muted-foreground/70">
                               {uniqueName || item.name}
                             </p>
                           </div>
@@ -236,53 +236,53 @@ export function CraftingPage() {
           </Card>
         </div>
 
-        <div className="space-y-6 lg:col-span-8">
+        <div className="space-y-4 lg:col-span-8">
           {!selectedConsumableId ? (
-            <div className="flex h-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border/40 bg-card/20 p-12 text-center">
-              <Factory className="mb-4 h-16 w-16 text-muted-foreground/20" />
-              <h3 className="mb-2 text-xl font-black text-foreground">
+            <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-border/40 bg-card/30 p-10 text-center">
+              <Factory className="mb-4 h-12 w-12 text-muted-foreground/20" />
+              <h3 className="mb-1.5 text-lg font-semibold text-foreground">
                 {t("crafting.emptyStateTitle")}
               </h3>
-              <p className="text-muted-foreground">{t("crafting.emptyStateDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t("crafting.emptyStateDescription")}</p>
             </div>
           ) : recipeQuery.isLoading || pricesQuery.isLoading ? (
-            <div className="rounded-3xl border border-border/20 bg-card/10 p-12 text-center">
-              <Zap className="mx-auto mb-4 h-12 w-12 animate-pulse text-primary" />
-              <p className="animate-pulse font-bold uppercase tracking-widest text-muted-foreground">
+            <div className="rounded-lg border border-border/25 bg-card/20 p-10 text-center">
+              <Zap className="mx-auto mb-3 h-10 w-10 text-primary/70" />
+              <p className="text-sm font-medium text-muted-foreground">
                 {t("crafting.loadingMessage")}
               </p>
             </div>
           ) : !recipe ? (
-            <div className="rounded-3xl border-2 border-amber-500/20 bg-amber-500/5 p-12 text-center">
-              <p className="font-bold text-amber-500">{t("crafting.noRecipeFound")}</p>
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-10 text-center">
+              <p className="font-medium text-amber-500">{t("crafting.noRecipeFound")}</p>
             </div>
           ) : !calculation ? (
-            <div className="rounded-3xl border-2 border-red-500/20 bg-red-500/5 p-12 text-center">
-              <p className="font-bold text-red-400">{t("crafting.calculationError")}</p>
+            <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-10 text-center">
+              <p className="font-medium text-red-400">{t("crafting.calculationError")}</p>
             </div>
           ) : (
             <>
-              <Card className="overflow-hidden rounded-3xl border border-border/40 bg-card/60 shadow-2xl backdrop-blur-xl">
-                <CardContent className="grid gap-4 p-6 md:grid-cols-2">
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-2xl border border-border/20 bg-black/40 p-3">
+              <Card className="overflow-hidden rounded-lg border border-border/40 bg-card/60 backdrop-blur-sm">
+                <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg border border-border/30 bg-card/80 p-2">
                       <img
                         src={getItemImageUrl(selectedUniqueName || selectedConsumable?.name || "")}
                         alt=""
-                        className="h-16 w-16 object-contain"
+                        className="h-12 w-12 object-contain"
                       />
                     </div>
                     <div>
                       <Badge
                         variant="outline"
-                        className="mb-2 border-primary/20 bg-primary/10 text-primary"
+                        className="mb-1.5 border-primary/15 bg-primary/8 text-primary text-[10px]"
                       >
                         {t("crafting.yieldBaseBadge", { value: recipe.yield_amount })}
                       </Badge>
-                      <h2 className="text-2xl font-black">
+                      <h2 className="text-xl font-bold">
                         {getItemDisplayNameWithEnchantment(selectedConsumable?.name || "")}
                       </h2>
-                      <p className="font-mono text-[11px] text-muted-foreground">
+                      <p className="font-mono text-[11px] text-muted-foreground/70">
                         {selectedUniqueName || t("crafting.noUniqueName")}
                       </p>
                     </div>
@@ -290,12 +290,12 @@ export function CraftingPage() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {/* Cidade de Compra */}
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.cityBuy")}
                       <select
                         value={cityBuy}
                         onChange={(event) => setCityBuy(event.target.value)}
-                        className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
+                        className="h-9 w-full rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium"
                       >
                         {CITIES.map((city) => (
                           <option key={city} value={city}>
@@ -306,12 +306,12 @@ export function CraftingPage() {
                     </label>
 
                     {/* Cidade de Venda */}
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.citySell")}
                       <select
                         value={citySell}
                         onChange={(event) => setCitySell(event.target.value)}
-                        className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
+                        className="h-9 w-full rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium"
                       >
                         {CITIES.map((city) => (
                           <option key={city} value={city}>
@@ -321,7 +321,7 @@ export function CraftingPage() {
                       </select>
                     </label>
 
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.focusReturnPct")}
                       <Input
                         type="number"
@@ -329,11 +329,11 @@ export function CraftingPage() {
                         max={90}
                         value={focusReturnPct}
                         onChange={(event) => setFocusReturnPct(Number(event.target.value || 0))}
-                        className="bg-background/70"
+                        className="h-9 bg-background/50"
                       />
                     </label>
 
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.journalBonusPct")}
                       <Input
                         type="number"
@@ -341,11 +341,11 @@ export function CraftingPage() {
                         max={100}
                         value={journalBonusPct}
                         onChange={(event) => setJournalBonusPct(Number(event.target.value || 0))}
-                        className="bg-background/70"
+                        className="h-9 bg-background/50"
                       />
                     </label>
 
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.marketTaxPct")}
                       <Input
                         type="number"
@@ -354,49 +354,49 @@ export function CraftingPage() {
                         step={0.1}
                         value={marketTaxPct}
                         onChange={(event) => setMarketTaxPct(Number(event.target.value || 0))}
-                        className="bg-background/70"
+                        className="h-9 bg-background/50"
                       />
                     </label>
 
-                    <label className="space-y-1 text-xs font-bold text-muted-foreground">
+                    <label className="space-y-1 text-[11px] font-medium text-muted-foreground/70">
                       {t("crafting.labels.craftingFee")}
                       <Input
                         type="number"
                         min={0}
                         value={craftingFee}
                         onChange={(event) => setCraftingFee(Number(event.target.value || 0))}
-                        className="bg-background/70"
+                        className="h-9 bg-background/50"
                       />
                     </label>
                   </div>
                 </CardContent>
               </Card>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <Card className="rounded-3xl border-border/40 bg-card/40">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
-                      <Flame className="h-4 w-4 text-orange-500" />
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card className="rounded-lg border-border/40 bg-card/60">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                      <Flame className="h-4 w-4 text-orange-400/80" />
                       {t("crafting.materialTreeTitle", { city: cityBuy })}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-2">
                     {calculation.materialRows.map((material) => (
                       <div
                         key={`${material.resource}-${material.id}`}
-                        className="flex items-center justify-between rounded-2xl border border-border/20 bg-background/40 px-3 py-2"
+                        className="flex items-center justify-between rounded-lg border border-border/25 bg-background/50 px-3 py-2"
                       >
-                        <div className="min-w-0 flex items-center gap-3">
+                        <div className="min-w-0 flex items-center gap-2.5">
                           <img
                             src={getItemImageUrl(material.resource)}
-                            className="w-8 rounded-lg bg-black/40 outline outline-1 outline-border/40"
+                            className="w-7 rounded-md bg-card/80 border border-border/30"
                             alt=""
                           />
                           <div className="min-w-0">
-                            <p className="truncate text-xs font-black">
+                            <p className="truncate text-xs font-semibold">
                               {material.amount}x {getItemDisplayNameWithEnchantment(material.resource)}
                             </p>
-                            <p className="font-mono text-[10px] text-muted-foreground">
+                            <p className="font-mono text-[10px] text-muted-foreground/70">
                               {material.unitPrice > 0
                                 ? t("crafting.unitPricePerUnit", {
                                     value: material.unitPrice.toLocaleString(numberLocale),
@@ -405,7 +405,7 @@ export function CraftingPage() {
                             </p>
                           </div>
                         </div>
-                        <p className="text-sm font-black text-orange-400">
+                        <p className="text-sm font-semibold text-orange-400/90">
                           {material.totalCost.toLocaleString(numberLocale)} Ag
                         </p>
                       </div>
@@ -413,10 +413,10 @@ export function CraftingPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-3xl border-border/40 bg-card/40">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
-                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <Card className="rounded-lg border-border/40 bg-card/60">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                      <TrendingUp className="h-4 w-4 text-emerald-400/80" />
                       {t("crafting.financialResultTitle")}
                     </CardTitle>
                   </CardHeader>

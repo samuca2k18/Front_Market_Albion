@@ -80,39 +80,39 @@ export function SignupPage() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Hero gradient overlay */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsla(187,85%,53%,0.12),transparent)] pointer-events-none" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_-10%,hsla(160,50%,45%,0.06),transparent)] pointer-events-none" />
 
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Left Panel - Branding */}
         <div className="relative hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col justify-center px-12 xl:px-20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_0%_50%,hsla(142,71%,45%,0.08),transparent)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_0%_50%,hsla(160,50%,42%,0.04),transparent)] pointer-events-none" />
           
           <div className="relative max-w-lg animate-fade-up">
             {/* Chip */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium tracking-wide uppercase mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-slow" />
-              Albion Market • Cadastro
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/8 text-primary text-xs font-medium mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/80" />
+              Albion Market
             </div>
 
-            <h1 className="text-4xl xl:text-5xl font-extrabold leading-[1.15] tracking-tight mb-6">
+            <h1 className="text-3xl xl:text-4xl font-bold leading-[1.2] tracking-tight mb-5">
               Comece a monitorar
-              <span className="block text-gradient mt-1">seu mercado</span>
+              <span className="block text-primary mt-1">seu mercado</span>
             </h1>
 
-            <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+            <p className="text-base text-muted-foreground leading-relaxed mb-8">
               Crie sua conta para salvar itens favoritos, comparar cidades e entender
-              como o preço se comporta ao longo dos dias.
+              como o preco se comporta ao longo dos dias.
             </p>
 
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {benefits.map((benefit, i) => (
                 <li
                   key={benefit}
-                  className="flex items-center gap-3 text-foreground animate-fade-up"
-                  style={{ animationDelay: `${0.2 + i * 0.1}s` }}
+                  className="flex items-center gap-3 text-sm text-foreground/90 animate-fade-up"
+                  style={{ animationDelay: `${0.15 + i * 0.08}s` }}
                 >
-                  <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-accent" />
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                   </div>
                   {benefit}
                 </li>
@@ -123,18 +123,18 @@ export function SignupPage() {
 
         {/* Right Panel - Form */}
         <div className="relative flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 xl:px-20 lg:w-1/2 xl:w-[45%]">
-          <div className="mx-auto w-full max-w-md animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          <div className="mx-auto w-full max-w-md animate-fade-up" style={{ animationDelay: "0.08s" }}>
             {/* Mobile chip */}
-            <div className="lg:hidden inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium tracking-wide uppercase mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-slow" />
+            <div className="lg:hidden inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-primary/8 text-primary text-xs font-medium mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/80" />
               Albion Market
             </div>
 
-            <div className="glass rounded-3xl p-8 sm:p-10">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Criar conta</h2>
-                <p className="text-muted-foreground">
-                  Organize seu portfólio de itens e acompanhe preços confiáveis.
+            <div className="bg-card/60 border border-border/40 backdrop-blur-sm rounded-xl p-7 sm:p-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-foreground mb-1.5">Criar conta</h2>
+                <p className="text-sm text-muted-foreground">
+                  Organize seu portfolio de itens e acompanhe precos confiaveis.
                 </p>
               </div>
 

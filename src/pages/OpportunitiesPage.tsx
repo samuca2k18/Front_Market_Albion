@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -98,31 +98,31 @@ export function OpportunitiesPage() {
   return (
     <div className="bg-background min-h-screen">
       <SEO title={t("navigation.opportunities")} />
-      <div className="app-container py-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <div className="bg-primary/10 p-4 rounded-3xl shadow-lg shadow-primary/15 border border-primary/20">
-                <TrendingUp className="w-8 h-8 text-primary" />
+      <div className="app-container py-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/15">
+                <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold">
                   {t("opportunities.title")}
                 </h1>
-                <p className="text-muted-foreground font-medium max-w-md">
+                <p className="text-sm text-muted-foreground max-w-md">
                   Rota fixa com lucro por viagem, limitada pela capacidade da montaria.
                 </p>
               </div>
             </div>
           </div>
 
-          <Card className="bg-card/40 border-border/40 backdrop-blur-md p-2 rounded-2xl shadow-xl">
+          <Card className="bg-card/50 border-border/40 backdrop-blur-sm p-1.5 rounded-lg">
             <div className="flex items-center gap-1">
               <Button
                 variant={tax === 0.08 ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTax(0.08)}
-                className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9"
+                className="rounded-md text-xs font-medium h-8"
               >
                 8% (Normal)
               </Button>
@@ -130,7 +130,7 @@ export function OpportunitiesPage() {
                 variant={tax === 0.04 ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTax(0.04)}
-                className="rounded-xl text-[10px] font-black uppercase tracking-widest h-9"
+                className="rounded-md text-xs font-medium h-8"
               >
                 4% (Premium)
               </Button>
@@ -138,24 +138,24 @@ export function OpportunitiesPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <aside className="lg:col-span-1 space-y-6">
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-lg rounded-2xl">
-              <CardHeader className="pb-3 border-b border-border/20">
-                <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Filter size={14} className="text-primary" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <aside className="lg:col-span-1 space-y-4">
+            <Card className="bg-card/60 border-border/40 backdrop-blur-sm rounded-lg">
+              <CardHeader className="pb-2 border-b border-border/20">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                  <Filter size={13} className="text-primary/70" />
                   {t("common.filters") || "Filtros"}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6 space-y-6">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+              <CardContent className="pt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground/70">
                     Cidade origem
                   </Label>
                   <select
                     value={origin}
                     onChange={(e) => setOrigin(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border/40 bg-background/40 px-3 text-sm font-semibold"
+                    className="h-9 w-full rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium"
                   >
                     {CITIES.map((city) => (
                       <option key={`origin-${city}`} value={city}>
@@ -165,14 +165,14 @@ export function OpportunitiesPage() {
                   </select>
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground/70">
                     Cidade destino
                   </Label>
                   <select
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-border/40 bg-background/40 px-3 text-sm font-semibold"
+                    className="h-9 w-full rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium"
                   >
                     {CITIES.map((city) => (
                       <option key={`dest-${city}`} value={city}>
@@ -182,8 +182,8 @@ export function OpportunitiesPage() {
                   </select>
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground/70">
                     Capacidade da montaria
                   </Label>
                   <Input
@@ -191,12 +191,12 @@ export function OpportunitiesPage() {
                     min={1}
                     value={mountCapacity}
                     onChange={(e) => setMountCapacity(Math.max(1, Number(e.target.value) || 1))}
-                    className="h-11 bg-background/40 border-border/40 font-bold"
+                    className="h-9 bg-background/50 border-border/40 font-medium"
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground/70">
                     Peso fallback por item
                   </Label>
                   <Input
@@ -205,39 +205,39 @@ export function OpportunitiesPage() {
                     step={0.1}
                     value={defaultWeight}
                     onChange={(e) => setDefaultWeight(Math.max(0.1, Number(e.target.value) || 1))}
-                    className="h-11 bg-background/40 border-border/40 font-bold"
+                    className="h-9 bg-background/50 border-border/40 font-medium"
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
-                    Lucro mínimo por viagem
+                <div className="space-y-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground/70">
+                    Lucro minimo por viagem
                   </Label>
-                  <div className="relative group">
+                  <div className="relative">
                     <Input
                       type="number"
                       value={minTripProfit}
                       onChange={(e) => setMinTripProfit(Number(e.target.value) || 0)}
                       placeholder="Ex: 500000"
-                      className="h-11 bg-background/40 border-border/40 group-focus-within:border-primary/50 transition-colors pl-9 font-bold"
+                      className="h-9 bg-background/50 border-border/40 pl-8 font-medium"
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40">$</div>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 text-sm">$</div>
                   </div>
                 </div>
 
                 {routeInvalid && (
-                  <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 flex gap-3">
-                    <AlertCircle size={16} className="text-destructive mt-0.5 shrink-0" />
+                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 flex gap-2">
+                    <AlertCircle size={14} className="text-destructive mt-0.5 shrink-0" />
                     <p className="text-[11px] leading-relaxed font-medium text-destructive">
-                      Origem e destino não podem ser iguais.
+                      Origem e destino nao podem ser iguais.
                     </p>
                   </div>
                 )}
 
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-3">
-                  <AlertCircle size={16} className="text-primary mt-0.5 shrink-0" />
-                  <p className="text-[11px] leading-relaxed font-medium text-primary/80">
-                    O peso do item tenta usar dados reais. Quando não existe dado na API, usa heurística/fallback.
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 flex gap-2">
+                  <AlertCircle size={14} className="text-primary mt-0.5 shrink-0" />
+                  <p className="text-[11px] leading-relaxed text-primary/70">
+                    O peso do item tenta usar dados reais. Quando nao existe dado na API, usa heuristica/fallback.
                   </p>
                 </div>
               </CardContent>
@@ -246,36 +246,36 @@ export function OpportunitiesPage() {
 
           <main className="lg:col-span-3">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-32 opacity-50">
-                <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                <p className="text-sm font-black uppercase tracking-widest animate-pulse">
+              <div className="flex flex-col items-center justify-center py-24">
+                <Loader2 className="w-10 h-10 animate-spin text-primary/70 mb-3" />
+                <p className="text-sm font-medium text-muted-foreground">
                   Calculando rota comercial...
                 </p>
               </div>
             ) : isError ? (
-              <div className="flex flex-col items-center justify-center py-20 px-6 rounded-3xl border-2 border-dashed border-destructive/20 bg-destructive/5 text-center shadow-inner">
-                <AlertCircle className="w-16 h-16 text-destructive/40 mb-4" />
-                <h3 className="text-xl font-black tracking-tight mb-2 uppercase text-destructive/80">
-                  Erro na análise
+              <div className="flex flex-col items-center justify-center py-16 px-6 rounded-lg border border-dashed border-destructive/30 bg-destructive/5 text-center">
+                <AlertCircle className="w-12 h-12 text-destructive/50 mb-4" />
+                <h3 className="text-lg font-semibold mb-2 text-destructive/80">
+                  Erro na analise
                 </h3>
-                <p className="text-muted-foreground mb-6 max-w-sm">
-                  Não foi possível conectar ao servidor de dados para calcular as arbitragens.
+                <p className="text-sm text-muted-foreground mb-5 max-w-sm">
+                  Nao foi possivel conectar ao servidor de dados para calcular as arbitragens.
                 </p>
                 <Button
                   variant="destructive"
                   onClick={() => refetch()}
-                  className="font-bold uppercase tracking-widest shadow-lg shadow-destructive/20"
+                  className="font-medium"
                 >
                   Tentar novamente
                 </Button>
               </div>
             ) : filteredData.length === 0 || routeInvalid ? (
-              <div className="flex flex-col items-center justify-center py-32 px-6 rounded-3xl border-2 border-dashed border-border/20 bg-card/20 text-center">
-                <Search className="w-16 h-16 text-muted-foreground/20 mb-4" />
-                <h3 className="text-xl font-black tracking-tight uppercase mb-2">
+              <div className="flex flex-col items-center justify-center py-24 px-6 rounded-lg border border-dashed border-border/40 bg-card/30 text-center">
+                <Search className="w-12 h-12 text-muted-foreground/20 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
                   Sem oportunidades no momento
                 </h3>
-                <p className="text-muted-foreground max-w-xs">
+                <p className="text-sm text-muted-foreground max-w-xs">
                   {t("opportunities.emptyMessage") ||
                     "Tente diminuir o filtro de lucro ou ajustar a rota."}
                 </p>

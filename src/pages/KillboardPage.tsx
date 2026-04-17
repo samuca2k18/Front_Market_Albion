@@ -69,52 +69,52 @@ export function KillboardPage() {
     return (
         <div className="bg-background min-h-screen">
             <SEO title="Killboard" />
-            <div className="app-container py-12">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                    <div className="space-y-2">
+            <div className="app-container py-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
+                    <div className="space-y-1.5">
                         <div className="flex items-center gap-3">
-                            <div className="bg-primary/10 p-3 rounded-2xl">
-                                <Skull className="w-8 h-8 text-primary shadow-lg shadow-primary/20" />
+                            <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/15">
+                                <Skull className="w-6 h-6 text-primary" />
                             </div>
-                            <h1 className="text-4xl font-black tracking-tighter uppercase whitespace-nowrap">
+                            <h1 className="text-2xl sm:text-3xl font-bold">
                                 Killboard
                             </h1>
                         </div>
-                        <p className="text-muted-foreground font-medium flex items-center gap-2 pl-1">
-                            <Clock className="w-4 h-4 opacity-50" />
-                            Últimas mortes em tempo real — atualiza a cada 30s
+                        <p className="text-sm text-muted-foreground flex items-center gap-2 pl-1">
+                            <Clock className="w-3.5 h-3.5 opacity-50" />
+                            Ultimas mortes em tempo real - atualiza a cada 30s
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         {/* Filter toggle */}
                         <Button
                             variant={showFilters ? "default" : "outline"}
                             size="sm"
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`rounded-xl text-[10px] font-black uppercase tracking-widest h-9 gap-1.5 ${
-                                showFilters ? "shadow-lg shadow-primary/20" : "border-border/40"
+                            className={`rounded-lg text-xs font-medium h-9 gap-1.5 ${
+                                showFilters ? "shadow-sm" : "border-border/40"
                             }`}
                         >
                             <Filter size={12} />
                             Filtros
                             {hasFilters && (
-                                <span className="ml-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[8px] flex items-center justify-center">
+                                <span className="ml-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center">
                                     !
                                 </span>
                             )}
                         </Button>
 
-                        <div className="flex items-center gap-4 bg-card/40 backdrop-blur-md border border-border/40 p-2 rounded-2xl shadow-xl">
-                            <div className="px-4 text-center border-r border-border/40">
-                                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total</div>
-                                <div className="text-xl font-black tracking-tighter text-foreground">{filteredData.length}</div>
+                        <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm border border-border/40 p-2 rounded-lg">
+                            <div className="px-3 text-center border-r border-border/40">
+                                <div className="text-[10px] font-medium text-muted-foreground/70">Total</div>
+                                <div className="text-lg font-bold text-foreground">{filteredData.length}</div>
                             </div>
-                            <div className="px-4 text-center">
-                                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</div>
+                            <div className="px-3 text-center">
+                                <div className="text-[10px] font-medium text-muted-foreground/70">Status</div>
                                 <div className="flex items-center justify-center gap-1.5 mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 animate-pulse" />
-                                    <span className="text-[10px] font-bold uppercase tracking-tight text-emerald-400">Live</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    <span className="text-xs font-medium text-emerald-400">Live</span>
                                 </div>
                             </div>
                         </div>
@@ -123,11 +123,11 @@ export function KillboardPage() {
 
                 {/* Filters Panel */}
                 {showFilters && (
-                    <Card className="bg-card/40 border-border/40 backdrop-blur-md shadow-xl rounded-2xl mb-8 animate-fade-up">
+                    <Card className="bg-card/60 border-border/40 backdrop-blur-sm rounded-lg mb-6 animate-fade-up">
                         <CardContent className="p-4">
-                            <div className="flex flex-wrap items-end gap-4">
-                                <div className="flex-1 min-w-[200px]">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1.5 block">
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="flex-1 min-w-[180px]">
+                                    <label className="text-[11px] font-medium text-muted-foreground/70 mb-1 block">
                                         Buscar jogador / Guild
                                     </label>
                                     <div className="relative">
@@ -135,32 +135,32 @@ export function KillboardPage() {
                                         <Input
                                             value={searchPlayer}
                                             onChange={(e) => setSearchPlayer(e.target.value)}
-                                            placeholder="Nome, guild ou aliança..."
-                                            className="h-10 pl-9 bg-background/40 border-border/40 focus:border-primary/50"
+                                            placeholder="Nome, guild ou alianca..."
+                                            className="h-9 pl-9 bg-background/50 border-border/40"
                                         />
                                     </div>
                                 </div>
-                                <div className="w-[180px]">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1.5 block">
-                                        Fame mínima
+                                <div className="w-[160px]">
+                                    <label className="text-[11px] font-medium text-muted-foreground/70 mb-1 block">
+                                        Fame minima
                                     </label>
                                     <Input
                                         type="number"
                                         value={minFame || ""}
                                         onChange={(e) => setMinFame(Number(e.target.value) || 0)}
                                         placeholder="Ex: 100000"
-                                        className="h-10 bg-background/40 border-border/40 focus:border-primary/50 font-bold"
+                                        className="h-9 bg-background/50 border-border/40 font-medium"
                                     />
                                 </div>
-                                <div className="w-[180px]">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 mb-1.5 block">
+                                <div className="w-[160px]">
+                                    <label className="text-[11px] font-medium text-muted-foreground/70 mb-1 block">
                                         Arma usada
                                     </label>
                                     <Input
                                         value={weaponFilter}
                                         onChange={(e) => setWeaponFilter(e.target.value)}
                                         placeholder="Ex: T8_MAIN_AXE"
-                                        className="h-10 bg-background/40 border-border/40 focus:border-primary/50 font-bold"
+                                        className="h-9 bg-background/50 border-border/40 font-medium"
                                     />
                                 </div>
                                 {hasFilters && (
@@ -168,7 +168,7 @@ export function KillboardPage() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => { setSearchPlayer(""); setMinFame(0); setWeaponFilter(""); }}
-                                        className="h-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-destructive gap-1"
+                                        className="h-9 text-xs font-medium text-muted-foreground hover:text-destructive gap-1"
                                     >
                                         <X size={12} />
                                         Limpar
@@ -180,29 +180,29 @@ export function KillboardPage() {
                 )}
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 opacity-50">
-                        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-                        <p className="text-sm font-black uppercase tracking-widest animate-pulse">Carregando kills...</p>
+                    <div className="flex flex-col items-center justify-center py-16">
+                        <Loader2 className="w-10 h-10 animate-spin text-primary/70 mb-3" />
+                        <p className="text-sm font-medium text-muted-foreground">Carregando kills...</p>
                     </div>
                 ) : isError ? (
-                    <div className="flex flex-col items-center justify-center py-20 px-6 rounded-3xl border-2 border-dashed border-destructive/20 bg-destructive/5 text-center">
-                        <AlertCircle className="w-16 h-16 text-destructive/40 mb-4" />
-                        <h3 className="text-xl font-black tracking-tight mb-2 uppercase">Erro ao buscar dados</h3>
-                        <p className="text-muted-foreground mb-6 max-w-sm">Houve um problema ao conectar com o servidor da Albion.</p>
-                        <Button variant="destructive" onClick={() => refetch()} className="font-bold uppercase tracking-widest shadow-lg shadow-destructive/20">
+                    <div className="flex flex-col items-center justify-center py-16 px-6 rounded-lg border border-dashed border-destructive/30 bg-destructive/5 text-center">
+                        <AlertCircle className="w-12 h-12 text-destructive/50 mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">Erro ao buscar dados</h3>
+                        <p className="text-sm text-muted-foreground mb-5 max-w-sm">Houve um problema ao conectar com o servidor da Albion.</p>
+                        <Button variant="destructive" onClick={() => refetch()} className="font-medium">
                             Tentar Novamente
                         </Button>
                     </div>
                 ) : filteredData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 px-6 rounded-3xl border-2 border-dashed border-border/40 bg-card/20 text-center">
-                        <Sword className="w-16 h-16 text-muted-foreground/20 mb-4" />
-                        <h3 className="text-xl font-black tracking-tight uppercase">
+                    <div className="flex flex-col items-center justify-center py-16 px-6 rounded-lg border border-dashed border-border/40 bg-card/30 text-center">
+                        <Sword className="w-12 h-12 text-muted-foreground/20 mb-4" />
+                        <h3 className="text-lg font-semibold">
                             {hasFilters ? "Nenhum kill para esses filtros" : "Nenhum kill encontrado"}
                         </h3>
                         {hasFilters && (
                             <Button
                                 variant="ghost"
-                                className="mt-4 text-muted-foreground"
+                                className="mt-3 text-muted-foreground"
                                 onClick={() => { setSearchPlayer(""); setMinFame(0); setWeaponFilter(""); }}
                             >
                                 Limpar filtros
