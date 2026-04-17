@@ -13,37 +13,60 @@ import { SignupPage } from './pages/SignupPage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { OpportunitiesPage } from './pages/OpportunitiesPage';
+import { KillboardPage } from './pages/KillboardPage';
 import { PricesPage } from './pages/PricesPage';
+import { CraftingPage } from './pages/CraftingPage';
+import { ItemDatabasePage } from './pages/ItemDatabasePage';
+import { TrackerPage } from './pages/TrackerPage';
+import { MetaMarketPage } from './pages/MetaMarketPage';
+import { GuildHubPage } from './pages/GuildHubPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { DataClientPage } from './pages/DataClientPage';
 import { ProtectedRoute } from './components/routing/ProtectedRoute';
 import { GuestRoute } from './components/routing/GuestRoute';
+import { GlobalSearch } from './components/search/GlobalSearch';
+import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <Routes>
-        {/* Layout principal (navbar, etc) */}
-        <Route element={<AppLayout />}>
-          {/* Rotas para visitantes (não logados) */}
-          <Route element={<GuestRoute />}>
-            <Route index element={<LandingPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<SignupPage />} />
-            <Route path="verify-email" element={<VerifyEmailPage />} />
-          </Route>
+    <ThemeProvider>
+      <I18nextProvider i18n={i18n}>
+        {/* Global Search Modal (Ctrl+K) */}
+        <GlobalSearch />
 
-          {/* Rotas protegidas (somente logado) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="prices" element={<PricesPage />} />
-            <Route path="opportunities" element={<OpportunitiesPage />} />
-          </Route>
+        <Routes>
+          {/* Layout principal (navbar, etc) */}
+          <Route element={<AppLayout />}>
+            {/* Rotas para visitantes (não logados) */}
+            <Route element={<GuestRoute />}>
+              <Route index element={<LandingPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="signup" element={<SignupPage />} />
+              <Route path="verify-email" element={<VerifyEmailPage />} />
+            </Route>
 
-          {/* 404 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </I18nextProvider>
+            {/* Rotas públicas (acessível por qualquer um) */}
+            <Route path="data-client" element={<DataClientPage />} />
+            <Route path="items" element={<ItemDatabasePage />} />
+
+            {/* Rotas protegidas (somente logado) */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="prices" element={<PricesPage />} />
+              <Route path="opportunities" element={<OpportunitiesPage />} />
+              <Route path="crafting" element={<CraftingPage />} />
+              <Route path="killboard" element={<KillboardPage />} />
+              <Route path="tracker" element={<TrackerPage />} />
+              <Route path="meta-market" element={<MetaMarketPage />} />
+              <Route path="guild-hub" element={<GuildHubPage />} />
+            </Route>
+
+            {/* 404 */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </I18nextProvider>
+    </ThemeProvider>
   );
 }
 

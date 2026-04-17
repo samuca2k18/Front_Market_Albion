@@ -6,18 +6,22 @@ import {
   useQueryClient,
   type UseMutationResult,
 } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
-import { createItem, listItems, deleteItem } from "@/api/items";
+import { createItem, listItems, deleteItem, reorderItems } from "@/api/items";
 import type { Item, ItemPayload, MyItemPrice } from "@/api/types";
 import type { ApiErrorShape } from "@/api/client";
 import { splitItemName } from "../utils/itemFilters";
 
 interface UseDashboardItemsReturn {
   trackedItems: Item[];
+  itemsQueryIsLoading: boolean;
+  itemsQueryIsError: boolean;
+  itemsQueryErrorMessage: string | null;
+  refetchItems: () => void;
   createMutation: UseMutationResult<void, ApiErrorShape, ItemPayload>;
   deleteMutation: UseMutationResult<void, ApiErrorShape, number>;
   deleteMultipleMutation: UseMutationResult<void, ApiErrorShape, number[]>;
+  reorderMutation: UseMutationResult<void, ApiErrorShape, { id: number, sort_order: number }[]>;
   selectedItems: Set<number>;
   isDeleting: boolean;
   handleDeleteSingle: (id: number) => void;
@@ -29,18 +33,23 @@ interface UseDashboardItemsReturn {
 export function useDashboardItems(
   myPricesQueryKey = ["my-items-prices"],
 ): UseDashboardItemsReturn {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   // Itens cadastrados pelo usuário
-  const itemsQuery = useQuery<Item[]>({
+  const itemsQuery = useQuery<Item[], ApiErrorShape>({
     queryKey: ["items"],
     queryFn: listItems,
+    retry: 1,
   });
 
   const trackedItems = itemsQuery.data ?? [];
+  const itemsQueryErrorMessage = itemsQuery.error?.message ?? null;
+
+  const refetchItems = () => {
+    void itemsQuery.refetch();
+  };
 
   // === MUTATIONS ===
 
@@ -161,6 +170,42 @@ export function useDashboardItems(
     },
   });
 
+  const reorderMutation = useMutation<
+    void,
+    ApiErrorShape,
+    { id: number; sort_order: number }[],
+    { previousItems: Item[] }
+  >({
+    mutationFn: async (payload) => {
+      await reorderItems(payload);
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: ["items"] });
+      const previousItems = queryClient.getQueryData<Item[]>(["items"]) ?? [];
+
+      // Update local state optimistically
+      queryClient.setQueryData<Item[]>(["items"], (old) => {
+        if (!old) return [];
+        const newItems = [...old];
+        payload.forEach(({ id, sort_order }) => {
+          const item = newItems.find((i) => i.id === id);
+          if (item) item.sort_order = sort_order;
+        });
+        return newItems.sort((a, b) => a.sort_order - b.sort_order);
+      });
+
+      return { previousItems };
+    },
+    onError: (_err, _payload, context) => {
+      if (context?.previousItems) {
+        queryClient.setQueryData(["items"], context.previousItems);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+    },
+  });
+
   const isDeleting =
     deleteMutation.isPending || deleteMultipleMutation.isPending;
 
@@ -168,10 +213,7 @@ export function useDashboardItems(
 
   const handleDeleteSingle = (id: number) => {
     if (deleteMutation.isPending || deleteMultipleMutation.isPending) return;
-
-    if (confirm(t("dashboard.confirmDelete"))) {
-      deleteMutation.mutate(id);
-    }
+    deleteMutation.mutate(id);
   };
 
   const handleToggleSelect = (id: number) => {
@@ -204,23 +246,20 @@ export function useDashboardItems(
     )
       return;
 
-    const count = selectedItems.size;
-    const message =
-      count === 1
-        ? t("dashboard.confirmDeleteOne")
-        : t("dashboard.confirmDeleteMultiple", { count });
-
-    if (confirm(message)) {
-      const idsToDelete = Array.from(selectedItems);
-      deleteMultipleMutation.mutate(idsToDelete);
-    }
+    const idsToDelete = Array.from(selectedItems);
+    deleteMultipleMutation.mutate(idsToDelete);
   };
 
   return {
     trackedItems,
+    itemsQueryIsLoading: itemsQuery.isLoading,
+    itemsQueryIsError: itemsQuery.isError,
+    itemsQueryErrorMessage,
+    refetchItems,
     createMutation,
     deleteMutation,
     deleteMultipleMutation,
+    reorderMutation,
     selectedItems,
     isDeleting,
     handleDeleteSingle,

@@ -1,0 +1,79 @@
+.bandit-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: default;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Status: Ativo */
+.bandit-indicator.active {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    animation: bandit-pulse 1.5s ease-in-out infinite;
+}
+
+/* Status: Em breve */
+.bandit-indicator.soon {
+    background: rgba(234, 179, 8, 0.12);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+/* Status: Esperando */
+.bandit-indicator.waiting {
+    background: rgba(148, 163, 184, 0.08);
+    color: rgba(148, 163, 184, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.bandit-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.bandit-indicator.active .bandit-dot {
+    background: #ef4444;
+    box-shadow: 0 0 8px #ef4444;
+}
+
+.bandit-indicator.soon .bandit-dot {
+    background: #eab308;
+    box-shadow: 0 0 6px rgba(234, 179, 8, 0.5);
+}
+
+.bandit-indicator.waiting .bandit-dot {
+    background: rgba(148, 163, 184, 0.5);
+}
+
+@keyframes bandit-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+    }
+}
+
+/* Mobile: compactar */
+@media (max-width: 768px) {
+    .bandit-indicator {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+}

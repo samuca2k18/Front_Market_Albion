@@ -36,8 +36,9 @@ export interface ItemPayload {
 export interface Item {
   id: number;
   item_name: string;
-  display_name?: string;
-  created_at?: string;
+  display_name: string | null;
+  created_at: string;
+  sort_order: number;
 }
 
 // === Albion API (resposta de /albion/prices) ===
@@ -97,6 +98,7 @@ export interface MyItemPrice {
   price: number;
   quality: number;
   enchantment: number;
+  updated_at?: string;
 }
 
 // === Alertas de preço ===
@@ -139,4 +141,115 @@ export interface PriceFilters {
   cities?: string[];
   quality?: number;
   enchantment?: number;
+}
+
+// === Meta Builds ===
+export interface EquipmentSlotData {
+  type: string;
+  quality: number;
+  price: number;
+  city: string;
+}
+
+export type EquipmentMap = {
+  MainHand: EquipmentSlotData | null;
+  OffHand: EquipmentSlotData | null;
+  Head: EquipmentSlotData | null;
+  Armor: EquipmentSlotData | null;
+  Shoes: EquipmentSlotData | null;
+  Cape: EquipmentSlotData | null;
+  Mount: EquipmentSlotData | null;
+  Food: EquipmentSlotData | null;
+  Potion: EquipmentSlotData | null;
+};
+
+export interface KillSample {
+  killer_name: string;
+  victim_name: string;
+  fame: number;
+  timestamp: string;
+}
+
+export interface MetaBuild {
+  rank: number;
+  frequency: number;
+  avg_ip: number;
+  signature: string;
+  equipment: EquipmentMap;
+  total_cost: number;
+  kills_sample: KillSample[];
+}
+
+export interface MetaBuildsResponse {
+  region: string;
+  kill_events_analyzed: number;
+  as_of: string;
+  builds: MetaBuild[];
+}
+
+// === Guild Economy Hub ===
+export interface GuildInfo {
+  id: string;
+  name: string;
+  founder: string;
+  alliance_id: string;
+  alliance_name: string;
+  member_count: number;
+  kill_fame: number;
+  death_fame: number;
+}
+
+export interface GuildStats {
+  total_kill_fame: number;
+  total_death_fame: number;
+  total_pve_fame: number;
+  fame_ratio: number;
+}
+
+export interface GuildMemberSummary {
+  id: string;
+  name: string;
+  kill_fame: number;
+  death_fame: number;
+  pve_fame?: number;
+}
+
+export interface GuildSummaryResponse {
+  guild: GuildInfo;
+  stats: GuildStats;
+  top_killers: GuildMemberSummary[];
+  top_deaths: GuildMemberSummary[];
+}
+
+export interface MemberEconomyRow {
+  id: string;
+  name: string;
+  kill_fame: number;
+  death_fame: number;
+  kills: number;
+  deaths: number;
+  silver_destroyed: number;
+  silver_lost: number;
+  balance: number;
+}
+
+export interface GuildEconomyTotals {
+  silver_destroyed: number;
+  silver_lost: number;
+  balance: number;
+  members_analyzed: number;
+}
+
+export interface GuildEconomyResponse {
+  region: string;
+  as_of: string;
+  totals: GuildEconomyTotals;
+  members: MemberEconomyRow[];
+}
+
+export interface GuildSearchResult {
+  id: string;
+  name: string;
+  member_count?: number;
+  alliance_name?: string;
 }

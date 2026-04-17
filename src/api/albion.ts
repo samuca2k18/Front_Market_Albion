@@ -5,6 +5,10 @@ import type {
   AlbionPriceByNameResponse,
   AlbionSearchItem,
   MyItemPrice,
+  MetaBuildsResponse,
+  GuildSummaryResponse,
+  GuildEconomyResponse,
+  GuildSearchResult,
 } from './types';
 
 function resolveSearchPath(language?: string): string {
@@ -212,6 +216,42 @@ export interface ArbitrageOpportunity {
   sell_date: string;
 }
 
+export interface ArbitrageRouteOpportunity {
+  item_id: string;
+  quality: number;
+  buy_from: string;
+  buy_price: number;
+  sell_at: string;
+  sell_price: number;
+  unit_profit: number;
+  unit_roi: number;
+  item_weight: number;
+  weight_source: 'gameinfo' | 'heuristic' | 'default';
+  max_units_by_capacity: number;
+  total_weight: number;
+  trip_profit: number;
+  investment_required: number;
+  buy_date: string;
+  sell_date: string;
+}
+
+export interface ArbitrageRouteResponse {
+  region: string;
+  origin: string;
+  destination: string;
+  mount_capacity: number;
+  default_weight: number;
+  tax: number;
+  setup_fee: number;
+  item_count_considered: number;
+  weight_sources: {
+    gameinfo: number;
+    heuristic: number;
+    default: number;
+  };
+  opportunities: ArbitrageRouteOpportunity[];
+}
+
 export async function fetchArbitrageOpportunities(
   region?: string,
   tax: number = 0.08,
@@ -228,6 +268,268 @@ export async function fetchArbitrageOpportunities(
 
     const { data } = await api.get<ArbitrageOpportunity[]>('/albion/arbitrage', {
       params,
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// === Bandit Event ===
+export interface BanditEventStatus {
+  status: 'active' | 'soon' | 'waiting';
+  phase: number;
+  next_event_utc: string;
+  minutes_remaining: number;
+  cycle_minutes: number;
+  event_duration_minutes: number;
+}
+
+export async function fetchBanditEvent(): Promise<BanditEventStatus> {
+  const { data } = await api.get<BanditEventStatus>('/albion/bandit-event');
+  return data;
+}
+
+// === Killboard ===
+export interface KillboardPlayer {
+  id?: string;
+  name: string;
+  guild_id?: string;
+  guild: string;
+  alliance_id?: string;
+  alliance: string;
+  ip: number;
+  weapon: string | null;
+  death_fame?: number;
+}
+
+export interface KillEvent {
+  event_id: number;
+  timestamp: string;
+  kill_area: string;
+  total_fame: number;
+  participants: number;
+  killer: KillboardPlayer;
+  victim: KillboardPlayer;
+}
+
+export async function fetchKillboard(limit = 20): Promise<KillEvent[]> {
+  const { data } = await api.get<KillEvent[]>('/albion/killboard', {
+    params: { limit },
+  });
+  return data;
+}
+
+export interface PlayerSearchResult {
+  id: string;
+  name: string;
+  guild_name?: string;
+  alliance_name?: string;
+}
+
+export interface MetaMarketRow {
+  item_id: string;
+  meta_frequency: number;
+  buy_city: string;
+  sell_city: string;
+  buy_price: number;
+  sell_price: number;
+  spread: number;
+  spread_pct: number;
+  meta_market_score: number;
+}
+
+export interface MetaMarketResponse {
+  region: string;
+  cities: string[];
+  kill_events_analyzed: number;
+  as_of: string;
+  data: MetaMarketRow[];
+}
+
+export async function searchPlayers(
+  q: string,
+  limit: number = 15,
+): Promise<PlayerSearchResult[]> {
+  try {
+    const { data } = await api.get<PlayerSearchResult[]>('/albion/player/search', {
+      params: { q, limit },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchArbitrageRouteOpportunities(params: {
+  origin: string;
+  destination: string;
+  region?: string;
+  tax?: number;
+  setupFee?: number;
+  mountCapacity?: number;
+  defaultWeight?: number;
+  maxResults?: number;
+  items?: string[];
+}): Promise<ArbitrageRouteResponse> {
+  try {
+    const { data } = await api.get<ArbitrageRouteResponse>('/albion/arbitrage-route', {
+      params: {
+        origin: params.origin,
+        destination: params.destination,
+        region: params.region ?? 'europe',
+        tax: params.tax ?? 0.08,
+        setup_fee: params.setupFee ?? 0.01,
+        mount_capacity: params.mountCapacity ?? 1200,
+        default_weight: params.defaultWeight ?? 1,
+        max_results: params.maxResults ?? 100,
+        items: params.items,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchPlayerProfile(playerId: string): Promise<any> {
+  try {
+    const { data } = await api.get(`/albion/player/${playerId}`);
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchPlayerKills(
+  playerId: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<KillEvent[]> {
+  try {
+    const { data } = await api.get<KillEvent[]>(`/albion/player/${playerId}/kills`, {
+      params: { limit, offset },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchPlayerDeaths(
+  playerId: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<KillEvent[]> {
+  try {
+    const { data } = await api.get<KillEvent[]>(`/albion/player/${playerId}/deaths`, {
+      params: { limit, offset },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchGuildProfile(guildId: string): Promise<any> {
+  try {
+    const { data } = await api.get(`/albion/guild/${guildId}`);
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchGuildMembers(guildId: string): Promise<any[]> {
+  try {
+    const { data } = await api.get<any[]>(`/albion/guild/${guildId}/members`);
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchAllianceProfile(allianceId: string): Promise<any> {
+  try {
+    const { data } = await api.get(`/albion/alliance/${allianceId}`);
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchMetaMarket(
+  region?: string,
+  killLimit: number = 40,
+  topItems: number = 12,
+  cities?: string[],
+): Promise<MetaMarketResponse> {
+  try {
+    const { data } = await api.get<MetaMarketResponse>('/albion/meta-market', {
+      params: {
+        region: region ?? 'europe',
+        kill_limit: killLimit,
+        top_items: topItems,
+        cities: cities?.join(','),
+      },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// === Meta Builds ===
+export async function fetchMetaBuilds(
+  region?: string,
+  killLimit: number = 40,
+  topBuilds: number = 8,
+  minIp: number = 0,
+): Promise<MetaBuildsResponse> {
+  try {
+    const { data } = await api.get<MetaBuildsResponse>('/albion/meta-builds', {
+      params: {
+        region: region ?? 'europe',
+        kill_limit: killLimit,
+        top_builds: topBuilds,
+        min_ip: minIp || undefined,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// === Guild Hub ===
+export async function searchGuilds(q: string, limit = 15): Promise<GuildSearchResult[]> {
+  try {
+    const { data } = await api.get<GuildSearchResult[]>('/albion/guild/search', {
+      params: { q, limit },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchGuildSummary(guildId: string): Promise<GuildSummaryResponse> {
+  try {
+    const { data } = await api.get<GuildSummaryResponse>(`/albion/guild/${guildId}/summary`);
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function fetchGuildEconomy(
+  guildId: string,
+  memberLimit = 15,
+  region = 'europe',
+): Promise<GuildEconomyResponse> {
+  try {
+    const { data } = await api.get<GuildEconomyResponse>(`/albion/guild/${guildId}/economy`, {
+      params: { member_limit: memberLimit, region },
     });
     return data;
   } catch (error) {

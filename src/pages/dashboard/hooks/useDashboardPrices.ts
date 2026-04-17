@@ -22,7 +22,7 @@ interface UseDashboardPricesReturn {
   lowestPrice: number | null;
 }
 
-export function useDashboardPrices(): UseDashboardPricesReturn {
+export function useDashboardPrices(trackedItems: { item_name: string }[] = []): UseDashboardPricesReturn {
   const [selectedTier, setSelectedTier] = useState<TierFilter>("all");
   const { region } = useRegion();
 
@@ -38,8 +38,8 @@ export function useDashboardPrices(): UseDashboardPricesReturn {
   }, [myPricesQuery.data, selectedTier]);
 
   const myPrices = useMemo(
-    () => getCheapestPricesByItemName(filtered),
-    [filtered],
+    () => getCheapestPricesByItemName(filtered, trackedItems),
+    [filtered, trackedItems],
   );
 
   const lowestPrice = getLowestPrice(myPrices);

@@ -4,10 +4,15 @@ import { useTranslation } from 'react-i18next';
 
 type Language = 'pt-BR' | 'en-US';
 
+function normalizeLanguage(lang?: string): Language {
+  const langNorm = (lang ?? '').toLowerCase();
+  return langNorm.startsWith('en') ? 'en-US' : 'pt-BR';
+}
+
 export function useLanguage() {
   const { i18n } = useTranslation();
 
-  const currentLanguage = i18n.language as Language;
+  const currentLanguage = normalizeLanguage(i18n.language);
   const isPortuguese = currentLanguage === 'pt-BR';
   const isEnglish = currentLanguage === 'en-US';
 
