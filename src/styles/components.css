@@ -145,16 +145,16 @@
    
    button,
    .btn {
-     min-height: 38px;
-     padding: 0.65rem 1.25rem;
-     border-radius: 10px;
+     min-height: 36px;
+     padding: 0.6rem 1.1rem;
+     border-radius: 8px;
      border: 1px solid transparent;
-     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-     color: var(--color-dark);
-     font-weight: 600;
-     font-size: 0.95rem;
+     background: hsl(var(--primary));
+     color: hsl(var(--primary-foreground));
+     font-weight: 500;
+     font-size: 0.9rem;
      cursor: pointer;
-     transition: all 0.2s ease;
+     transition: background-color 0.15s ease, border-color 0.15s ease;
      display: inline-flex;
      align-items: center;
      justify-content: center;
@@ -166,13 +166,12 @@
    
    button:hover:not(:disabled),
    .btn:hover:not(:disabled) {
-     transform: translateY(-2px);
-     box-shadow: 0 8px 20px rgba(65, 240, 181, 0.25);
+     background: hsl(var(--primary) / 0.9);
    }
    
    button:active:not(:disabled),
    .btn:active:not(:disabled) {
-     transform: translateY(0);
+     background: hsl(var(--primary) / 0.85);
    }
    
    button:disabled,
@@ -181,40 +180,39 @@
      cursor: not-allowed;
    }
    
-   /* Botão secundário */
+   /* Botao secundario */
    .btn-secondary,
    button.secondary {
-     background: rgba(65, 240, 181, 0.1);
-     color: var(--color-primary);
-     border: 1px solid rgba(65, 240, 181, 0.3);
+     background: hsl(var(--secondary));
+     color: hsl(var(--secondary-foreground));
+     border: 1px solid hsl(var(--border));
    }
    
    .btn-secondary:hover:not(:disabled),
    button.secondary:hover:not(:disabled) {
-     background: rgba(65, 240, 181, 0.15);
-     border-color: rgba(65, 240, 181, 0.5);
+     background: hsl(var(--secondary) / 0.8);
    }
    
-   /* Botão de perigo */
+   /* Botao de perigo */
    .btn-danger,
    button.danger {
-     background: rgba(255, 107, 107, 0.1);
-     color: #ff8b8b;
-     border: 1px solid rgba(255, 107, 107, 0.3);
+     background: hsl(var(--destructive) / 0.15);
+     color: hsl(var(--destructive));
+     border: 1px solid hsl(var(--destructive) / 0.3);
    }
    
    .btn-danger:hover:not(:disabled),
    button.danger:hover:not(:disabled) {
-     background: rgba(255, 107, 107, 0.15);
-     border-color: rgba(255, 107, 107, 0.6);
+     background: hsl(var(--destructive) / 0.2);
+     border-color: hsl(var(--destructive) / 0.5);
    }
    
-   /* Botão pequeno */
+   /* Botao pequeno */
    .btn-sm,
    button.small {
-     padding: 0.4rem 0.8rem;
-     font-size: 0.85rem;
-     min-height: 32px;
+     padding: 0.35rem 0.75rem;
+     font-size: 0.8rem;
+     min-height: 30px;
    }
    
    /* ============================================

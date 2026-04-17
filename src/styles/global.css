@@ -1,41 +1,41 @@
 :root {
-  /* Albion Heritage Palette (HSL) */
-  --primary: 155 85% 55%;         /* Emerald Green */
-  --primary-foreground: 155 85% 5%;
-  --secondary: 198 100% 56%;       /* Frost Blue */
-  --secondary-foreground: 198 100% 95%;
-  --accent: 42 100% 62%;          /* Gold Amber */
-  --accent-foreground: 42 100% 5%;
+  /* Albion Heritage Palette (HSL) - More muted and natural */
+  --primary: 160 55% 45%;         /* Muted Teal */
+  --primary-foreground: 160 55% 5%;
+  --secondary: 190 45% 48%;       /* Soft Blue */
+  --secondary-foreground: 190 45% 95%;
+  --accent: 45 60% 50%;           /* Warm Gold */
+  --accent-foreground: 45 60% 5%;
   
-  --background: 220 33% 4%;       /* Deepest Night */
-  --foreground: 220 10% 95%;
+  --background: 220 25% 5%;       /* Deep Night */
+  --foreground: 220 15% 92%;
   
-  --card: 220 33% 7%;
-  --card-foreground: 220 10% 95%;
+  --card: 220 22% 8%;
+  --card-foreground: 220 15% 92%;
   
-  --popover: 220 33% 5%;
-  --popover-foreground: 220 10% 95%;
+  --popover: 220 22% 6%;
+  --popover-foreground: 220 15% 92%;
   
-  --border: 220 33% 15%;
-  --input: 220 33% 12%;
-  --ring: 155 85% 55%;
+  --border: 220 18% 14%;
+  --input: 220 18% 14%;
+  --ring: 160 55% 45%;
 
-  /* Effects */
-  --glass-bg: rgba(7, 17, 30, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  /* Effects - More subtle */
+  --glass-bg: hsla(220, 22%, 8%, 0.8);
+  --glass-border: hsla(220, 15%, 50%, 0.1);
   --glass-blur: blur(12px);
-  --radius: 1rem;
+  --radius: 0.625rem;
   
-  /* Legacy Vars (Backwards compatibility) */
-  --color-primary: #2ee89a;
-  --color-secondary: #1fb2ff;
-  --color-white: #e8efff;
-  --color-dark: #050910;
-  --color-dark-bg: #07111e;
-  --color-dark-card: #0d1524;
-  --color-danger: #ff6b6b;
-  --color-success: #38ef7d;
-  --color-warning: #ffd93d;
+  /* Legacy Vars (Backwards compatibility) - Updated to match */
+  --color-primary: #3fb893;
+  --color-secondary: #4aa8c7;
+  --color-white: #e8edf4;
+  --color-dark: #0a0d12;
+  --color-dark-bg: #0d1118;
+  --color-dark-card: #12171f;
+  --color-danger: #e05252;
+  --color-success: #3db87a;
+  --color-warning: #d4a843;
 }
 
 /* Preferência de movimento reduzido (acessibilidade) */

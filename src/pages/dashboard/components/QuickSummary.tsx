@@ -32,56 +32,55 @@ export function QuickSummary({
   const { t } = useTranslation();
 
   return (
-    <Card className="bg-card/40 border-border/60 shadow-xl overflow-hidden backdrop-blur-sm group hover:border-primary/20 transition-all duration-300">
+    <Card className="bg-card/60 border-border/40 overflow-hidden backdrop-blur-sm group hover:border-border/60 transition-colors">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+            <CardTitle className="text-lg font-semibold text-foreground">
               {t("dashboard.quickSummary")}
             </CardTitle>
-            <CardDescription className="text-muted-foreground mt-1">
+            <CardDescription className="text-muted-foreground/70 mt-0.5 text-sm">
               {t("dashboard.quickSummaryDesc")}
             </CardDescription>
           </div>
           <div className="relative">
-            <Activity className="text-primary w-5 h-5 animate-pulse" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-500" />
+            <Activity className="text-primary/70 w-4 h-4" />
+            <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Tracked Items */}
-          <div className="flex flex-col p-4 rounded-xl border border-border/40 bg-background/40 hover:bg-background/60 hover:border-primary/20 transition-all duration-300 group/card">
-            <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-              <BarChart3 className="w-3.5 h-3.5 group-hover/card:text-primary transition-colors" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">
+          <div className="flex flex-col p-3.5 rounded-lg border border-border/30 bg-background/50 hover:bg-background/70 hover:border-border/50 transition-colors group/card">
+            <div className="flex items-center gap-2 mb-1.5 text-muted-foreground">
+              <BarChart3 className="w-3.5 h-3.5 group-hover/card:text-primary/70 transition-colors" />
+              <span className="text-[11px] font-medium">
                 {t("dashboard.trackedItems")}
               </span>
             </div>
-            <p className="text-3xl font-black tracking-tighter">
+            <p className="text-2xl font-bold">
               <AnimatedNumber value={trackedCount} />
             </p>
           </div>
 
           {/* Active Prices */}
-          <div className={`flex flex-col p-4 rounded-xl border transition-all duration-300 group/card ${
+          <div className={`flex flex-col p-3.5 rounded-lg border transition-colors group/card ${
             liveBumpsCount > 0
-              ? "border-emerald-400/40 bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.2)]"
-              : "border-primary/20 bg-primary/5 hover:bg-primary/10"
+              ? "border-emerald-500/30 bg-emerald-500/8"
+              : "border-primary/20 bg-primary/5 hover:bg-primary/8"
           }`}>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className={`w-3.5 h-3.5 group-hover/card:animate-pulse ${liveBumpsCount > 0 ? "text-emerald-400" : "text-primary"}`} />
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${liveBumpsCount > 0 ? "text-emerald-300" : "text-primary/80"}`}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className={`w-3.5 h-3.5 ${liveBumpsCount > 0 ? "text-emerald-400/80" : "text-primary/70"}`} />
+              <span className={`text-[11px] font-medium ${liveBumpsCount > 0 ? "text-emerald-300/80" : "text-primary/70"}`}>
                 {t("dashboard.activePrices")}
               </span>
             </div>
-            <p className={`text-3xl font-black tracking-tighter ${liveBumpsCount > 0 ? "text-emerald-300" : "text-primary"}`}>
+            <p className={`text-2xl font-bold ${liveBumpsCount > 0 ? "text-emerald-300" : "text-primary"}`}>
               <AnimatedNumber value={activePricesCount} />
             </p>
             {liveBumpsCount > 0 && (
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-emerald-300/90">
+              <p className="mt-1 text-[10px] font-medium text-emerald-400/70">
                 {liveBumpsCount} update(s) ao vivo
               </p>
             )}
@@ -90,29 +89,26 @@ export function QuickSummary({
           {/* Opportunities */}
           <Link
             to="/opportunities"
-            className="flex flex-col p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-all group/opp relative overflow-hidden"
+            className="flex flex-col p-3.5 rounded-lg border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/8 transition-colors group/opp relative overflow-hidden"
           >
-            {/* Shimmer effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent -translate-x-full group-hover/opp:translate-x-full transition-transform duration-700" />
-
-            <div className="flex justify-between items-center mb-2 relative z-10">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">
+            <div className="flex justify-between items-center mb-1.5 relative z-10">
+              <span className="text-[11px] font-medium text-blue-400/80">
                 Oportunidades
               </span>
               <TrendingUp
-                size={14}
-                className="text-blue-400 group-hover/opp:scale-125 group-hover/opp:rotate-12 transition-all"
+                size={13}
+                className="text-blue-400/70 group-hover/opp:text-blue-400 transition-colors"
               />
             </div>
             <div className="flex items-baseline gap-2 relative z-10">
-              <p className="text-3xl font-black tracking-tighter text-blue-100">
+              <p className="text-2xl font-bold text-blue-100/90">
                 <AnimatedNumber value={opportunityCount} />
               </p>
-              <span className="text-xs font-medium text-blue-400/60 uppercase">
+              <span className="text-xs font-medium text-blue-400/50">
                 vias
               </span>
             </div>
-            <div className="mt-2 text-[10px] font-bold text-blue-400/40 group-hover/opp:text-blue-400/80 transition-colors uppercase tracking-widest relative z-10">
+            <div className="mt-1.5 text-[10px] font-medium text-blue-400/50 group-hover/opp:text-blue-400/70 transition-colors relative z-10">
               Ver Detalhes →
             </div>
           </Link>

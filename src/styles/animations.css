@@ -1,5 +1,5 @@
 /* ============================================
-   ANIMAÇÕES GLOBAIS
+   ANIMACOES GLOBAIS - Suaves e Naturais
    ============================================ */
 
 @keyframes spin {
@@ -8,7 +8,7 @@
   }
 }
 
-/* Marquee / Ticker animation */
+/* Marquee / Ticker animation - mais lento */
 @keyframes marquee {
   0% {
     transform: translateX(0%);
@@ -19,7 +19,7 @@
 }
 
 .animate-marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 40s linear infinite;
   will-change: transform;
 }
 
@@ -27,40 +27,39 @@
   animation-play-state: paused;
 }
 
-/* 3D card hover effect */
+/* Card hover effect - sutil */
 .card-3d {
-  transition: transform 0.3s ease;
-  transform-style: preserve-3d;
-  perspective: 800px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-3d:hover {
-  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px hsla(220, 30%, 4%, 0.2);
 }
 
 /* Staggered fade-in for children */
 .stagger-children > * {
   opacity: 0;
-  animation: fade-up 0.5s ease-out forwards;
+  animation: fade-up 0.4s ease-out forwards;
 }
 
-.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.09s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.18s; }
 
-/* Glow pulse for live indicators */
+/* Glow pulse for live indicators - mais sutil */
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px 0 currentColor;
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 0 12px 2px currentColor;
+    opacity: 0.6;
   }
 }
 
 .animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
+  animation: glow-pulse 2.5s ease-in-out infinite;
 }
