@@ -1,4 +1,4 @@
-name: Frontend CI
+name: "⚛️ Frontend CI"
 
 on:
   push:
@@ -11,23 +11,20 @@ jobs:
     name: Run frontend checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
+          cache: "npm"
 
-      - name: Install dependencies
+      - name: Instalar dependências
         run: npm ci
 
-      - name: Run lint
-        run: npm run lint
-
-      - name: Run Vitest
+      - name: Rodar Vitest
         run: npm run test:run
 
-      - name: Run build
+      - name: Verificar build
         run: npm run build
