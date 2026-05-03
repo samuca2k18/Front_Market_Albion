@@ -30,7 +30,7 @@ export function VerifyEmailPage() {
         if (cancelled) return;
         setStatus("success");
         setMessage(res.message || "E-mail verificado com sucesso. Você já pode fazer login.");
-      } catch (error) {
+      } catch {
         if (cancelled) return;
         setStatus("error");
         setMessage(

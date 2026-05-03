@@ -35,6 +35,9 @@ Interface web profissional para monitoramento inteligente de preços e inteligê
 
 - **🔐 Autenticação Segura**: Fluxo completo de signup, login e logout com tokens JWT
 - **📊 Dashboard Inteligente**: Resumo rápido de itens monitorados, preços ativos e melhor oportunidade
+- **⚒️ Meta Builds Analyzer NEW**: Precificação completa de loadouts do Meta em tempo real, com `BuildCard` e `BuildCostBar`
+- **🛡️ Guild Economy Hub NEW**: Rastreamento financeiro, pesquisa de guildas e relatórios de membros (`GuildHubPage`)
+- **💎 Premium Design & Glassmorphism**: Interface ultra moderna, `SideNav` remodelada e experiência imersiva
 - **💰 Monitoramento de Preços**: Preços em tempo real com **indicador de frescor** (🟢🟡🔴)
 - **💱 Monitor de Ouro**: Preço atual, variação 24h e gráfico sparkline
 - **⚖️ Calculadora de Arbitragem**: Oportunidades de trade entre cidades com cálculo de lucro e ROI
@@ -43,7 +46,7 @@ Interface web profissional para monitoramento inteligente de preços e inteligê
 - **🔍 Busca Avançada**: Autocomplete com sugestões de itens e filtros
 - **📈 Histórico de Preços**: Gráficos interativos com 7 dias de histórico
 - **🌍 Suporte Multilíngue**: Português (PT-BR) e Inglês (EN-US)
-- **📱 Design Responsivo**: Otimizado para desktop e mobile
+- **📱 Design Responsivo**: Otimizado para desktop e mobile, com Skeleton Loaders e validações aprimoradas
 - **⚡ Performance**: Construído com React 19, Vite 7 e TanStack Query
 
 ---
@@ -194,7 +197,7 @@ npm run preview
 - **Signup**: Criar conta com username, email e senha
 - **Login**: Autenticação com JWT
 - **Logout**: Limpar token e sessão
-- **Persistência**: Token armazenado em localStorage
+- **Sessão Segura**: Access token em memória e refresh token em cookie HttpOnly
 - **Sincronização**: Múltiplas abas do navegador sincronizadas
 - **Rotas protegidas**: `ProtectedRoute` e `GuestRoute` para controle de acesso
 

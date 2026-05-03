@@ -112,7 +112,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div className="relative group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
         <Input
           type="text"
           placeholder={t("search.placeholder")}
@@ -120,7 +120,7 @@ export function SearchAutocomplete({ onSelectProduct }: SearchAutocompleteProps)
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="pl-10 pr-10 h-11 bg-background/40 border-border/40 focus:ring-primary/30 rounded-xl"
+          className="h-11 rounded-xl bg-background/40 pl-12 pr-10 border-border/40 text-sm md:text-base focus:ring-primary/30"
         />
         {query && (
           <Button

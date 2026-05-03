@@ -1,25 +1,39 @@
-// src/api/client.ts
 import axios, { AxiosError } from 'axios';
 
 const DEFAULT_API_URL = 'https://market-albion-online.onrender.com';
 
-const API_BASE_URL =
-  (
-    import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL ||
-    DEFAULT_API_URL
-  ).replace(/\/$/, '');
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  DEFAULT_API_URL
+).replace(/\/$/, '');
 
 export const STORAGE_KEYS = {
+  user: 'albion_market_user',
+  // Legacy keys kept only for cleanup migration.
   token: 'albion_market_token',
   refreshToken: 'albion_market_refresh_token',
   sessionExpiry: 'albion_market_session_expiry',
-  user: 'albion_market_user',
 };
+
+let currentAccessToken: string | null = null;
+
+export function getAccessToken(): string | null {
+  return currentAccessToken;
+}
+
+export function setAccessToken(token: string | null): void {
+  currentAccessToken = token;
+}
+
+export function clearAccessToken(): void {
+  currentAccessToken = null;
+}
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
+  withCredentials: true,
 });
 
 const PROTECTED_ROUTE_PREFIXES = [
@@ -32,9 +46,9 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/meta-market',
   '/guild-hub',
 ];
-// ── Injeta access token em toda requisição ────────────────────────────────
+
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(STORAGE_KEYS.token);
+  const token = getAccessToken();
   if (token) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
@@ -42,9 +56,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Interceptor de resposta: tenta refresh automático no 401 ─────────────
 let isRefreshing = false;
-// fila de requisições que chegaram durante o refresh
 let failedQueue: Array<{
   resolve: (value: string) => void;
   reject: (reason: unknown) => void;
@@ -52,8 +64,8 @@ let failedQueue: Array<{
 
 function processQueue(error: unknown, newToken: string | null) {
   failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(newToken!);
+    if (error || !newToken) reject(error);
+    else resolve(newToken);
   });
   failedQueue = [];
 }
@@ -65,12 +77,19 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Só tenta refresh em 401 e apenas uma vez por requisição
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    const requestUrl = String(originalRequest?.url ?? '');
+    const isAuthRefreshRequest = requestUrl.includes('/refresh');
+    const isAuthLoginRequest = requestUrl.includes('/login');
+
+    if (
+      error.response?.status !== 401 ||
+      originalRequest?._retry ||
+      isAuthRefreshRequest ||
+      isAuthLoginRequest
+    ) {
       return Promise.reject(error);
     }
 
-    // Se já está em processo de refresh, enfileira esta requisição
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {
         failedQueue.push({ resolve, reject });
@@ -85,24 +104,15 @@ api.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    const refreshToken = localStorage.getItem(STORAGE_KEYS.refreshToken);
-
-    if (!refreshToken) {
-      // Sem refresh token → desloga e redireciona
-      _clearSessionAndRedirect();
-      isRefreshing = false;
-      return Promise.reject(error);
-    }
-
     try {
       const { data } = await axios.post<{ access_token: string }>(
         `${API_BASE_URL}/refresh`,
         null,
-        { params: { refresh_token: refreshToken } },
+        { withCredentials: true },
       );
 
       const newAccessToken = data.access_token;
-      localStorage.setItem(STORAGE_KEYS.token, newAccessToken);
+      setAccessToken(newAccessToken);
 
       processQueue(null, newAccessToken);
       originalRequest!.headers!.Authorization = `Bearer ${newAccessToken}`;
@@ -117,11 +127,13 @@ api.interceptors.response.use(
   },
 );
 
-/** Remove a sessão e redireciona para /login apenas em rotas protegidas. */
 function _clearSessionAndRedirect() {
+  clearAccessToken();
+
   localStorage.removeItem(STORAGE_KEYS.token);
   localStorage.removeItem(STORAGE_KEYS.refreshToken);
   localStorage.removeItem(STORAGE_KEYS.user);
+  localStorage.removeItem(STORAGE_KEYS.sessionExpiry);
 
   const pathname = window.location.pathname.toLowerCase();
   const isProtectedPath = PROTECTED_ROUTE_PREFIXES.some(
@@ -133,7 +145,6 @@ function _clearSessionAndRedirect() {
   }
 }
 
-// ── Helpers de erro ───────────────────────────────────────────────────────
 export interface ApiErrorShape {
   message: string;
   status?: number;
@@ -172,7 +183,9 @@ export function parseApiError(error: unknown): ApiErrorShape {
   };
 }
 
-export function buildQuery(params: Record<string, string | number | undefined | string[]>) {
+export function buildQuery(
+  params: Record<string, string | number | undefined | string[]>,
+) {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined) return;

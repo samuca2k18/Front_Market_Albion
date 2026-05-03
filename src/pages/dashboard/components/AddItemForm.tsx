@@ -1,5 +1,6 @@
 // src/pages/dashboard/components/AddItemForm.tsx
 import { useTranslation } from "react-i18next";
+import { useRef } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   Card,
@@ -20,6 +21,7 @@ interface AddItemFormProps {
 
 export function AddItemForm({ createMutation }: AddItemFormProps) {
   const { t, i18n } = useTranslation();
+  const submitLockRef = useRef(false);
 
   return (
     <Card className="bg-card/40 border-border/60 shadow-xl backdrop-blur-sm">
@@ -41,17 +43,25 @@ export function AddItemForm({ createMutation }: AddItemFormProps) {
           <SearchAutocomplete
             onSelectProduct={(product: Product) => {
               const internal = product.unique_name;
-              if (!internal || createMutation.isPending) return;
+              if (!internal || createMutation.isPending || submitLockRef.current) return;
+              submitLockRef.current = true;
 
               const isPT = i18n.language.toLowerCase().startsWith("pt");
               const label = isPT
                 ? product.name_pt || product.name_en || internal
                 : product.name_en || product.name_pt || internal;
 
-              createMutation.mutate({
-                item_name: internal,
-                display_name: label,
-              });
+              createMutation.mutate(
+                {
+                  item_name: internal,
+                  display_name: label,
+                },
+                {
+                  onSettled: () => {
+                    submitLockRef.current = false;
+                  },
+                },
+              );
             }}
           />
 
