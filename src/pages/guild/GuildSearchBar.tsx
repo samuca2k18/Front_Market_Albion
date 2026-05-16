@@ -1,8 +1,9 @@
 // src/pages/guild/GuildSearchBar.tsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Search, Loader2, Users, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useRegion } from "@/context/RegionContext";
 import type { GuildSearchResult } from "@/api/types";
 
 interface GuildSearchBarProps {
@@ -14,12 +15,13 @@ export function GuildSearchBar({ onSelect, isLoading }: GuildSearchBarProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<GuildSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
-  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { region } = useRegion();
 
   const handleChange = useCallback(
     (value: string) => {
       setQuery(value);
-      if (timer) clearTimeout(timer);
+      if (timerRef.current) clearTimeout(timerRef.current);
 
       if (value.length < 2) {
         setResults([]);
@@ -31,7 +33,7 @@ export function GuildSearchBar({ onSelect, isLoading }: GuildSearchBarProps) {
         try {
           // Import dynamically to avoid circular dep issues at build
           const { searchGuilds } = await import("@/api/albion");
-          const data = await searchGuilds(value);
+          const data = await searchGuilds(value, 15, region);
           setResults(data);
         } catch {
           setResults([]);
@@ -39,9 +41,9 @@ export function GuildSearchBar({ onSelect, isLoading }: GuildSearchBarProps) {
           setSearching(false);
         }
       }, 400);
-      setTimer(t);
+      timerRef.current = t;
     },
-    [timer],
+    [region],
   );
 
   const handleSelect = (guild: GuildSearchResult) => {

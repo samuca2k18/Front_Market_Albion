@@ -17,6 +17,7 @@ import {
 } from '../api/auth';
 import {
   clearAccessToken,
+  getAccessToken,
   parseApiError,
   setAccessToken,
   type ApiErrorShape,
@@ -52,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (!token) {
+    const accessToken = getAccessToken();
+    if (!accessToken) {
       setUser(null);
       return;
     }
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       persistToken(null);
       setUser(null);
     }
-  }, [token, persistToken]);
+  }, [persistToken]);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,12 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const data = await loginRequest(credentials);
         persistToken(data.access_token);
-        await refreshUser();
+        const profile = await meRequest();
+        setUser(profile);
       } catch (error) {
         throw parseApiError(error) as ApiErrorShape;
       }
     },
-    [persistToken, refreshUser],
+    [persistToken],
   );
 
   const signup = useCallback(async (payload: SignupPayload) => {

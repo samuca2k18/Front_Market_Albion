@@ -9,6 +9,7 @@ import {
   searchPlayers,
   type KillEvent,
 } from "@/api/albion";
+import { useRegion } from "@/context/RegionContext";
 import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,31 +25,32 @@ export function TrackerPage() {
   const [query, setQuery] = useState("");
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 300);
+  const { region } = useRegion();
 
   const playersQuery = useQuery({
-    queryKey: ["tracker-player-search", debouncedQuery],
-    queryFn: () => searchPlayers(debouncedQuery, 20),
+    queryKey: ["tracker-player-search", debouncedQuery, region],
+    queryFn: () => searchPlayers(debouncedQuery, 20, region),
     enabled: debouncedQuery.trim().length >= 2,
     staleTime: 1000 * 60,
   });
 
   const profileQuery = useQuery({
-    queryKey: ["tracker-player-profile", selectedPlayerId],
-    queryFn: () => fetchPlayerProfile(selectedPlayerId!),
+    queryKey: ["tracker-player-profile", selectedPlayerId, region],
+    queryFn: () => fetchPlayerProfile(selectedPlayerId!, region),
     enabled: Boolean(selectedPlayerId),
     staleTime: 1000 * 30,
   });
 
   const killsQuery = useQuery({
-    queryKey: ["tracker-player-kills", selectedPlayerId],
-    queryFn: () => fetchPlayerKills(selectedPlayerId!, 20, 0),
+    queryKey: ["tracker-player-kills", selectedPlayerId, region],
+    queryFn: () => fetchPlayerKills(selectedPlayerId!, 20, 0, region),
     enabled: Boolean(selectedPlayerId),
     staleTime: 1000 * 30,
   });
 
   const deathsQuery = useQuery({
-    queryKey: ["tracker-player-deaths", selectedPlayerId],
-    queryFn: () => fetchPlayerDeaths(selectedPlayerId!, 20, 0),
+    queryKey: ["tracker-player-deaths", selectedPlayerId, region],
+    queryFn: () => fetchPlayerDeaths(selectedPlayerId!, 20, 0, region),
     enabled: Boolean(selectedPlayerId),
     staleTime: 1000 * 30,
   });
@@ -186,4 +188,5 @@ export function TrackerPage() {
     </div>
   );
 }
+
 

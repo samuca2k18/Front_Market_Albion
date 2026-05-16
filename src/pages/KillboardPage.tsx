@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sword, Skull, AlertCircle, Clock, Shield, Users, Loader2, Search, Filter, X } from "lucide-react";
 import { fetchKillboard } from "@/api/albion";
+import { useRegion } from "@/context/RegionContext";
 import {
     Card,
     CardContent,
@@ -25,9 +26,10 @@ function getTimeAgo(ts: string) {
 }
 
 export function KillboardPage() {
+    const { region } = useRegion();
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ["killboard"],
-        queryFn: () => fetchKillboard(30),
+        queryKey: ["killboard", region],
+        queryFn: () => fetchKillboard(30, region),
         refetchInterval: 1000 * 30,
     });
 
