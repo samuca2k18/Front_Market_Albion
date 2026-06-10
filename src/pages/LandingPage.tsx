@@ -75,9 +75,9 @@ function GoldTicker() {
 
   return (
     <div className="w-full overflow-hidden border-b border-border/10 bg-card/20 backdrop-blur-sm">
-      <div className="flex items-center gap-8 py-2 px-4 animate-marquee whitespace-nowrap">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-8 shrink-0">
+      <div className="flex w-max items-center animate-marquee whitespace-nowrap">
+        {[1, 2].map((i, idx) => (
+          <div key={i} className="flex items-center gap-8 py-2 px-4 shrink-0" aria-hidden={idx === 1}>
             <div className="flex items-center gap-2">
               <Coins className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
