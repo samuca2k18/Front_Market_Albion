@@ -11,20 +11,16 @@
 /* Marquee / Ticker animation */
 @keyframes marquee {
   0% {
-    transform: translateX(0%);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-33.33%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .animate-marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 22s linear infinite;
   will-change: transform;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
 }
 
 /* 3D card hover effect */

@@ -35,8 +35,8 @@ export function GuildHubPage() {
   const memberLimit = 15;
 
   const summaryQuery = useQuery({
-    queryKey: ["guild-summary", selectedGuild?.id],
-    queryFn: () => fetchGuildSummary(selectedGuild!.id),
+    queryKey: ["guild-summary", selectedGuild?.id, region],
+    queryFn: () => fetchGuildSummary(selectedGuild!.id, region),
     enabled: !!selectedGuild,
     staleTime: 1000 * 60 * 5,
   });

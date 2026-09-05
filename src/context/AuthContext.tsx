@@ -8,8 +8,20 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 
-import { loginRequest, meRequest, signupRequest } from '../api/auth';
-import { STORAGE_KEYS, parseApiError, type ApiErrorShape } from '../api/client';
+import {
+  loginRequest,
+  logoutRequest,
+  meRequest,
+  refreshAccessRequest,
+  signupRequest,
+} from '../api/auth';
+import {
+  clearAccessToken,
+  getAccessToken,
+  parseApiError,
+  setAccessToken,
+  type ApiErrorShape,
+} from '../api/client';
 import type { AuthCredentials, SignupPayload, User } from '../api/types';
 
 interface AuthContextValue {
@@ -27,26 +39,22 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(STORAGE_KEYS.token),
-  );
+  const [token, setToken] = useState<string | null>(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
 
-  // salva/remove tokens no localStorage
   const persistToken = useCallback((value: string | null) => {
     if (!value) {
-      localStorage.removeItem(STORAGE_KEYS.token);
-      localStorage.removeItem(STORAGE_KEYS.refreshToken);
+      clearAccessToken();
       setToken(null);
       return;
     }
-    localStorage.setItem(STORAGE_KEYS.token, value);
+    setAccessToken(value);
     setToken(value);
   }, []);
 
-  // busca /me quando tem token
   const refreshUser = useCallback(async () => {
-    if (!token) {
+    const accessToken = getAccessToken();
+    if (!accessToken) {
       setUser(null);
       return;
     }
@@ -55,63 +63,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profile = await meRequest();
       setUser(profile);
     } catch (error) {
-      console.error('Erro ao buscar usuário', error);
+      console.error('Erro ao buscar usuario', error);
       persistToken(null);
       setUser(null);
     }
-  }, [token, persistToken]);
+  }, [persistToken]);
 
-  // bootstrap inicial: se tem token, tenta carregar usuário
   useEffect(() => {
-    if (!token) {
-      setIsBootstrapping(false);
-      return;
+    let cancelled = false;
+
+    async function bootstrapAuth() {
+      try {
+        const refreshed = await refreshAccessRequest();
+        if (cancelled) return;
+        persistToken(refreshed.access_token);
+        const profile = await meRequest();
+        if (!cancelled) {
+          setUser(profile);
+        }
+      } catch {
+        if (!cancelled) {
+          persistToken(null);
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsBootstrapping(false);
+        }
+      }
     }
 
-    refreshUser().finally(() => setIsBootstrapping(false));
-  }, [token, refreshUser]);
+    void bootstrapAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, [persistToken]);
 
   const login = useCallback(
     async (credentials: AuthCredentials) => {
       try {
         const data = await loginRequest(credentials);
-        // salva access e refresh tokens
         persistToken(data.access_token);
-        localStorage.setItem(STORAGE_KEYS.refreshToken, data.refresh_token);
-        await refreshUser();
+        const profile = await meRequest();
+        setUser(profile);
       } catch (error) {
         throw parseApiError(error) as ApiErrorShape;
       }
     },
-    [persistToken, refreshUser],
+    [persistToken],
   );
 
-  const signup = useCallback(
-    async (payload: SignupPayload) => {
-      try {
-        await signupRequest(payload);
-      } catch (error) {
-        throw parseApiError(error) as ApiErrorShape;
-      }
-    },
-    [],
-  );
+  const signup = useCallback(async (payload: SignupPayload) => {
+    try {
+      await signupRequest(payload);
+    } catch (error) {
+      throw parseApiError(error) as ApiErrorShape;
+    }
+  }, []);
 
   const logout = useCallback(() => {
+    void logoutRequest().catch(() => undefined);
     persistToken(null);
     setUser(null);
   }, [persistToken]);
-
-  // sincroniza login/logout entre abas do navegador
-  useEffect(() => {
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEYS.token) {
-        setToken(event.newValue);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({

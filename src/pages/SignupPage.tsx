@@ -14,7 +14,10 @@ import "./auth-pages.css";
 
 const signupSchema = z
   .object({
-    username: z.string().min(3, "Informe um usuário válido"),
+    username: z
+      .string()
+      .min(3, "Informe um usuário válido")
+      .regex(/^[a-zA-Z0-9_\-@.]+$/, "Apenas letras, números, _, -, @ e ."),
     email: z.string().email("Email inválido"),
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirmPassword: z.string().min(6),

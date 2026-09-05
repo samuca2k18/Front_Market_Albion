@@ -313,9 +313,9 @@ export interface KillEvent {
   victim: KillboardPlayer;
 }
 
-export async function fetchKillboard(limit = 20): Promise<KillEvent[]> {
+export async function fetchKillboard(limit = 20, region?: string): Promise<KillEvent[]> {
   const { data } = await api.get<KillEvent[]>('/albion/killboard', {
-    params: { limit },
+    params: { limit, region: region ?? 'west' },
   });
   return data;
 }
@@ -350,10 +350,11 @@ export interface MetaMarketResponse {
 export async function searchPlayers(
   q: string,
   limit: number = 15,
+  region?: string,
 ): Promise<PlayerSearchResult[]> {
   try {
     const { data } = await api.get<PlayerSearchResult[]>('/albion/player/search', {
-      params: { q, limit },
+      params: { q, limit, region: region ?? 'west' },
     });
     return data;
   } catch (error) {
@@ -392,9 +393,11 @@ export async function fetchArbitrageRouteOpportunities(params: {
   }
 }
 
-export async function fetchPlayerProfile(playerId: string): Promise<any> {
+export async function fetchPlayerProfile(playerId: string, region?: string): Promise<any> {
   try {
-    const { data } = await api.get(`/albion/player/${playerId}`);
+    const { data } = await api.get(`/albion/player/${playerId}`, {
+      params: { region: region ?? 'west' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);
@@ -405,10 +408,11 @@ export async function fetchPlayerKills(
   playerId: string,
   limit: number = 20,
   offset: number = 0,
+  region?: string,
 ): Promise<KillEvent[]> {
   try {
     const { data } = await api.get<KillEvent[]>(`/albion/player/${playerId}/kills`, {
-      params: { limit, offset },
+      params: { limit, offset, region: region ?? 'west' },
     });
     return data;
   } catch (error) {
@@ -420,10 +424,11 @@ export async function fetchPlayerDeaths(
   playerId: string,
   limit: number = 20,
   offset: number = 0,
+  region?: string,
 ): Promise<KillEvent[]> {
   try {
     const { data } = await api.get<KillEvent[]>(`/albion/player/${playerId}/deaths`, {
-      params: { limit, offset },
+      params: { limit, offset, region: region ?? 'west' },
     });
     return data;
   } catch (error) {
@@ -431,27 +436,33 @@ export async function fetchPlayerDeaths(
   }
 }
 
-export async function fetchGuildProfile(guildId: string): Promise<any> {
+export async function fetchGuildProfile(guildId: string, region?: string): Promise<any> {
   try {
-    const { data } = await api.get(`/albion/guild/${guildId}`);
+    const { data } = await api.get(`/albion/guild/${guildId}`, {
+      params: { region: region ?? 'west' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);
   }
 }
 
-export async function fetchGuildMembers(guildId: string): Promise<any[]> {
+export async function fetchGuildMembers(guildId: string, region?: string): Promise<any[]> {
   try {
-    const { data } = await api.get<any[]>(`/albion/guild/${guildId}/members`);
+    const { data } = await api.get<any[]>(`/albion/guild/${guildId}/members`, {
+      params: { region: region ?? 'west' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);
   }
 }
 
-export async function fetchAllianceProfile(allianceId: string): Promise<any> {
+export async function fetchAllianceProfile(allianceId: string, region?: string): Promise<any> {
   try {
-    const { data } = await api.get(`/albion/alliance/${allianceId}`);
+    const { data } = await api.get(`/albion/alliance/${allianceId}`, {
+      params: { region: region ?? 'west' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);
@@ -502,10 +513,10 @@ export async function fetchMetaBuilds(
 }
 
 // === Guild Hub ===
-export async function searchGuilds(q: string, limit = 15): Promise<GuildSearchResult[]> {
+export async function searchGuilds(q: string, limit = 15, region?: string): Promise<GuildSearchResult[]> {
   try {
     const { data } = await api.get<GuildSearchResult[]>('/albion/guild/search', {
-      params: { q, limit },
+      params: { q, limit, region: region ?? 'west' },
     });
     return data;
   } catch (error) {
@@ -513,9 +524,11 @@ export async function searchGuilds(q: string, limit = 15): Promise<GuildSearchRe
   }
 }
 
-export async function fetchGuildSummary(guildId: string): Promise<GuildSummaryResponse> {
+export async function fetchGuildSummary(guildId: string, region?: string): Promise<GuildSummaryResponse> {
   try {
-    const { data } = await api.get<GuildSummaryResponse>(`/albion/guild/${guildId}/summary`);
+    const { data } = await api.get<GuildSummaryResponse>(`/albion/guild/${guildId}/summary`, {
+      params: { region: region ?? 'west' },
+    });
     return data;
   } catch (error) {
     throw parseApiError(error);

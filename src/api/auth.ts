@@ -45,3 +45,12 @@ export async function resendVerificationRequest(
   });
   return data;
 }
+
+export async function refreshAccessRequest(): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/refresh');
+  return data;
+}
+
+export async function logoutRequest(): Promise<void> {
+  await api.post('/logout');
+}
