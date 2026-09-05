@@ -13,7 +13,7 @@ import {
 } from "recharts";
 
 import { fetchAlbionPrices } from "@/api/albion";
-import { getOpenAlbionUniqueName, type OpenAlbionItem } from "@/api/openalbion";
+import { getOpenAlbionUniqueName, type OpenAlbionItem } from "@/api/catalog";
 import { useRegion } from "@/context/RegionContext";
 import { getItemDisplayNameWithEnchantment, getItemImageUrl } from "@/utils/items";
 import { Button } from "../ui/button";

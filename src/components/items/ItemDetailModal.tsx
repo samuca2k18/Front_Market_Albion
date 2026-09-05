@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAlbionPrices } from "@/api/albion";
 import { useRegion } from "@/context/RegionContext";
-import { fetchItemDetail, getOpenAlbionUniqueName, type ItemType, type OpenAlbionItem } from "@/api/openalbion";
+import { fetchItemDetail, getOpenAlbionUniqueName, type ItemType, type OpenAlbionItem } from "@/api/catalog";
 import { useTranslation } from "react-i18next";
 import {
   Zap,
@@ -61,7 +61,7 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
   });
 
   const detailQuery = useQuery({
-    queryKey: ["openalbion-item-detail", itemType, item.id],
+    queryKey: ["catalog-item-detail", itemType, item.id],
     queryFn: () => fetchItemDetail(itemType, item.id),
     staleTime: 1000 * 60 * 10,
   });

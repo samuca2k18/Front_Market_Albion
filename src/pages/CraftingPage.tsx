@@ -15,7 +15,7 @@ import {
   fetchConsumableCraftings,
   fetchConsumables,
   getOpenAlbionUniqueName,
-} from "@/api/openalbion";
+} from "@/api/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
