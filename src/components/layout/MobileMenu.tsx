@@ -26,7 +26,7 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const MARKET_PATHS = ["/dashboard", "/prices", "/opportunities", "/crafting"];
+  const MARKET_PATHS = ["/dashboard", "/prices", "/opportunities", "/crafting", "/price-grid"];
   const COMBAT_PATHS = ["/killboard", "/tracker", "/meta-market", "/guild-hub"];
   const RESOURCES_PATHS = ["/items", "/data-client"];
   const groupedPaths = [...MARKET_PATHS, ...COMBAT_PATHS, ...RESOURCES_PATHS];

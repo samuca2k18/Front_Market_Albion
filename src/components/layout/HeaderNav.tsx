@@ -28,6 +28,7 @@ export function HeaderNav({ items }: HeaderNavProps) {
     "/prices",
     "/opportunities",
     "/crafting",
+    "/price-grid",
     "/killboard",
     "/tracker",
   ];

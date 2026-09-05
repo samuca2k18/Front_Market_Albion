@@ -231,6 +231,7 @@ export interface ArbitrageRouteOpportunity {
   total_weight: number;
   trip_profit: number;
   investment_required: number;
+  profit_per_kg?: number;
   buy_date: string;
   sell_date: string;
 }
@@ -241,6 +242,7 @@ export interface ArbitrageRouteResponse {
   destination: string;
   mount_capacity: number;
   default_weight: number;
+  budget_cap?: number;
   tax: number;
   setup_fee: number;
   item_count_considered: number;
@@ -370,6 +372,7 @@ export async function fetchArbitrageRouteOpportunities(params: {
   setupFee?: number;
   mountCapacity?: number;
   defaultWeight?: number;
+  budgetCap?: number;
   maxResults?: number;
   items?: string[];
 }): Promise<ArbitrageRouteResponse> {
@@ -378,11 +381,12 @@ export async function fetchArbitrageRouteOpportunities(params: {
       params: {
         origin: params.origin,
         destination: params.destination,
-        region: params.region ?? 'europe',
+        region: params.region ?? 'west',
         tax: params.tax ?? 0.08,
         setup_fee: params.setupFee ?? 0.01,
         mount_capacity: params.mountCapacity ?? 1200,
         default_weight: params.defaultWeight ?? 1,
+        budget_cap: params.budgetCap ?? 0,
         max_results: params.maxResults ?? 100,
         items: params.items,
       },
@@ -543,6 +547,112 @@ export async function fetchGuildEconomy(
   try {
     const { data } = await api.get<GuildEconomyResponse>(`/albion/guild/${guildId}/economy`, {
       params: { member_limit: memberLimit, region },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+
+// === Black Market flips ===
+export interface BmFlip {
+  item_id: string;
+  name_pt: string;
+  name_en: string;
+  buy_city: string;
+  buy_price: number;
+  buy_date: string;
+  buy_age_hours: number | null;
+  bm_buy_price: number;
+  bm_date: string;
+  bm_age_hours: number | null;
+  profit: number;
+  roi: number;
+  tax: number;
+  setup_fee: number;
+  weight: number;
+  weight_source: string;
+  profit_per_kg: number;
+}
+
+export interface BmFlipsResponse {
+  region: string;
+  cities: string[];
+  min_profit: number;
+  max_age_hours: number;
+  items_considered: number;
+  flips: BmFlip[];
+}
+
+export async function fetchBmFlips(params: {
+  region?: string;
+  cities?: string[];
+  minProfit?: number;
+  maxAgeHours?: number;
+  limit?: number;
+  tax?: number;
+  items?: string[];
+}): Promise<BmFlipsResponse> {
+  try {
+    const { data } = await api.get<BmFlipsResponse>('/albion/bm-flips', {
+      params: {
+        region: params.region ?? 'west',
+        cities: params.cities?.join(','),
+        min_profit: params.minProfit ?? 0,
+        max_age_hours: params.maxAgeHours ?? 12,
+        limit: params.limit ?? 50,
+        tax: params.tax ?? 0,
+        items: params.items,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+// === Multi-city price grid ===
+export interface PriceGridCell {
+  city: string;
+  sell_min: number | null;
+  sell_min_date?: string | null;
+  buy_max: number | null;
+  buy_max_date?: string | null;
+  age_hours: number | null;
+  quality?: number;
+}
+
+export interface PriceGridItem {
+  item_id: string;
+  name_pt: string;
+  name_en: string;
+  cities: PriceGridCell[];
+  cheapest_sell: number | null;
+  best_buy: number | null;
+}
+
+export interface PriceGridResponse {
+  region: string;
+  cities: string[];
+  qualities: number[];
+  items: PriceGridItem[];
+}
+
+export async function fetchPriceGrid(params: {
+  items: string[];
+  region?: string;
+  cities?: string[];
+  qualities?: number[];
+}): Promise<PriceGridResponse> {
+  try {
+    const { data } = await api.get<PriceGridResponse>('/albion/price-grid', {
+      params: {
+        items: params.items.join(','),
+        region: params.region ?? 'west',
+        cities: params.cities?.join(','),
+        qualities: params.qualities?.join(',') ?? '1',
+      },
     });
     return data;
   } catch (error) {

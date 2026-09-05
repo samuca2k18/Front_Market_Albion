@@ -121,6 +121,7 @@ export interface PriceAlert {
   cooldown_minutes: number;
   is_active: boolean;
 
+  last_checked_at?: string | null;
   last_triggered_at?: string | null;
   last_expected_price?: number | null;
   last_expected_at?: string | null;

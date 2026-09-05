@@ -12,13 +12,16 @@
     "close": "Fechar",
     "save": "Salvar",
     "loadingPage": "Carregando página...",
-    "loadingSubtitle": "Isso pode levar apenas alguns segundos."
+    "loadingSubtitle": "Isso pode levar apenas alguns segundos.",
+    "filters": "Filtros",
+    "now": "agora"
   },
   "navigation": {
     "dashboard": "Painel",
     "prices": "Preços",
     "opportunities": "Oportunidades",
-    "killboard": "Killboard"
+    "killboard": "Killboard",
+    "priceGrid": "Grade de Preços"
   },
   "languages": {
     "pt": "Português",
@@ -48,7 +51,8 @@
     "toggleMenu": "Alternar navegação",
     "login": "Entrar",
     "signup": "Criar conta",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "priceGrid": "Grade de Preços"
   },
   "footer": {
     "description": "Monitoramento de preços, histórico e inteligência de mercado para jogadores e traders de Albion Online.",
@@ -66,8 +70,34 @@
   },
   "opportunities": {
     "title": "Oportunidades de Mercado",
-    "subtitle": "Encontre as melhores margens de lucro de itens entre diferentes cidades.",
-    "emptyMessage": "Tente diminuir o filtro de lucro ou adicione mais itens ao seu rastreador."
+    "subtitle": "Rotas entre cidades e flips para o Black Market.",
+    "emptyMessage": "Tente diminuir o filtro de lucro ou ajustar a rota.",
+    "emptyTitle": "Sem oportunidades no momento",
+    "tabs": {
+      "routes": "Rotas",
+      "bm": "Black Market"
+    },
+    "originCity": "Cidade origem",
+    "destCity": "Cidade destino",
+    "mountCapacity": "Capacidade da montaria",
+    "budgetCap": "Orçamento máximo (Ag)",
+    "defaultWeight": "Peso fallback por item",
+    "minTripProfit": "Lucro mínimo por viagem",
+    "sameCityError": "Origem e destino não podem ser iguais.",
+    "calculating": "Calculando rota comercial...",
+    "errorTitle": "Erro na análise",
+    "retry": "Tentar novamente",
+    "tripProfit": "Lucro da viagem",
+    "profitPerKg": "Lucro / kg",
+    "investment": "Investimento",
+    "bmFilters": "Filtros BM",
+    "minProfit": "Lucro mínimo",
+    "maxAgeHours": "Idade máxima do dado (h)",
+    "bmHint": "Compra o sell order mais barato nas reais e vende no buy order do Black Market (taxa padrão 0%).",
+    "scanningBm": "Escaneando flips BM...",
+    "bmEmpty": "Nenhum flip BM passou nos filtros de idade/lucro.",
+    "buy": "Compra",
+    "profit": "Lucro"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -142,7 +172,11 @@
     "viewDetails": "Ver Detalhes →",
     "liveUpdates": "{{count}} update(s) ao vivo",
     "noItemsYet": "Nenhum item adicionado ainda.",
-    "addFirstItemHint": "Comece adicionando um acima!"
+    "addFirstItemHint": "Comece adicionando um acima!",
+    "alertsRunCheck": "Verificar agora",
+    "alertsUnread": "{{count}} não lidas",
+    "alertsLastChecked": "Última checagem: {{value}}",
+    "alertsNeverChecked": "Ainda não verificado"
   },
   "prices": {
     "title": "Preços dos meus itens",
@@ -279,41 +313,82 @@
   },
   "crafting": {
     "title": "Calculadora de Crafting",
-    "subtitle": "Receita, custo de materiais e lucro por cidade com foco e diarios.",
-    "searchCardTitle": "Buscar Consumivel",
-    "searchPlaceholder": "Ex: potion, stew, T6_POTION",
+    "subtitle": "Receitas reais, lucro, ROI e prata/foco — com Black Market.",
+    "searchCardTitle": "Buscar item craftável",
+    "searchPlaceholder": "Ex: espada, T4_MAIN_SWORD, potion...",
+    "searchHint": "Digite ao menos 2 caracteres para buscar armas, armaduras e consumíveis.",
+    "noSearchResults": "Nenhum item encontrado.",
     "emptyStateTitle": "Nenhum item selecionado",
-    "emptyStateDescription": "Escolha um consumivel para calcular custo e retorno por cidade.",
+    "emptyStateDescription": "Busque qualquer item craftável para ver receita e lucro agora.",
     "loadingMessage": "Processando receita e mercado...",
-    "noRecipeFound": "Dados de crafting ainda não disponíveis.",
-    "calculationError": "Nao foi possivel calcular os valores.",
-    "yieldBaseBadge": "Yield base: {{value}}x",
+    "noRecipeFound": "Receita ainda não disponível.",
+    "calculationError": "Não foi possível calcular os valores.",
+    "enchantBadge": "Encantamento {{value}}",
     "noUniqueName": "sem unique_name",
+    "noData": "sem dado",
     "labels": {
       "cityBuy": "Cidade de compra (materiais)",
       "citySell": "Cidade de venda (produto)",
       "focusReturnPct": "Retorno com foco (%)",
-      "journalBonusPct": "Economia de diario (%)",
+      "journalBonusPct": "Economia de diário (%)",
       "marketTaxPct": "Taxa de venda (%)",
       "craftingFee": "Taxa fixa de craft (Ag)"
     },
-    "materialTreeTitle": "Arvore de Materiais ({{city}})",
+    "materialTreeTitle": "Materiais ({{city}})",
     "unitPricePerUnit": "{{value}} Ag/un",
-    "noCityPrice": "sem preco na cidade",
-    "financialResultTitle": "Resultado Financeiro",
+    "noCityPrice": "sem preço na cidade",
+    "financialResultTitle": "Resultado financeiro",
     "metrics": {
       "baseMaterialCost": "Custo base dos materiais",
-      "focusAdjustedCost": "Custo apos foco",
-      "saleUnitPrice": "Preco de venda ({{city}})",
-      "journalSavings": "Economia de diarios",
-      "netRevenue": "Receita liquida (apos taxa)",
+      "focusAdjustedCost": "Custo efetivo (foco/diário)",
+      "saleUnitPrice": "Preço de venda ({{city}})",
+      "journalSavings": "Economia de diários",
+      "netRevenue": "Receita líquida (após taxa)",
       "craftingFee": "Taxa fixa de craft",
       "estimatedProfit": "Lucro estimado",
-      "roiPrefix": "ROI"
+      "roiPrefix": "ROI",
+      "silverPerFocus": "Prata / foco",
+      "focusCost": "Custo de foco"
     },
-    "regionNotice": "Região ativa: {{region}}. Materiais: {{cityBuy}} — Venda: {{citySell}}.",
-    "recipeUnavailableTitle": "Crafting indisponível no momento",
-    "recipeUnavailableDescription": "As receitas de craft ainda não estão no catálogo local. Em breve você poderá calcular custo e lucro aqui — por enquanto esta página lista consumíveis, mas não inventa receitas."
+    "regionNotice": "Região: {{region}}. Materiais: {{cityBuy}} — Venda: {{citySell}}.",
+    "recipeUnavailableTitle": "Receita não encontrada",
+    "recipeUnavailableDescription": "Este item não possui craftingRequirements na API do jogo (ou falhou o cache).",
+    "topTitle": "Top crafts agora",
+    "topEmpty": "Nenhum craft lucrativo com os filtros atuais.",
+    "topMeta": "Escaneados: {{scanned}} · Com receita: {{withRecipe}}",
+    "dataAge": {
+      "unknown": "idade desconhecida",
+      "fresh": "dado fresco · {{hours}}h",
+      "ok": "dado ok · {{hours}}h",
+      "stale": "dado velho · {{hours}}h"
+    },
+    "sort": {
+      "profit": "Lucro",
+      "roi": "ROI",
+      "silver_per_focus": "Prata/foco"
+    },
+    "tabs": {
+      "craft": "Craft",
+      "refine": "Refino"
+    },
+    "refine": {
+      "configTitle": "Configurar refino",
+      "resourceType": "Tipo de recurso",
+      "tier": "Tier",
+      "cityBonusPct": "Bônus de cidade / RRR (%)",
+      "returnTotal": "Retorno total de recursos: {{value}}%",
+      "topTitle": "Top refinos agora",
+      "topEmpty": "Nenhum refino com preços suficientes nos filtros atuais.",
+      "missingPrices": "Faltam preços de mercado — exibindo \"sem dado\" onde aplicável.",
+      "bonusCityHint": "Cidade com maior bônus: {{city}}",
+      "families": {
+        "METALBAR": "Barras de metal (ore → bar)",
+        "LEATHER": "Couro (hide → leather)",
+        "CLOTH": "Tecido (fiber → cloth)",
+        "PLANKS": "Tábuas (wood → plank)",
+        "STONEBLOCK": "Blocos de pedra (rock → block)"
+      }
+    }
   },
   "itemDatabase": {
     "title": "Item Database",
@@ -362,5 +437,27 @@
     "itemDatabase": "Item Database",
     "citiesRegions": "6 Cidades • 3 Regiões",
     "loginTrend": "Login"
+  },
+  "priceGrid": {
+    "title": "Grade de Preços",
+    "subtitle": "Compare sell_min e buy_max em várias cidades — compartilhe via URL.",
+    "addItems": "Adicionar itens",
+    "searchPlaceholder": "Buscar item...",
+    "empty": "Adicione itens para montar a grade.",
+    "error": "Falha ao carregar a grade.",
+    "item": "Item",
+    "copyLink": "Copiar link",
+    "favoritesTitle": "Favoritos",
+    "favoriteNamePlaceholder": "Nome da lista (ex: Flip BM)",
+    "favoriteDefaultName": "Minha lista",
+    "saveFavorite": "Salvar grade atual",
+    "favoritesEmpty": "Nenhum favorito ainda. Monte a grade e salve."
+  },
+  "quality": {
+    "normal": "Normal",
+    "good": "Bom",
+    "outstanding": "Excepcional",
+    "excellent": "Excelente",
+    "masterpiece": "Obra-prima"
   }
 }

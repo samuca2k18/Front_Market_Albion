@@ -12,13 +12,16 @@
     "close": "Close",
     "save": "Save",
     "loadingPage": "Loading page...",
-    "loadingSubtitle": "This may take just a few seconds."
+    "loadingSubtitle": "This may take just a few seconds.",
+    "filters": "Filters",
+    "now": "now"
   },
   "navigation": {
     "dashboard": "Dashboard",
     "prices": "Prices",
     "opportunities": "Opportunities",
-    "killboard": "Killboard"
+    "killboard": "Killboard",
+    "priceGrid": "Price Grid"
   },
   "languages": {
     "pt": "Português",
@@ -48,7 +51,8 @@
     "toggleMenu": "Toggle navigation",
     "login": "Sign in",
     "signup": "Create account",
-    "settings": "Settings"
+    "settings": "Settings",
+    "priceGrid": "Price Grid"
   },
   "footer": {
     "description": "Price monitoring, history, and market intelligence for Albion Online players and traders.",
@@ -66,8 +70,34 @@
   },
   "opportunities": {
     "title": "Market Opportunities",
-    "subtitle": "Find the best profit margins for items across different cities.",
-    "emptyMessage": "Try lowering the profit filter or add more items to your tracker."
+    "subtitle": "City routes and Black Market flips.",
+    "emptyMessage": "Try lowering the profit filter or adjusting the route.",
+    "emptyTitle": "No opportunities right now",
+    "tabs": {
+      "routes": "Routes",
+      "bm": "Black Market"
+    },
+    "originCity": "Origin city",
+    "destCity": "Destination city",
+    "mountCapacity": "Mount capacity",
+    "budgetCap": "Budget cap (silver)",
+    "defaultWeight": "Fallback weight per item",
+    "minTripProfit": "Minimum trip profit",
+    "sameCityError": "Origin and destination must differ.",
+    "calculating": "Calculating trade route...",
+    "errorTitle": "Analysis error",
+    "retry": "Try again",
+    "tripProfit": "Trip profit",
+    "profitPerKg": "Profit / kg",
+    "investment": "Investment",
+    "bmFilters": "BM filters",
+    "minProfit": "Minimum profit",
+    "maxAgeHours": "Max data age (h)",
+    "bmHint": "Buy the cheapest royal sell order and sell into Black Market buy orders (default tax 0%).",
+    "scanningBm": "Scanning BM flips...",
+    "bmEmpty": "No BM flips passed age/profit filters.",
+    "buy": "Buy",
+    "profit": "Profit"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -142,7 +172,11 @@
     "viewDetails": "View Details →",
     "liveUpdates": "{{count}} live update(s)",
     "noItemsYet": "No items added yet.",
-    "addFirstItemHint": "Start by adding one above!"
+    "addFirstItemHint": "Start by adding one above!",
+    "alertsRunCheck": "Check now",
+    "alertsUnread": "{{count}} unread",
+    "alertsLastChecked": "Last checked: {{value}}",
+    "alertsNeverChecked": "Never checked"
   },
   "prices": {
     "title": "My Item Prices",
@@ -279,41 +313,82 @@
   },
   "crafting": {
     "title": "Crafting Calculator",
-    "subtitle": "Recipe, material cost and city-based profit with focus and journals.",
-    "searchCardTitle": "Search Consumable",
-    "searchPlaceholder": "Ex: potion, stew, T6_POTION",
+    "subtitle": "Real recipes, profit, ROI and silver/focus — including Black Market.",
+    "searchCardTitle": "Search craftable item",
+    "searchPlaceholder": "Ex: sword, T4_MAIN_SWORD, potion...",
+    "searchHint": "Type at least 2 characters to search weapons, armor and consumables.",
+    "noSearchResults": "No items found.",
     "emptyStateTitle": "No item selected",
-    "emptyStateDescription": "Choose a consumable to calculate cost and return by city.",
-    "loadingMessage": "Processing recipe and market data...",
-    "noRecipeFound": "Crafting data is not available yet.",
-    "calculationError": "Could not calculate the values.",
-    "yieldBaseBadge": "Base yield: {{value}}x",
+    "emptyStateDescription": "Search any craftable item to see recipe and profit now.",
+    "loadingMessage": "Processing recipe and market...",
+    "noRecipeFound": "Recipe not available yet.",
+    "calculationError": "Could not calculate values.",
+    "enchantBadge": "Enchant {{value}}",
     "noUniqueName": "no unique_name",
+    "noData": "no data",
     "labels": {
       "cityBuy": "Buy city (materials)",
       "citySell": "Sell city (product)",
       "focusReturnPct": "Focus return (%)",
       "journalBonusPct": "Journal savings (%)",
-      "marketTaxPct": "Sale tax (%)",
-      "craftingFee": "Fixed crafting fee (Ag)"
+      "marketTaxPct": "Market tax (%)",
+      "craftingFee": "Crafting fee (silver)"
     },
-    "materialTreeTitle": "Material Tree ({{city}})",
-    "unitPricePerUnit": "{{value}} Ag/unit",
-    "noCityPrice": "no price in city",
-    "financialResultTitle": "Financial Result",
+    "materialTreeTitle": "Materials ({{city}})",
+    "unitPricePerUnit": "{{value}} Ag/un",
+    "noCityPrice": "no city price",
+    "financialResultTitle": "Financial result",
     "metrics": {
       "baseMaterialCost": "Base material cost",
-      "focusAdjustedCost": "Cost after focus",
-      "saleUnitPrice": "Sale price ({{city}})",
+      "focusAdjustedCost": "Effective cost (focus/journal)",
+      "saleUnitPrice": "Sell price ({{city}})",
       "journalSavings": "Journal savings",
       "netRevenue": "Net revenue (after tax)",
-      "craftingFee": "Fixed crafting fee",
+      "craftingFee": "Crafting fee",
       "estimatedProfit": "Estimated profit",
-      "roiPrefix": "ROI"
+      "roiPrefix": "ROI",
+      "silverPerFocus": "Silver / focus",
+      "focusCost": "Focus cost"
     },
-    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}.",
-    "recipeUnavailableTitle": "Crafting unavailable for now",
-    "recipeUnavailableDescription": "Craft recipes are not in the local catalog yet. Soon you will be able to calculate cost and profit here — for now this page lists consumables but does not invent recipes."
+    "regionNotice": "Região: {{region}}. Materiais: {{cityBuy}} — Venda: {{citySell}}.",
+    "recipeUnavailableTitle": "Recipe not found",
+    "recipeUnavailableDescription": "This item has no craftingRequirements in the game API (or cache failed).",
+    "topTitle": "Top crafts now",
+    "topEmpty": "No profitable crafts with current filters.",
+    "topMeta": "Scanned: {{scanned}} · With recipe: {{withRecipe}}",
+    "dataAge": {
+      "unknown": "age unknown",
+      "fresh": "fresh · {{hours}}h",
+      "ok": "ok · {{hours}}h",
+      "stale": "stale · {{hours}}h"
+    },
+    "sort": {
+      "profit": "Profit",
+      "roi": "ROI",
+      "silver_per_focus": "Silver/focus"
+    },
+    "tabs": {
+      "craft": "Craft",
+      "refine": "Refine"
+    },
+    "refine": {
+      "configTitle": "Refine setup",
+      "resourceType": "Resource type",
+      "tier": "Tier",
+      "cityBonusPct": "City bonus / RRR (%)",
+      "returnTotal": "Total resource return: {{value}}%",
+      "topTitle": "Top refines now",
+      "topEmpty": "No refine with enough prices for the current filters.",
+      "missingPrices": "Missing market prices — showing \"no data\" where needed.",
+      "bonusCityHint": "Best bonus city: {{city}}",
+      "families": {
+        "METALBAR": "Metal bars (ore → bar)",
+        "LEATHER": "Leather (hide → leather)",
+        "CLOTH": "Cloth (fiber → cloth)",
+        "PLANKS": "Planks (wood → plank)",
+        "STONEBLOCK": "Stone blocks (rock → block)"
+      }
+    }
   },
   "itemDatabase": {
     "title": "Item Database",
@@ -362,5 +437,27 @@
     "itemDatabase": "Item Database",
     "citiesRegions": "6 Cities • 3 Regions",
     "loginTrend": "Login"
+  },
+  "priceGrid": {
+    "title": "Price Grid",
+    "subtitle": "Compare sell_min and buy_max across cities — share via URL.",
+    "addItems": "Add items",
+    "searchPlaceholder": "Search item...",
+    "empty": "Add items to build the grid.",
+    "error": "Failed to load the grid.",
+    "item": "Item",
+    "copyLink": "Copy link",
+    "favoritesTitle": "Favorites",
+    "favoriteNamePlaceholder": "List name (e.g. BM Flip)",
+    "favoriteDefaultName": "My list",
+    "saveFavorite": "Save current grid",
+    "favoritesEmpty": "No favorites yet. Build a grid and save it."
+  },
+  "quality": {
+    "normal": "Normal",
+    "good": "Good",
+    "outstanding": "Outstanding",
+    "excellent": "Excellent",
+    "masterpiece": "Masterpiece"
   }
 }
