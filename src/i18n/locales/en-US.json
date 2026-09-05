@@ -356,7 +356,6 @@
     "topTitle": "Top crafts now",
     "topEmpty": "No profitable crafts with current filters.",
     "topMeta": "Scanned: {{scanned}} · With recipe: {{withRecipe}}",
-    "refiningSoon": "Refining and *_LEVEL* chains: coming soon — craft engine is ready to reuse.",
     "dataAge": {
       "unknown": "age unknown",
       "fresh": "fresh · {{hours}}h",
@@ -367,6 +366,28 @@
       "profit": "Profit",
       "roi": "ROI",
       "silver_per_focus": "Silver/focus"
+    },
+    "tabs": {
+      "craft": "Craft",
+      "refine": "Refine"
+    },
+    "refine": {
+      "configTitle": "Refine setup",
+      "resourceType": "Resource type",
+      "tier": "Tier",
+      "cityBonusPct": "City bonus / RRR (%)",
+      "returnTotal": "Total resource return: {{value}}%",
+      "topTitle": "Top refines now",
+      "topEmpty": "No refine with enough prices for the current filters.",
+      "missingPrices": "Missing market prices — showing \"no data\" where needed.",
+      "bonusCityHint": "Best bonus city: {{city}}",
+      "families": {
+        "METALBAR": "Metal bars (ore → bar)",
+        "LEATHER": "Leather (hide → leather)",
+        "CLOTH": "Cloth (fiber → cloth)",
+        "PLANKS": "Planks (wood → plank)",
+        "STONEBLOCK": "Stone blocks (rock → block)"
+      }
     }
   },
   "itemDatabase": {
@@ -425,7 +446,12 @@
     "empty": "Add items to build the grid.",
     "error": "Failed to load the grid.",
     "item": "Item",
-    "copyLink": "Copy link"
+    "copyLink": "Copy link",
+    "favoritesTitle": "Favorites",
+    "favoriteNamePlaceholder": "List name (e.g. BM Flip)",
+    "favoriteDefaultName": "My list",
+    "saveFavorite": "Save current grid",
+    "favoritesEmpty": "No favorites yet. Build a grid and save it."
   },
   "quality": {
     "normal": "Normal",

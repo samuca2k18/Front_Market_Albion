@@ -356,7 +356,6 @@
     "topTitle": "Top crafts agora",
     "topEmpty": "Nenhum craft lucrativo com os filtros atuais.",
     "topMeta": "Escaneados: {{scanned}} · Com receita: {{withRecipe}}",
-    "refiningSoon": "Refino e cadeias *_LEVEL*: em breve — o motor de craft já está pronto para reutilizar.",
     "dataAge": {
       "unknown": "idade desconhecida",
       "fresh": "dado fresco · {{hours}}h",
@@ -367,6 +366,28 @@
       "profit": "Lucro",
       "roi": "ROI",
       "silver_per_focus": "Prata/foco"
+    },
+    "tabs": {
+      "craft": "Craft",
+      "refine": "Refino"
+    },
+    "refine": {
+      "configTitle": "Configurar refino",
+      "resourceType": "Tipo de recurso",
+      "tier": "Tier",
+      "cityBonusPct": "Bônus de cidade / RRR (%)",
+      "returnTotal": "Retorno total de recursos: {{value}}%",
+      "topTitle": "Top refinos agora",
+      "topEmpty": "Nenhum refino com preços suficientes nos filtros atuais.",
+      "missingPrices": "Faltam preços de mercado — exibindo \"sem dado\" onde aplicável.",
+      "bonusCityHint": "Cidade com maior bônus: {{city}}",
+      "families": {
+        "METALBAR": "Barras de metal (ore → bar)",
+        "LEATHER": "Couro (hide → leather)",
+        "CLOTH": "Tecido (fiber → cloth)",
+        "PLANKS": "Tábuas (wood → plank)",
+        "STONEBLOCK": "Blocos de pedra (rock → block)"
+      }
     }
   },
   "itemDatabase": {
@@ -425,7 +446,12 @@
     "empty": "Adicione itens para montar a grade.",
     "error": "Falha ao carregar a grade.",
     "item": "Item",
-    "copyLink": "Copiar link"
+    "copyLink": "Copiar link",
+    "favoritesTitle": "Favoritos",
+    "favoriteNamePlaceholder": "Nome da lista (ex: Flip BM)",
+    "favoriteDefaultName": "Minha lista",
+    "saveFavorite": "Salvar grade atual",
+    "favoritesEmpty": "Nenhum favorito ainda. Monte a grade e salve."
   },
   "quality": {
     "normal": "Normal",

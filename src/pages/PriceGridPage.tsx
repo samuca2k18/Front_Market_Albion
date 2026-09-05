@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Grid3X3, Search, Loader2, Share2 } from "lucide-react";
+import { Grid3X3, Search, Loader2, Share2, Star, Trash2 } from "lucide-react";
 
 import { fetchPriceGrid, searchItems } from "@/api/albion";
 import { useRegion } from "@/context/RegionContext";
@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SEO } from "@/components/SEO";
 import { getItemImageUrl } from "@/utils/items";
+import {
+  addPriceGridFavorite,
+  deletePriceGridFavorite,
+  loadPriceGridFavorites,
+  type PriceGridFavorite,
+} from "@/utils/priceGridFavorites";
 
 function AgeDot({ hours }: { hours: number | null | undefined }) {
   const color =
@@ -37,6 +43,8 @@ export function PriceGridPage() {
 
   const [selected, setSelected] = useState<string[]>(initialItems.slice(0, 20));
   const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState<PriceGridFavorite[]>(() => loadPriceGridFavorites());
+  const [favoriteName, setFavoriteName] = useState("");
   const debounced = useDebounce(searchTerm, 300);
   const locale = i18n.language.startsWith("pt") ? "pt-BR" : "en-US";
   const missing = t("crafting.noData");
@@ -145,6 +153,70 @@ export function PriceGridPage() {
                 </Badge>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+
+        <Card className="rounded-3xl border-border/40 bg-card/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
+              <Star className="h-4 w-4 text-amber-400" />
+              {t("priceGrid.favoritesTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Input
+                value={favoriteName}
+                onChange={(e) => setFavoriteName(e.target.value)}
+                placeholder={t("priceGrid.favoriteNamePlaceholder")}
+                className="max-w-sm"
+                disabled={selected.length === 0}
+              />
+              <Button
+                className="rounded-xl"
+                disabled={selected.length === 0}
+                onClick={() => {
+                  const name = favoriteName.trim() || t("priceGrid.favoriteDefaultName");
+                  setFavorites(addPriceGridFavorite(name, selected));
+                  setFavoriteName("");
+                }}
+              >
+                <Star className="mr-2 h-4 w-4" />
+                {t("priceGrid.saveFavorite")}
+              </Button>
+            </div>
+            {favorites.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("priceGrid.favoritesEmpty")}</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {favorites.map((fav) => (
+                  <div
+                    key={fav.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border/30 bg-background/40 px-3 py-2"
+                  >
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 text-left"
+                      onClick={() => setSelected(fav.items.slice(0, 20))}
+                    >
+                      <p className="truncate text-sm font-black">{fav.name}</p>
+                      <p className="truncate font-mono text-[10px] text-muted-foreground">
+                        {fav.items.join(", ")}
+                      </p>
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-xl text-destructive"
+                      onClick={() => setFavorites(deletePriceGridFavorite(fav.id))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

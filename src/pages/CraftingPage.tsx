@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useRegion } from "@/context/RegionContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getItemImageUrl } from "@/utils/items";
+import { RefinePanel } from "@/pages/crafting/RefinePanel";
 
 const BUY_CITIES = [
   "Bridgewatch",
@@ -98,6 +99,7 @@ export function CraftingPage() {
   const [marketTaxPct, setMarketTaxPct] = useState<number | "">( "");
   const [craftingFee, setCraftingFee] = useState(0);
   const [topSort, setTopSort] = useState<"profit" | "roi" | "silver_per_focus">("profit");
+  const [activeTab, setActiveTab] = useState<"craft" | "refine">("craft");
 
   const numberLocale = useMemo(
     () => (i18n.language.startsWith("pt") ? "pt-BR" : "en-US"),
@@ -112,14 +114,14 @@ export function CraftingPage() {
         debouncedSearch,
         i18n.language.startsWith("en") ? "en-US" : "pt-BR",
       ),
-    enabled: debouncedSearch.trim().length >= 2,
+    enabled: activeTab === "craft" && debouncedSearch.trim().length >= 2,
     staleTime: 1000 * 60 * 5,
   });
 
   const recipeQuery = useQuery({
     queryKey: ["craft-recipe", selectedItem?.unique_name],
     queryFn: () => fetchCraftRecipe(selectedItem!.unique_name),
-    enabled: Boolean(selectedItem?.unique_name),
+    enabled: activeTab === "craft" && Boolean(selectedItem?.unique_name),
     staleTime: 1000 * 60 * 30,
     retry: 1,
   });
@@ -154,7 +156,10 @@ export function CraftingPage() {
         market_tax_pct: effectiveTax,
         crafting_fee: craftingFee,
       }),
-    enabled: Boolean(selectedItem?.unique_name) && recipeQuery.isSuccess,
+    enabled:
+      activeTab === "craft" &&
+      Boolean(selectedItem?.unique_name) &&
+      recipeQuery.isSuccess,
     staleTime: 1000 * 60 * 2,
   });
 
@@ -183,6 +188,7 @@ export function CraftingPage() {
         scan_limit: 180,
         sort_by: topSort,
       }),
+    enabled: activeTab === "craft",
     staleTime: 1000 * 60 * 5,
   });
 
@@ -202,11 +208,34 @@ export function CraftingPage() {
           </h1>
           <p className="font-medium text-muted-foreground">{t("crafting.subtitle")}</p>
         </div>
-        {profit && (
+        {profit && activeTab === "craft" && (
           <DataAgeBadge hours={profit.data_age_hours} t={t} />
         )}
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={activeTab === "craft" ? "default" : "ghost"}
+          className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+          onClick={() => setActiveTab("craft")}
+        >
+          {t("crafting.tabs.craft")}
+        </Button>
+        <Button
+          size="sm"
+          variant={activeTab === "refine" ? "default" : "ghost"}
+          className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+          onClick={() => setActiveTab("refine")}
+        >
+          {t("crafting.tabs.refine")}
+        </Button>
+      </div>
+
+      {activeTab === "refine" ? (
+        <RefinePanel />
+      ) : (
+      <>
       <div className="grid gap-8 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-4">
           <Card className="overflow-hidden rounded-3xl border-border/40 bg-card/40 shadow-xl backdrop-blur-md">
@@ -691,12 +720,8 @@ export function CraftingPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border-dashed border-border/40 bg-card/20">
-        <CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground">
-          <Sparkles className="h-5 w-5 text-amber-400/70" />
-          {t("crafting.refiningSoon")}
-        </CardContent>
-      </Card>
+      </>
+      )}
     </div>
   );
 }
