@@ -184,17 +184,19 @@ export function DashboardPage() {
     <div className="bg-background">
       <SEO title={t("navigation.dashboard")} />
       <div className="app-container py-8 space-y-10">
-        {/* Top Section: Quick Summary, Gold, and Add Item */}
-        <section className="grid gap-6 lg:grid-cols-3">
+        {/* Resumo em largura total — evita ficar miúdo numa coluna de 1/3 */}
+        <section>
           <QuickSummary
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
             opportunityCount={arbitrageQuery.data?.length || 0}
             liveBumpsCount={recentUpdateCount}
           />
+        </section>
 
+        {/* Gold + adicionar item */}
+        <section className="grid gap-6 lg:grid-cols-2">
           <GoldPriceCard region={region} />
-
           <AddItemForm createMutation={createMutation} />
         </section>
 
