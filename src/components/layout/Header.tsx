@@ -16,7 +16,7 @@ const navItems = [
   { label: "prices", path: "/prices", protected: true },
   { label: "opportunities", path: "/opportunities", protected: true },
   { label: "crafting", path: "/crafting", protected: true },
-  { label: "killboard", path: "/killboard", protected: true },
+  { label: "killboard", path: "/killboard", protected: false },
   { label: "tracker", path: "/tracker", protected: true },
   { label: "metaMarket", path: "/meta-market", protected: true },
   { label: "guildHub", path: "/guild-hub", protected: true },
@@ -37,32 +37,32 @@ export function Header() {
 
   return (
     <header className="glass-header sticky top-0 z-40 transition-all duration-300">
-      <div className="app-header-inner flex items-center gap-3">
+      <div className="app-header-inner flex min-w-0 items-center gap-2 lg:gap-3 overflow-hidden">
         {/* Brand */}
-        <div className="shrink-0">
+        <div className="shrink-0 min-w-0">
           <HeaderBrand onMobileMenuClick={() => setIsMenuOpen(false)} />
         </div>
 
         {/* Desktop Navigation */}
         {showDesktopTopNav && (
-          <div className="hidden md:block min-w-0 flex-1">
+          <div className="hidden lg:block min-w-0 flex-1 overflow-hidden">
             <HeaderNav items={availableItems} />
           </div>
         )}
 
-        <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
-          <div className="rounded-2xl border border-border/45 bg-background/40 p-1.5 backdrop-blur-md">
+        <div className="hidden md:flex min-w-0 items-center gap-1.5 lg:gap-2 shrink-0 ml-auto max-w-full">
+          <div className="hidden xl:block rounded-2xl border border-border/45 bg-background/40 p-1.5 backdrop-blur-md">
             <GlobalSearchTrigger />
           </div>
-          <div className="rounded-2xl border border-border/45 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
+          <div className="hidden xl:block rounded-2xl border border-border/45 bg-background/35 px-2.5 py-1.5 backdrop-blur-md">
             <BanditEventIndicator />
           </div>
           <HeaderActions />
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile / tablet menu toggle (desktop nav starts at lg) */}
         {hasNavigation && (
-          <div className="ml-auto md:hidden">
+          <div className="shrink-0 lg:hidden ml-auto md:ml-2">
             <MobileMenuToggle
               isOpen={isMenuOpen}
               onToggle={() => setIsMenuOpen(!isMenuOpen)}

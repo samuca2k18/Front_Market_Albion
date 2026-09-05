@@ -4,6 +4,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { vi } from "vitest";
 import { LandingPage } from "../pages/LandingPage";
 
+vi.mock("../hooks/useAuth", () => ({
+  useAuth: () => ({
+    isAuthenticated: false,
+    isBootstrapping: false,
+    user: null,
+    token: null,
+    login: vi.fn(),
+    signup: vi.fn(),
+    logout: vi.fn(),
+    refreshUser: vi.fn(),
+  }),
+}));
+
 vi.mock("../api/albion", () => ({
   fetchGoldPrices: vi.fn().mockResolvedValue({
     current: { price: 123456, timestamp: "2026-01-01T00:00:00Z" },

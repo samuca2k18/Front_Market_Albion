@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const DEFAULT_API_URL = 'https://market-albion-online.onrender.com';
+const DEFAULT_API_URL = 'https://market-albion-online.vercel.app';
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ||
@@ -41,7 +41,6 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/prices',
   '/opportunities',
   '/crafting',
-  '/killboard',
   '/tracker',
   '/meta-market',
   '/guild-hub',
@@ -87,6 +86,12 @@ api.interceptors.response.use(
       isAuthRefreshRequest ||
       isAuthLoginRequest
     ) {
+      return Promise.reject(error);
+    }
+
+    // Guests (no access token) must not trigger /refresh loops — e.g. landing
+    // calling protected price endpoints. Only attempt refresh when we had a session.
+    if (!getAccessToken()) {
       return Promise.reject(error);
     }
 
@@ -141,7 +146,10 @@ function _clearSessionAndRedirect() {
   );
 
   if (isProtectedPath && !pathname.includes('/login')) {
-    window.location.href = '/login';
+    const returnTo = encodeURIComponent(
+      `${window.location.pathname}${window.location.search}`,
+    );
+    window.location.href = `/login?returnTo=${returnTo}`;
   }
 }
 

@@ -1,6 +1,7 @@
 // src/pages/LandingPage.tsx
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../hooks/useAuth";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent } from "../components/ui/card";
@@ -58,7 +59,10 @@ const featureList = [
   },
 ];
 
-const HERO_PREVIEW_ITEMS = ["T8_BAG", "T6_CAPE", "T8_ROYALCALF"];
+const HERO_PREVIEW_ITEMS = ["T8_BAG", "T6_CAPE", "T7_BAG"];
+
+const PREVIEW_PLACEHOLDER_SVG =
+  `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="%23222"/><path d="M8 24l8-16 8 16H8z" fill="%23555"/></svg>`;
 
 // Gold ticker at the top
 function GoldTicker() {
@@ -74,7 +78,7 @@ function GoldTicker() {
   const isUp = data.variation > 0;
 
   return (
-    <div className="w-full overflow-hidden border-b border-border/10 bg-card/20 backdrop-blur-sm">
+    <div className="w-full overflow-hidden border-b border-border/10 bg-card/20 backdrop-blur-sm max-w-full">
       <div className="flex w-max items-center animate-marquee whitespace-nowrap">
         {[1, 2].map((i, idx) => (
           <div key={i} className="flex items-center gap-8 py-2 px-4 shrink-0" aria-hidden={idx === 1}>
@@ -130,40 +134,53 @@ function GoldTicker() {
 }
 
 export function LandingPage() {
-  const { data: pricesData } = useQuery({
+  const { isAuthenticated } = useAuth();
+
+  const { data: pricesData, isLoading: pricesLoading } = useQuery({
     queryKey: ["landing-preview-prices"],
     queryFn: () => fetchAlbionPrices(HERO_PREVIEW_ITEMS, undefined, undefined, "europe"),
     staleTime: 1000 * 60 * 5,
+    enabled: isAuthenticated,
   });
 
   const previewItems = HERO_PREVIEW_ITEMS.map((itemName) => {
-    // Find the cheapest active price for this item across cities
+    if (!isAuthenticated) {
+      return {
+        city: "Faça login",
+        item: itemName,
+        price: "—",
+        trend: "Login",
+        href: "/login",
+      };
+    }
+
     const itemEntries = (pricesData?.all_data || []).filter(
       (entry: any) => entry.item_id === itemName && entry.sell_price_min > 0
     );
-    
+
     if (itemEntries.length > 0) {
-      const cheapest = itemEntries.reduce((prev: any, curr: any) => 
+      const cheapest = itemEntries.reduce((prev: any, curr: any) =>
         prev.sell_price_min < curr.sell_price_min ? prev : curr
       );
       return {
         city: cheapest.city,
         item: itemName,
         price: cheapest.sell_price_min.toLocaleString("pt-BR"),
-        trend: "Live", // Without history we can't show trend here easily, but "Live" works
+        trend: "Live",
+        href: undefined as string | undefined,
       };
     }
-    
-    // Fallback if no data or loading
+
     return {
-      city: "Carregando...",
+      city: pricesLoading ? "Carregando..." : "Sem dados",
       item: itemName,
-      price: "---",
-      trend: "---",
+      price: "—",
+      trend: "—",
+      href: undefined as string | undefined,
     };
   });
   return (
-    <div className="min-h-screen bg-background overflow-hidden selection:bg-primary/30 noise-overlay">
+    <div className="min-h-screen bg-background overflow-x-hidden overflow-hidden selection:bg-primary/30 noise-overlay">
       {/* Hero gradient overlay */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsla(187,85%,53%,0.15),transparent)] pointer-events-none" />
 
@@ -264,12 +281,8 @@ export function LandingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {previewItems.map((item, i) => (
-                    <div
-                      key={`${item.item}-${i}`}
-                      className="group flex flex-col gap-3 rounded-2xl bg-background/40 border border-border/20 p-4 hover:bg-background/60 hover:border-primary/30 transition-all duration-300"
-                      style={{ animationDelay: `${0.3 + i * 0.1}s` }}
-                    >
+                  {previewItems.map((item, i) => {
+                    const card = (
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="bg-black/40 p-1.5 rounded-xl border border-border/20 group-hover:scale-110 transition-transform">
@@ -277,6 +290,10 @@ export function LandingPage() {
                               src={getItemImageUrl(item.item)}
                               alt={item.item}
                               className="h-8 w-8 object-contain"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = PREVIEW_PLACEHOLDER_SVG;
+                              }}
                             />
                           </div>
                           <div className="flex flex-col">
@@ -305,8 +322,34 @@ export function LandingPage() {
                           </span>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+
+                    const wrapperClass =
+                      "group flex flex-col gap-3 rounded-2xl bg-background/40 border border-border/20 p-4 hover:bg-background/60 hover:border-primary/30 transition-all duration-300";
+
+                    if (item.href) {
+                      return (
+                        <Link
+                          key={`${item.item}-${i}`}
+                          to={item.href}
+                          className={wrapperClass}
+                          style={{ animationDelay: `${0.3 + i * 0.1}s` }}
+                        >
+                          {card}
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={`${item.item}-${i}`}
+                        className={wrapperClass}
+                        style={{ animationDelay: `${0.3 + i * 0.1}s` }}
+                      >
+                        {card}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-border/10 flex items-center justify-center gap-2">

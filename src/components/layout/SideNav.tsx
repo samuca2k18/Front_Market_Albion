@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "prices", path: "/prices", protected: true },
   { label: "opportunities", path: "/opportunities", protected: true },
   { label: "crafting", path: "/crafting", protected: true },
-  { label: "killboard", path: "/killboard", protected: true },
+  { label: "killboard", path: "/killboard", protected: false },
   { label: "tracker", path: "/tracker", protected: true },
   { label: "metaMarket", path: "/meta-market", protected: true },
   { label: "guildHub", path: "/guild-hub", protected: true },
