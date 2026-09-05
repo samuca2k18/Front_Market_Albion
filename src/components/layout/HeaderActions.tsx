@@ -2,8 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "@/components/ui/button";
-// LanguageSwitcher hidden until EN translations cover landing/auth chrome.
-// import { LanguageSwitcher } from "../common/LanguageSwitcher";
+import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 import { ThemeToggle } from "../common/ThemeToggle";
@@ -32,6 +31,7 @@ export function HeaderActions() {
     <div className="flex min-w-0 items-center gap-1.5 lg:gap-2">
       <div className="flex items-center gap-1 rounded-2xl border border-border/40 bg-background/35 px-1.5 py-1.5 backdrop-blur-md">
         <ThemeToggle />
+        <LanguageSwitcher />
         <div className="hidden xl:block">
           <RegionSwitcher />
         </div>
@@ -94,7 +94,7 @@ function HeaderUserMenu({ user, onLogout }: HeaderUserMenuProps) {
         <DropdownMenuSeparator className="bg-border/60" />
         <DropdownMenuItem className="py-2.5 px-4 cursor-pointer gap-3 focus:bg-primary/10">
           <Settings className="w-4 h-4 text-muted-foreground" />
-          <span>Settings</span>
+          <span>{t("header.settings")}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border/60" />
         <DropdownMenuItem

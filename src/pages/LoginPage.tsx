@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation, useNavigate, Link, type Location } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import type { ApiErrorShape } from "../api/client";
 import { resendVerificationRequest } from "../api/auth";
@@ -12,24 +13,17 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { User, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getSafeReturnTo } from "../utils/returnTo";
 import "./auth-pages.css";
 
-const loginSchema = z.object({
-  username: z.string().min(3, "Usuário obrigatório"),
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-const loginBenefits = [
-  "Acesso ao painel inteligente em tempo real",
-  "Itens favoritos sincronizados na nuvem",
-  "Histórico para entender o comportamento do mercado",
-];
+type LoginFormData = {
+  username: string;
+  password: string;
+};
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -39,6 +33,20 @@ export function LoginPage() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [resendError, setResendError] = useState<string | null>(null);
+
+  const loginSchema = useMemo(
+    () =>
+      z.object({
+        username: z.string().min(3, t("login.invalidUsername")),
+        password: z.string().min(6, t("login.invalidPassword")),
+      }),
+    [t],
+  );
+
+  const loginBenefits = useMemo(() => {
+    const benefits = t("login.benefits", { returnObjects: true });
+    return Array.isArray(benefits) ? (benefits as string[]) : [];
+  }, [t]);
 
   const locationState = location.state as
     | { from?: Location; fromSignup?: boolean; email?: string }
@@ -84,7 +92,7 @@ export function LoginPage() {
 
   const handleResendVerification = async () => {
     const email =
-      locationState?.email || window.prompt("Informe o e-mail cadastrado:");
+      locationState?.email || window.prompt(t("login.promptEmail"));
 
     if (!email) return;
 
@@ -96,7 +104,7 @@ export function LoginPage() {
     } catch (error) {
       const err = error as ApiErrorShape;
       setResendStatus("error");
-      setResendError(err.message || "Não foi possível reenviar o e-mail.");
+      setResendError(err.message || t("login.resendError"));
     }
   };
 
@@ -106,25 +114,23 @@ export function LoginPage() {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsla(187,85%,53%,0.12),transparent)] pointer-events-none" />
 
       <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Left Panel - Branding (igual o cadastro, mas texto para login) */}
+        {/* Left Panel - Branding */}
         <div className="relative hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col justify-center px-12 xl:px-20">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_0%_50%,hsla(142,71%,45%,0.08),transparent)] pointer-events-none" />
 
           <div className="relative max-w-lg animate-fade-up">
-            {/* Chip */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium tracking-wide uppercase mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-slow" />
-              Albion Market • Login
+              {t("login.chip")}
             </div>
 
             <h1 className="text-4xl xl:text-5xl font-extrabold leading-[1.15] tracking-tight mb-6">
-              Bem-vindo de volta
-              <span className="block text-gradient mt-1">ao seu painel</span>
+              {t("login.welcomeBack")}
+              <span className="block text-gradient mt-1">{t("login.welcomePanel")}</span>
             </h1>
 
             <p className="text-lg text-muted-foreground leading-relaxed mb-10">
-              Entre para acompanhar seus itens, comparar cidades e aproveitar as melhores
-              oportunidades do mercado de Albion Online.
+              {t("login.heroDescription")}
             </p>
 
             <ul className="space-y-4">
@@ -150,7 +156,6 @@ export function LoginPage() {
             className="mx-auto w-full max-w-md animate-fade-up"
             style={{ animationDelay: "0.1s" }}
           >
-            {/* Mobile chip */}
             <div className="lg:hidden inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium tracking-wide uppercase mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-slow" />
               Albion Market
@@ -159,35 +164,34 @@ export function LoginPage() {
             <div className="glass rounded-3xl p-8 sm:p-10">
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-foreground mb-2">
-                  Entrar na sua conta
+                  {t("login.title")}
                 </h2>
                 <p className="text-muted-foreground">
-                  Use seu usuário configurado no Albion Market para acessar o painel.
+                  {t("login.description")}
                 </p>
               </div>
 
               {locationState?.fromSignup && !infoMessageDismissed && (
                 <div className="mb-4 rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 flex items-start justify-between gap-3">
                   <span>
-                    Conta criada com sucesso! Enviamos um link de verificação para{" "}
-                    <strong>{locationState.email || "seu e-mail"}</strong>. Confirme
-                    seu e-mail antes de fazer login.
+                    {t("login.accountCreated")}{" "}
+                    <strong>{locationState.email || t("login.yourEmail")}</strong>.{" "}
+                    {t("login.confirmBeforeLogin")}
                   </span>
                   <button
                     type="button"
                     onClick={() => setInfoMessageDismissed(true)}
                     className="ml-2 text-emerald-200/70 hover:text-emerald-100 text-[10px] uppercase tracking-wide"
                   >
-                    Fechar
+                    {t("common.close")}
                   </button>
                 </div>
               )}
 
               <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
-                {/* USERNAME */}
                 <div className="field">
                   <Label htmlFor="username" className="text-sm font-medium text-foreground">
-                    Usuário
+                    {t("login.username")}
                   </Label>
                   <div className="relative group">
                     <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
@@ -196,7 +200,7 @@ export function LoginPage() {
                     <Input
                       id="username"
                       type="text"
-                      placeholder="nome.albion"
+                      placeholder={t("login.usernamePlaceholder")}
                       autoComplete="username"
                       className="pl-10"
                       {...register("username", {
@@ -211,10 +215,9 @@ export function LoginPage() {
                   )}
                 </div>
 
-                {/* PASSWORD */}
                 <div className="field">
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                    Senha
+                    {t("login.password")}
                   </Label>
                   <div className="relative group">
                     <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-opacity duration-200 ${
@@ -242,8 +245,8 @@ export function LoginPage() {
                   <div className="mt-2 text-xs">
                     <p className="text-destructive">
                       {mutation.error.status === 403
-                        ? "Seu e-mail ainda não foi verificado. Confirme o link enviado para sua caixa de entrada."
-                        : mutation.error.message || "Não foi possível fazer login."}
+                        ? t("login.emailUnverified")
+                        : mutation.error.message || t("login.loginError")}
                     </p>
 
                     {mutation.error.status === 403 && (
@@ -255,12 +258,12 @@ export function LoginPage() {
                           disabled={resendStatus === "loading"}
                         >
                           {resendStatus === "loading"
-                            ? "Reenviando..."
-                            : "Reenviar e-mail de verificação"}
+                            ? t("login.resending")
+                            : t("login.resendVerification")}
                         </button>
                         {resendStatus === "success" && (
                           <p className="text-emerald-400">
-                            Se o e-mail existir, enviaremos um novo link de verificação.
+                            {t("login.resendSuccess")}
                           </p>
                         )}
                         {resendStatus === "error" && resendError && (
@@ -278,15 +281,15 @@ export function LoginPage() {
                   className="w-full mt-2"
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? "Entrando..." : "Entrar"}
+                  {mutation.isPending ? t("login.enteringDots") : t("login.submit")}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </form>
 
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                Ainda não tem conta?{" "}
+                {t("login.noAccount")}{" "}
                 <Link to="/signup" className="text-primary hover:underline font-medium">
-                  Crie uma agora
+                  {t("login.createNow")}
                 </Link>
               </p>
             </div>

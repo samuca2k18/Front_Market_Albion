@@ -10,7 +10,9 @@
     "search": "Buscar",
     "clear": "Limpar",
     "close": "Fechar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "loadingPage": "Carregando página...",
+    "loadingSubtitle": "Isso pode levar apenas alguns segundos."
   },
   "navigation": {
     "dashboard": "Painel",
@@ -45,7 +47,8 @@
     "logout": "Sair",
     "toggleMenu": "Alternar navegação",
     "login": "Entrar",
-    "signup": "Criar conta"
+    "signup": "Criar conta",
+    "settings": "Configurações"
   },
   "footer": {
     "description": "Monitoramento de preços, histórico e inteligência de mercado para jogadores e traders de Albion Online.",
@@ -133,7 +136,13 @@
     "freshnessUnknown": "-",
     "freshnessNoDate": "Sem data",
     "freshnessMinutes": "{{value}}min",
-    "freshnessHours": "{{value}}h"
+    "freshnessHours": "{{value}}h",
+    "opportunitiesLabel": "Oportunidades",
+    "routesLabel": "vias",
+    "viewDetails": "Ver Detalhes →",
+    "liveUpdates": "{{count}} update(s) ao vivo",
+    "noItemsYet": "Nenhum item adicionado ainda.",
+    "addFirstItemHint": "Comece adicionando um acima!"
   },
   "prices": {
     "title": "Preços dos meus itens",
@@ -183,7 +192,21 @@
       "Acesso ao painel inteligente em tempo real",
       "Itens favoritos sincronizados na nuvem",
       "Histórico para entender o comportamento do mercado"
-    ]
+    ],
+    "chip": "Albion Market • Login",
+    "welcomeBack": "Bem-vindo de volta",
+    "welcomePanel": "ao seu painel",
+    "heroDescription": "Entre para acompanhar seus itens, comparar cidades e aproveitar as melhores oportunidades do mercado de Albion Online.",
+    "accountCreated": "Conta criada com sucesso! Enviamos um link de verificação para",
+    "yourEmail": "seu e-mail",
+    "confirmBeforeLogin": "Confirme seu e-mail antes de fazer login.",
+    "emailUnverified": "Seu e-mail ainda não foi verificado. Confirme o link enviado para sua caixa de entrada.",
+    "resendVerification": "Reenviar e-mail de verificação",
+    "resending": "Reenviando...",
+    "resendSuccess": "Se o e-mail existir, enviaremos um novo link de verificação.",
+    "resendError": "Não foi possível reenviar o e-mail.",
+    "promptEmail": "Informe o e-mail cadastrado:",
+    "usernamePlaceholder": "nome.albion"
   },
   "signup": {
     "title": "Criar conta",
@@ -205,7 +228,15 @@
       "Itens sincronizados por usuário",
       "Visual profissional para decisões rápidas",
       "Histórico de preço integrado ao painel"
-    ]
+    ],
+    "chip": "Albion Market • Cadastro",
+    "heroTitle": "Comece a monitorar",
+    "heroHighlight": "seu mercado",
+    "heroDescription": "Crie sua conta para salvar itens favoritos, comparar cidades e entender como o preço se comporta ao longo dos dias.",
+    "usernamePlaceholder": "nome.albion",
+    "emailPlaceholder": "voce@exemplo.com",
+    "confirmPasswordPlaceholder": "Repita a senha",
+    "invalidUsernameChars": "Apenas letras, números, _, -, @ e ."
   },
   "search": {
     "loading": "Carregando...",
@@ -213,7 +244,14 @@
     "noResults": "Nenhum item encontrado.",
     "placeholder": "Buscar item...",
     "resultsTitle": "Resultado de buscas",
-    "openModal": "Abrir resultados"
+    "openModal": "Abrir resultados",
+    "commandTitle": "Albion Command Search",
+    "shortcutHint": "Pressione Ctrl+K para abrir rápido",
+    "placeholderLong": "Buscar itens, armas, armaduras...",
+    "emptyHint": "Digite para buscar itens do Albion Online",
+    "navHint": "Use as setas para navegar - Enter para abrir",
+    "triggerPlaceholder": "Buscar...",
+    "footerBrand": "Albion Market Search"
   },
   "dataClient": {
     "badge": "Comunidade",
@@ -293,7 +331,10 @@
       "armor": "Armaduras",
       "accessory": "Acessorios",
       "consumable": "Consumiveis"
-    }
+    },
+    "loadErrorTitle": "Falha ao carregar catálogo",
+    "loadErrorFallback": "Erro inesperado ao buscar itens.",
+    "retry": "Tentar novamente"
   },
   "comparison": {
     "title": "Comparacao ({{count}}/{{max}})",
@@ -309,5 +350,15 @@
     "noPrice": "sem preco",
     "ipValue": "{{value}} IP",
     "bestPriceInline": "{{price}} ({{city}})"
+  },
+  "landing": {
+    "loginRequired": "Faça login",
+    "loading": "Carregando...",
+    "noData": "Sem dados",
+    "gold": "Gold",
+    "killboardLive": "Killboard Live",
+    "itemDatabase": "Item Database",
+    "citiesRegions": "6 Cidades • 3 Regiões",
+    "loginTrend": "Login"
   }
 }

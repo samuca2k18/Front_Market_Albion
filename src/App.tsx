@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Routes, Route } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n/i18n';
@@ -74,9 +75,10 @@ const DataClientPage = lazy(() =>
 );
 
 function RouteFallback() {
+  const { t } = useTranslation();
   return (
     <div className="w-full py-12 text-center text-sm text-muted-foreground">
-      Carregando página...
+      {t("common.loadingPage")}
     </div>
   );
 }

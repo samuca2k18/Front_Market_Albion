@@ -109,7 +109,7 @@ function ItemCard({
               <div className="flex items-center gap-1">
                 <Zap className="w-3 h-3 text-amber-500" />
                 <span className="text-[10px] font-bold text-muted-foreground">
-                  {item.item_power} IP
+                  {t("comparison.ipValue", { value: item.item_power })}
                 </span>
               </div>
             </div>
@@ -213,7 +213,7 @@ export function ItemDatabasePage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <SEO title="Item Database" />
+      <SEO title={t("itemDatabase.title")} />
       <div className="app-container py-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
@@ -397,10 +397,10 @@ export function ItemDatabasePage() {
                     <AlertCircle className="h-8 w-8 text-destructive/70" />
                   </div>
                   <h3 className="text-lg font-black uppercase tracking-tight mb-2">
-                    Falha ao carregar catálogo
+                    {t("itemDatabase.loadErrorTitle")}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-                    {catalogErrorMessage || "Erro inesperado ao buscar itens."}
+                    {catalogErrorMessage || t("itemDatabase.loadErrorFallback")}
                   </p>
                   <Button
                     variant="destructive"
@@ -411,7 +411,7 @@ export function ItemDatabasePage() {
                     className="font-bold uppercase tracking-widest gap-2"
                   >
                     <RefreshCw className="h-4 w-4" />
-                    Tentar novamente
+                    {t("itemDatabase.retry")}
                   </Button>
                 </div>
               ) : itemsQuery.isLoading ? (

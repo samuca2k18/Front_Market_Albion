@@ -150,7 +150,7 @@ export function ItemsListSection({
               )}
             </div>
 
-            <div className="space-y-2 overflow-y-auto pr-2 custom-scrollbar max-h-[450px]">
+            <div className="space-y-3 overflow-y-auto pr-2 custom-scrollbar max-h-[560px]">
               {trackedItems.map((item) => {
                 const displayName = item.display_name ?? getItemDisplayName(item.item_name);
                 const isSelected = selectedItems.has(item.id);
@@ -158,7 +158,7 @@ export function ItemsListSection({
                 return (
                   <div
                     key={item.id}
-                    className={`group flex items-center justify-between p-3 rounded-xl border transition-all duration-200 ${isSelected
+                    className={`group flex items-center justify-between gap-3 p-4 rounded-xl border transition-all duration-200 ${isSelected
                       ? "border-primary/50 bg-primary/10 shadow-inner"
                       : "border-border/40 bg-background/40 hover:bg-background/80 hover:border-border/80"
                       }`}
@@ -177,7 +177,7 @@ export function ItemsListSection({
                       />
 
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-bold tracking-tight truncate max-w-[120px] sm:max-w-none">
+                        <span className="text-sm font-bold tracking-tight truncate min-w-0">
                           {displayName}
                         </span>
                         <span className="text-[10px] font-mono font-medium text-muted-foreground/50 truncate opacity-0 group-hover:opacity-100 transition-opacity">
@@ -189,7 +189,7 @@ export function ItemsListSection({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"
