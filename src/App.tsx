@@ -43,6 +43,11 @@ const CraftingPage = lazy(() =>
     default: module.CraftingPage,
   })),
 );
+const PriceGridPage = lazy(() =>
+  import('./pages/PriceGridPage').then((module) => ({
+    default: module.PriceGridPage,
+  })),
+);
 const ItemDatabasePage = lazy(() =>
   import('./pages/ItemDatabasePage').then((module) => ({
     default: module.ItemDatabasePage,
@@ -113,6 +118,8 @@ function App() {
                 <Route path="prices" element={<PricesPage />} />
                 <Route path="opportunities" element={<OpportunitiesPage />} />
                 <Route path="crafting" element={<CraftingPage />} />
+                <Route path="price-grid" element={<PriceGridPage />} />
+                <Route path="bm-flips" element={<OpportunitiesPage />} />
                 <Route path="tracker" element={<TrackerPage />} />
                 <Route path="meta-market" element={<MetaMarketPage />} />
                 <Route path="guild-hub" element={<GuildHubPage />} />

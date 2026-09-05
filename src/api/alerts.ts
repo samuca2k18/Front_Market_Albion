@@ -80,3 +80,34 @@ export async function markNotificationRead(id: number): Promise<void> {
   }
 }
 
+
+
+export interface AlertsSummary {
+  total_alerts: number;
+  active_alerts: number;
+  unread_notifications: number;
+  last_checked_at: string | null;
+}
+
+export async function fetchAlertsSummary(): Promise<AlertsSummary> {
+  try {
+    const { data } = await api.get<AlertsSummary>('/alerts/summary');
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}
+
+export async function runCheckMyAlerts(): Promise<{
+  checked: number;
+  triggered: number;
+  errors: number;
+  unread_notifications: number;
+}> {
+  try {
+    const { data } = await api.post('/alerts/run-check-mine');
+    return data;
+  } catch (error) {
+    throw parseApiError(error);
+  }
+}

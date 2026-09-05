@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pin, PinOff, Bell, BellOff, Loader2, AlertCircle } from "lucide-react";
 
-import { listPriceAlerts, createPriceAlert } from "@/api/alerts";
+import { listPriceAlerts, createPriceAlert, fetchAlertsSummary, runCheckMyAlerts } from "@/api/alerts";
 import type { PriceAlert } from "@/api/types";
 import {
   Card,
@@ -79,7 +79,9 @@ export function PriceAlertsSection() {
   const [error, setError] = useState<string | null>(null);
   const [pinned, setPinned] = useState<Set<number>>(() => loadPinned());
   const [isCreating, setIsCreating] = useState(false);
-  const { t } = useTranslation();
+  const [isChecking, setIsChecking] = useState(false);
+  const [summary, setSummary] = useState<{ unread_notifications: number; last_checked_at: string | null; active_alerts: number } | null>(null);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -88,9 +90,10 @@ export function PriceAlertsSection() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await listPriceAlerts();
+        const [data, sum] = await Promise.all([listPriceAlerts(), fetchAlertsSummary()]);
         if (!cancelled) {
           setAlerts(data);
+          setSummary(sum);
         }
       } catch (e: any) {
         if (!cancelled) {
@@ -214,7 +217,46 @@ export function PriceAlertsSection() {
                 : (t("dashboard.alertsDescription") as string)}
             </CardDescription>
           </div>
-          <Bell className={`w-5 h-5 transition-all ${isCreating ? "text-primary animate-pulse" : "text-primary opacity-50"}`} />
+          <div className="flex items-center gap-2">
+            {summary && (
+              <div className="text-right mr-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  {t("dashboard.alertsUnread", { count: summary.unread_notifications })}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {summary.last_checked_at
+                    ? t("dashboard.alertsLastChecked", {
+                        value: new Date(summary.last_checked_at).toLocaleString(
+                          i18n.language.startsWith("pt") ? "pt-BR" : "en-US",
+                        ),
+                      })
+                    : t("dashboard.alertsNeverChecked")}
+                </p>
+              </div>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isChecking}
+              className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+              onClick={async () => {
+                try {
+                  setIsChecking(true);
+                  await runCheckMyAlerts();
+                  const [data, sum] = await Promise.all([listPriceAlerts(), fetchAlertsSummary()]);
+                  setAlerts(data);
+                  setSummary(sum);
+                } catch (e: any) {
+                  setError(e?.message || "Falha ao verificar alertas.");
+                } finally {
+                  setIsChecking(false);
+                }
+              }}
+            >
+              {isChecking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t("dashboard.alertsRunCheck")}
+            </Button>
+            <Bell className={`w-5 h-5 transition-all ${isCreating ? "text-primary animate-pulse" : "text-primary opacity-50"}`} />
+          </div>
         </div>
       </CardHeader>
 
@@ -245,7 +287,9 @@ export function PriceAlertsSection() {
               const label = alert.display_name || alert.item_id;
               const city = alert.city || (t("dashboard.alertsAnyCity") as string);
               const rule = formatRule(alert);
-              const last = formatLastTriggered(alert);
+              const last = formatLastTriggered(alert) + (alert.last_checked_at
+                ? ` · check ${new Date(alert.last_checked_at).toLocaleString("pt-BR")}`
+                : "");
               const isPinned = pinned.has(alert.id);
 
               return (

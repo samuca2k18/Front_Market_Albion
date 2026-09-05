@@ -11,6 +11,7 @@ import {
   Shield,
   Database,
   Download,
+  LayoutGrid,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -25,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "prices", path: "/prices", protected: true },
   { label: "opportunities", path: "/opportunities", protected: true },
   { label: "crafting", path: "/crafting", protected: true },
+  { label: "priceGrid", path: "/price-grid", protected: true },
   { label: "killboard", path: "/killboard", protected: false },
   { label: "tracker", path: "/tracker", protected: true },
   { label: "metaMarket", path: "/meta-market", protected: true },
@@ -38,6 +40,7 @@ const ICONS: Record<string, any> = {
   prices: Coins,
   opportunities: TrendingUp,
   crafting: Hammer,
+  priceGrid: LayoutGrid,
   killboard: Swords,
   tracker: Radar,
   metaMarket: Flame,
@@ -47,7 +50,7 @@ const ICONS: Record<string, any> = {
 };
 
 const SECTION_PATHS: Record<string, string[]> = {
-  market: ["/dashboard", "/prices", "/opportunities", "/crafting"],
+  market: ["/dashboard", "/prices", "/opportunities", "/crafting", "/price-grid"],
   combat: ["/killboard", "/tracker", "/meta-market", "/guild-hub"],
   resources: ["/items", "/data-client"],
 };

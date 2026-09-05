@@ -8,23 +8,23 @@ import {
   Search,
   TrendingUp,
   Zap,
+  Clock,
+  Trophy,
+  Sparkles,
 } from "lucide-react";
 
-import { fetchAlbionPrices } from "@/api/albion";
-import {
-  fetchConsumableCraftings,
-  fetchConsumables,
-  getOpenAlbionUniqueName,
-} from "@/api/catalog";
+import { searchItems } from "@/api/albion";
+import { fetchCraftProfit, fetchCraftRecipe, fetchCraftTop } from "@/api/craft";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useRegion } from "@/context/RegionContext";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getItemDisplayNameWithEnchantment, getItemImageUrl } from "@/utils/items";
+import { getItemImageUrl } from "@/utils/items";
 
-const CITIES = [
+const BUY_CITIES = [
   "Bridgewatch",
   "Caerleon",
   "Fort Sterling",
@@ -34,19 +34,49 @@ const CITIES = [
   "Brecilien",
 ];
 
-function getUnitPriceByCity(
-  entries: { item_id?: string; city: string; sell_price_min: number }[],
-  itemId: string,
-  city: string,
-): number {
-  const candidates = entries.filter(
-    (entry) => entry.item_id === itemId && entry.city === city && entry.sell_price_min > 0,
+const SELL_CITIES = [...BUY_CITIES, "Black Market"];
+
+function DataAgeBadge({
+  hours,
+  t,
+}: {
+  hours: number | null | undefined;
+  t: (k: string, o?: Record<string, unknown>) => string;
+}) {
+  if (hours == null) {
+    return (
+      <Badge variant="outline" className="border-border/40 text-muted-foreground">
+        {t("crafting.dataAge.unknown")}
+      </Badge>
+    );
+  }
+  const tone =
+    hours < 1
+      ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+      : hours < 6
+        ? "border-amber-500/40 bg-amber-500/15 text-amber-300"
+        : "border-red-500/40 bg-red-500/15 text-red-300";
+  const label =
+    hours < 1
+      ? t("crafting.dataAge.fresh", { hours: hours.toFixed(1) })
+      : hours < 6
+        ? t("crafting.dataAge.ok", { hours: hours.toFixed(1) })
+        : t("crafting.dataAge.stale", { hours: hours.toFixed(1) });
+  return (
+    <Badge variant="outline" className={`gap-1 ${tone}`}>
+      <Clock className="h-3 w-3" />
+      {label}
+    </Badge>
   );
-  if (candidates.length === 0) return 0;
-  return candidates.reduce(
-    (acc, row) => (row.sell_price_min < acc ? row.sell_price_min : acc),
-    candidates[0].sell_price_min,
-  );
+}
+
+function formatSilver(
+  value: number | null | undefined,
+  locale: string,
+  missing: string,
+): string {
+  if (value == null || Number.isNaN(value)) return missing;
+  return `${Math.round(value).toLocaleString(locale)} Ag`;
 }
 
 export function CraftingPage() {
@@ -54,129 +84,127 @@ export function CraftingPage() {
   const { region } = useRegion();
 
   const [searchTerm, setSearchTerm] = useState("");
-  // Debounce para evitar re-renders a cada tecla
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const [selectedItem, setSelectedItem] = useState<{
+    unique_name: string;
+    name_pt: string;
+    name_en: string;
+  } | null>(null);
 
-  const [selectedConsumableId, setSelectedConsumableId] = useState<number | null>(null);
-  // Cidades independentes: compra dos materiais vs venda do produto
   const [cityBuy, setCityBuy] = useState("Caerleon");
-  const [citySell, setCitySell] = useState("Caerleon");
-  const [focusReturnPct, setFocusReturnPct] = useState(0);
-  // journalBonusPct: percentual dos materiais economizados pelos diários (≠ multiplicador de yield)
+  const [citySell, setCitySell] = useState("Black Market");
+  const [focusReturnPct, setFocusReturnPct] = useState(36);
   const [journalBonusPct, setJournalBonusPct] = useState(0);
-  const [marketTaxPct, setMarketTaxPct] = useState(6.5);
+  const [marketTaxPct, setMarketTaxPct] = useState<number | "">( "");
   const [craftingFee, setCraftingFee] = useState(0);
+  const [topSort, setTopSort] = useState<"profit" | "roi" | "silver_per_focus">("profit");
 
   const numberLocale = useMemo(
     () => (i18n.language.startsWith("pt") ? "pt-BR" : "en-US"),
     [i18n.language],
   );
+  const missingLabel = t("crafting.noData");
 
-  const consumablesQuery = useQuery({
-    queryKey: ["crafting-consumables"],
-    queryFn: () => fetchConsumables(),
-    staleTime: 1000 * 60 * 60,
+  const searchQuery = useQuery({
+    queryKey: ["craft-search", debouncedSearch, i18n.language],
+    queryFn: () =>
+      searchItems(
+        debouncedSearch,
+        i18n.language.startsWith("en") ? "en-US" : "pt-BR",
+      ),
+    enabled: debouncedSearch.trim().length >= 2,
+    staleTime: 1000 * 60 * 5,
   });
-
-  const consumables = consumablesQuery.data?.data ?? [];
-  const filteredConsumables = (() => {
-    const query = debouncedSearch.trim().toLowerCase();
-    if (!query) return consumables.slice(0, 18);
-
-    return consumables
-      .filter((item) => {
-        const base = item.name.toLowerCase();
-        const unique = getOpenAlbionUniqueName(item).toLowerCase();
-        return base.includes(query) || unique.includes(query);
-      })
-      .slice(0, 18);
-  })();
-
-  const selectedConsumable = consumables.find((item) => item.id === selectedConsumableId);
-  const selectedUniqueName = selectedConsumable
-    ? getOpenAlbionUniqueName(selectedConsumable)
-    : "";
 
   const recipeQuery = useQuery({
-    queryKey: ["crafting-recipe", selectedConsumableId],
-    queryFn: () => fetchConsumableCraftings(selectedConsumableId!),
-    enabled: Boolean(selectedConsumableId),
-    staleTime: 1000 * 60 * 60,
+    queryKey: ["craft-recipe", selectedItem?.unique_name],
+    queryFn: () => fetchCraftRecipe(selectedItem!.unique_name),
+    enabled: Boolean(selectedItem?.unique_name),
+    staleTime: 1000 * 60 * 30,
+    retry: 1,
   });
 
-  const recipe = recipeQuery.data?.data?.[0];
-  const materialIds = recipe?.materials.map((mat) => mat.resource) ?? [];
+  const effectiveTax =
+    marketTaxPct === ""
+      ? citySell === "Black Market"
+        ? 0
+        : 6.5
+      : Number(marketTaxPct);
 
-  // Busca preços das duas cidades de uma vez
-  const allCities = Array.from(new Set([cityBuy, citySell]));
-  const itemNamesToPrice = Array.from(
-    new Set([selectedUniqueName, ...materialIds].filter((value): value is string => Boolean(value))),
-  );
-
-  const pricesQuery = useQuery({
-    queryKey: ["crafting-prices", region, allCities.join(","), itemNamesToPrice.join(",")],
-    queryFn: () => fetchAlbionPrices(itemNamesToPrice, allCities, undefined, region),
-    enabled: itemNamesToPrice.length > 0,
-    staleTime: 1000 * 60 * 3,
+  const profitQuery = useQuery({
+    queryKey: [
+      "craft-profit",
+      selectedItem?.unique_name,
+      region,
+      cityBuy,
+      citySell,
+      focusReturnPct,
+      journalBonusPct,
+      effectiveTax,
+      craftingFee,
+    ],
+    queryFn: () =>
+      fetchCraftProfit({
+        item: selectedItem!.unique_name,
+        city_buy: cityBuy,
+        city_sell: citySell,
+        region,
+        focus_return_pct: focusReturnPct,
+        journal_bonus_pct: journalBonusPct,
+        market_tax_pct: effectiveTax,
+        crafting_fee: craftingFee,
+      }),
+    enabled: Boolean(selectedItem?.unique_name) && recipeQuery.isSuccess,
+    staleTime: 1000 * 60 * 2,
   });
 
-  const calculation =
-    recipe && selectedUniqueName && pricesQuery.data
-      ? (() => {
-          const entries = pricesQuery.data.all_data;
-          const materialRows = recipe.materials.map((material) => {
-            const unitPrice = getUnitPriceByCity(entries, material.resource, cityBuy);
-            const totalCost = unitPrice * material.amount;
-            return {
-              ...material,
-              unitPrice,
-              totalCost,
-            };
-          });
+  const topQuery = useQuery({
+    queryKey: [
+      "craft-top",
+      region,
+      cityBuy,
+      citySell,
+      focusReturnPct,
+      journalBonusPct,
+      effectiveTax,
+      craftingFee,
+      topSort,
+    ],
+    queryFn: () =>
+      fetchCraftTop({
+        city_buy: cityBuy,
+        city_sell: citySell,
+        region,
+        focus_return_pct: focusReturnPct,
+        journal_bonus_pct: journalBonusPct,
+        market_tax_pct: effectiveTax,
+        crafting_fee: craftingFee,
+        limit: 12,
+        scan_limit: 180,
+        sort_by: topSort,
+      }),
+    staleTime: 1000 * 60 * 5,
+  });
 
-          const rawMaterialCost = materialRows.reduce((sum, row) => sum + row.totalCost, 0);
-          // Foco reduz o custo dos materiais consumidos
-          const focusMultiplier = Math.max(0, 1 - focusReturnPct / 100);
-          // Diários economizam materiais (redução adicional no custo, não no yield)
-          const journalMultiplier = Math.max(0, 1 - journalBonusPct / 100);
-          const effectiveMaterialCost = rawMaterialCost * focusMultiplier * journalMultiplier;
+  const displayName = (pt: string, en: string, fallback: string) =>
+    i18n.language.startsWith("en") ? en || fallback : pt || fallback;
 
-          // Economia dos diários em prata (para exibição)
-          const journalSavings = rawMaterialCost * focusMultiplier - effectiveMaterialCost;
-
-          // Preço de venda na cidade de venda (citySell)
-          const saleUnitPrice = getUnitPriceByCity(entries, selectedUniqueName, citySell);
-          // Yield é fixo — diários não multiplicam o produto fabricado no Albion
-          const effectiveYield = recipe.yield_amount;
-          const grossRevenue = saleUnitPrice * effectiveYield;
-          const netRevenue = grossRevenue * (1 - marketTaxPct / 100);
-
-          const profit = netRevenue - effectiveMaterialCost - craftingFee;
-          const roi = effectiveMaterialCost > 0 ? (profit / effectiveMaterialCost) * 100 : 0;
-
-          return {
-            materialRows,
-            rawMaterialCost,
-            effectiveMaterialCost,
-            journalSavings,
-            saleUnitPrice,
-            effectiveYield,
-            grossRevenue,
-            netRevenue,
-            profit,
-            roi,
-          };
-        })()
-      : null;
+  const searchResults = searchQuery.data ?? [];
+  const profit = profitQuery.data;
 
   return (
     <div className="space-y-6 animate-fade-in pb-20 lg:space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight lg:text-4xl">
-          <Hammer className="h-8 w-8 text-primary" />
-          {t("crafting.title")}
-        </h1>
-        <p className="font-medium text-muted-foreground">{t("crafting.subtitle")}</p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight lg:text-4xl">
+            <Hammer className="h-8 w-8 text-primary" />
+            {t("crafting.title")}
+          </h1>
+          <p className="font-medium text-muted-foreground">{t("crafting.subtitle")}</p>
+        </div>
+        {profit && (
+          <DataAgeBadge hours={profit.data_age_hours} t={t} />
+        )}
       </div>
 
       <div className="grid gap-8 lg:grid-cols-12">
@@ -195,141 +223,159 @@ export function CraftingPage() {
                 onChange={(event) => setSearchTerm(event.target.value)}
                 className="border-border/40 bg-background/60 font-mono text-sm"
               />
-
               <div className="custom-scrollbar max-h-[440px] space-y-2 overflow-y-auto pr-2">
-                {consumablesQuery.isLoading
-                  ? Array.from({ length: 6 }).map((_, index) => (
-                      <Skeleton key={index} className="h-16 w-full rounded-2xl" />
-                    ))
-                  : filteredConsumables.map((item) => {
-                      const uniqueName = getOpenAlbionUniqueName(item);
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setSelectedConsumableId(item.id)}
-                          className={`flex w-full items-center gap-3 rounded-2xl border p-3 transition-all ${
-                            selectedConsumableId === item.id
-                              ? "border-primary/40 bg-primary/10 shadow-sm"
-                              : "border-border/20 bg-background/40 hover:bg-background/80"
-                          }`}
-                        >
-                          <div className="rounded-xl bg-black/30 p-1.5">
-                            <img
-                              src={getItemImageUrl(uniqueName || item.name)}
-                              alt=""
-                              className="h-8 w-8 object-contain"
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1 text-left">
-                            <p className="truncate text-sm font-black">
-                              {getItemDisplayNameWithEnchantment(item.name)}
-                            </p>
-                            <p className="truncate font-mono text-[10px] text-muted-foreground">
-                              {uniqueName || item.name}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
+                {debouncedSearch.trim().length < 2 ? (
+                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+                    {t("crafting.searchHint")}
+                  </p>
+                ) : searchQuery.isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <Skeleton key={index} className="h-16 w-full rounded-2xl" />
+                  ))
+                ) : searchResults.length === 0 ? (
+                  <p className="px-2 py-6 text-center text-xs text-muted-foreground">
+                    {t("crafting.noSearchResults")}
+                  </p>
+                ) : (
+                  searchResults.slice(0, 24).map((item) => (
+                    <button
+                      key={item.unique_name}
+                      onClick={() =>
+                        setSelectedItem({
+                          unique_name: item.unique_name,
+                          name_pt: item.name_pt,
+                          name_en: item.name_en,
+                        })
+                      }
+                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 transition-all ${
+                        selectedItem?.unique_name === item.unique_name
+                          ? "border-primary/40 bg-primary/10 shadow-sm"
+                          : "border-border/20 bg-background/40 hover:bg-background/80"
+                      }`}
+                    >
+                      <div className="rounded-xl bg-black/30 p-1.5">
+                        <img
+                          src={getItemImageUrl(item.unique_name)}
+                          alt=""
+                          className="h-8 w-8 object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1 text-left">
+                        <p className="truncate text-sm font-black">
+                          {displayName(item.name_pt, item.name_en, item.unique_name)}
+                        </p>
+                        <p className="truncate font-mono text-[10px] text-muted-foreground">
+                          {item.unique_name}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-6 lg:col-span-8">
-          {!selectedConsumableId ? (
-            <div className="flex h-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border/40 bg-card/20 p-12 text-center">
+          {!selectedItem ? (
+            <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border/40 bg-card/20 p-12 text-center">
               <Factory className="mb-4 h-16 w-16 text-muted-foreground/20" />
               <h3 className="mb-2 text-xl font-black text-foreground">
                 {t("crafting.emptyStateTitle")}
               </h3>
               <p className="text-muted-foreground">{t("crafting.emptyStateDescription")}</p>
             </div>
-          ) : recipeQuery.isLoading || pricesQuery.isLoading ? (
+          ) : recipeQuery.isLoading || profitQuery.isLoading ? (
             <div className="rounded-3xl border border-border/20 bg-card/10 p-12 text-center">
               <Zap className="mx-auto mb-4 h-12 w-12 animate-pulse text-primary" />
               <p className="animate-pulse font-bold uppercase tracking-widest text-muted-foreground">
                 {t("crafting.loadingMessage")}
               </p>
             </div>
-          ) : !recipe ? (
-            <div className="flex h-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 p-12 text-center">
+          ) : recipeQuery.isError ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 p-12 text-center">
               <Hammer className="mb-4 h-14 w-14 text-amber-500/40" />
-              <h3 className="mb-2 text-xl font-black text-foreground">
-                {t("crafting.recipeUnavailableTitle")}
-              </h3>
-              <p className="mb-3 max-w-md text-sm font-medium text-muted-foreground">
+              <h3 className="mb-2 text-xl font-black">{t("crafting.recipeUnavailableTitle")}</h3>
+              <p className="text-sm text-muted-foreground">
                 {t("crafting.recipeUnavailableDescription")}
               </p>
-              <p className="text-xs font-bold uppercase tracking-widest text-amber-500/80">
-                {t("crafting.noRecipeFound")}
-              </p>
             </div>
-          ) : !calculation ? (
+          ) : !profit ? (
             <div className="rounded-3xl border-2 border-red-500/20 bg-red-500/5 p-12 text-center">
               <p className="font-bold text-red-400">{t("crafting.calculationError")}</p>
             </div>
           ) : (
             <>
               <Card className="overflow-hidden rounded-3xl border border-border/40 bg-card/60 shadow-2xl backdrop-blur-xl">
-                <CardContent className="grid gap-4 p-6 md:grid-cols-2">
-                  <div className="flex items-center gap-4">
-                    <div className="rounded-2xl border border-border/20 bg-black/40 p-3">
-                      <img
-                        src={getItemImageUrl(selectedUniqueName || selectedConsumable?.name || "")}
-                        alt=""
-                        className="h-16 w-16 object-contain"
-                      />
-                    </div>
-                    <div>
-                      <Badge
-                        variant="outline"
-                        className="mb-2 border-primary/20 bg-primary/10 text-primary"
-                      >
-                        {t("crafting.yieldBaseBadge", { value: recipe.yield_amount })}
-                      </Badge>
-                      <h2 className="text-2xl font-black">
-                        {getItemDisplayNameWithEnchantment(selectedConsumable?.name || "")}
-                      </h2>
-                      <p className="font-mono text-[11px] text-muted-foreground">
-                        {selectedUniqueName || t("crafting.noUniqueName")}
-                      </p>
+                <CardContent className="grid gap-6 p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="rounded-2xl border border-border/20 bg-black/40 p-3">
+                        <img
+                          src={getItemImageUrl(profit.item)}
+                          alt=""
+                          className="h-16 w-16 object-contain"
+                        />
+                      </div>
+                      <div>
+                        <div className="mb-2 flex flex-wrap gap-2">
+                          <Badge
+                            variant="outline"
+                            className="border-primary/20 bg-primary/10 text-primary"
+                          >
+                            {t("crafting.enchantBadge", { value: profit.enchant })}
+                          </Badge>
+                          {profit.is_black_market && (
+                            <Badge className="bg-violet-500/20 text-violet-300">
+                              Black Market
+                            </Badge>
+                          )}
+                          <DataAgeBadge hours={profit.data_age_hours} t={t} />
+                        </div>
+                        <h2 className="text-2xl font-black">
+                          {displayName(profit.name_pt, profit.name_en, profit.item)}
+                        </h2>
+                        <p className="font-mono text-[11px] text-muted-foreground">
+                          {profit.item}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {/* Cidade de Compra */}
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.cityBuy")}
                       <select
                         value={cityBuy}
-                        onChange={(event) => setCityBuy(event.target.value)}
+                        onChange={(e) => setCityBuy(e.target.value)}
                         className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
                       >
-                        {CITIES.map((city) => (
+                        {BUY_CITIES.map((city) => (
                           <option key={city} value={city}>
                             {city}
                           </option>
                         ))}
                       </select>
                     </label>
-
-                    {/* Cidade de Venda */}
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.citySell")}
                       <select
                         value={citySell}
-                        onChange={(event) => setCitySell(event.target.value)}
+                        onChange={(e) => {
+                          setCitySell(e.target.value);
+                          if (e.target.value === "Black Market" && marketTaxPct === "") {
+                            /* keep auto 0 */
+                          }
+                        }}
                         className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
                       >
-                        {CITIES.map((city) => (
+                        {SELL_CITIES.map((city) => (
                           <option key={city} value={city}>
                             {city}
                           </option>
                         ))}
                       </select>
                     </label>
-
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.focusReturnPct")}
                       <Input
@@ -337,11 +383,10 @@ export function CraftingPage() {
                         min={0}
                         max={90}
                         value={focusReturnPct}
-                        onChange={(event) => setFocusReturnPct(Number(event.target.value || 0))}
+                        onChange={(e) => setFocusReturnPct(Number(e.target.value || 0))}
                         className="bg-background/70"
                       />
                     </label>
-
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.journalBonusPct")}
                       <Input
@@ -349,11 +394,10 @@ export function CraftingPage() {
                         min={0}
                         max={100}
                         value={journalBonusPct}
-                        onChange={(event) => setJournalBonusPct(Number(event.target.value || 0))}
+                        onChange={(e) => setJournalBonusPct(Number(e.target.value || 0))}
                         className="bg-background/70"
                       />
                     </label>
-
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.marketTaxPct")}
                       <Input
@@ -361,25 +405,76 @@ export function CraftingPage() {
                         min={0}
                         max={20}
                         step={0.1}
+                        placeholder={citySell === "Black Market" ? "0" : "6.5"}
                         value={marketTaxPct}
-                        onChange={(event) => setMarketTaxPct(Number(event.target.value || 0))}
+                        onChange={(e) =>
+                          setMarketTaxPct(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
+                        }
                         className="bg-background/70"
                       />
                     </label>
-
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.craftingFee")}
                       <Input
                         type="number"
                         min={0}
                         value={craftingFee}
-                        onChange={(event) => setCraftingFee(Number(event.target.value || 0))}
+                        onChange={(e) => setCraftingFee(Number(e.target.value || 0))}
                         className="bg-background/70"
                       />
                     </label>
                   </div>
+
+                  {profit.tax_note && (
+                    <p className="text-[11px] text-violet-300/90">{profit.tax_note}</p>
+                  )}
                 </CardContent>
               </Card>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Card className="rounded-3xl border-emerald-500/20 bg-emerald-500/5">
+                  <CardContent className="p-5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      {t("crafting.metrics.estimatedProfit")}
+                    </p>
+                    <p
+                      className={`mt-1 text-3xl font-black ${
+                        (profit.profit ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"
+                      }`}
+                    >
+                      {profit.profit == null
+                        ? missingLabel
+                        : `${profit.profit >= 0 ? "+" : ""}${profit.profit.toLocaleString(numberLocale)}`}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-3xl border-border/40 bg-card/40">
+                  <CardContent className="p-5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      ROI
+                    </p>
+                    <p className="mt-1 text-3xl font-black">
+                      {profit.roi == null
+                        ? missingLabel
+                        : `${profit.roi >= 0 ? "+" : ""}${profit.roi.toFixed(1)}%`}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-3xl border-border/40 bg-card/40">
+                  <CardContent className="p-5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      {t("crafting.metrics.silverPerFocus")}
+                    </p>
+                    <p className="mt-1 text-3xl font-black text-sky-300">
+                      {profit.silver_per_focus == null
+                        ? missingLabel
+                        : profit.silver_per_focus.toLocaleString(numberLocale)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="rounded-3xl border-border/40 bg-card/40">
@@ -390,32 +485,37 @@ export function CraftingPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {calculation.materialRows.map((material) => (
+                    {profit.materials.map((material) => (
                       <div
-                        key={`${material.resource}-${material.id}`}
+                        key={material.unique_name}
                         className="flex items-center justify-between rounded-2xl border border-border/20 bg-background/40 px-3 py-2"
                       >
-                        <div className="min-w-0 flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <img
-                            src={getItemImageUrl(material.resource)}
+                            src={getItemImageUrl(material.unique_name)}
                             className="w-8 rounded-lg bg-black/40 outline outline-1 outline-border/40"
                             alt=""
                           />
                           <div className="min-w-0">
                             <p className="truncate text-xs font-black">
-                              {material.amount}x {getItemDisplayNameWithEnchantment(material.resource)}
+                              {material.count}x{" "}
+                              {displayName(
+                                material.name_pt || "",
+                                material.name_en || "",
+                                material.unique_name,
+                              )}
                             </p>
                             <p className="font-mono text-[10px] text-muted-foreground">
-                              {material.unitPrice > 0
+                              {material.unit_price != null
                                 ? t("crafting.unitPricePerUnit", {
-                                    value: material.unitPrice.toLocaleString(numberLocale),
+                                    value: material.unit_price.toLocaleString(numberLocale),
                                   })
-                                : t("crafting.noCityPrice")}
+                                : missingLabel}
                             </p>
                           </div>
                         </div>
                         <p className="text-sm font-black text-orange-400">
-                          {material.totalCost.toLocaleString(numberLocale)} Ag
+                          {formatSilver(material.total_cost, numberLocale, missingLabel)}
                         </p>
                       </div>
                     ))}
@@ -431,64 +531,53 @@ export function CraftingPage() {
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t("crafting.metrics.baseMaterialCost")}</span>
-                      <strong>{calculation.rawMaterialCost.toLocaleString(numberLocale)} Ag</strong>
+                      <span className="text-muted-foreground">
+                        {t("crafting.metrics.baseMaterialCost")}
+                      </span>
+                      <strong>
+                        {formatSilver(profit.raw_material_cost, numberLocale, missingLabel)}
+                      </strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t("crafting.metrics.focusAdjustedCost")}</span>
-                      <strong>{calculation.effectiveMaterialCost.toLocaleString(numberLocale)} Ag</strong>
+                      <span className="text-muted-foreground">
+                        {t("crafting.metrics.focusAdjustedCost")}
+                      </span>
+                      <strong>
+                        {formatSilver(profit.effective_cost, numberLocale, missingLabel)}
+                      </strong>
                     </div>
-                    {calculation.journalSavings > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">{t("crafting.metrics.journalSavings")}</span>
-                        <strong className="text-sky-400">
-                          -{calculation.journalSavings.toLocaleString(numberLocale)} Ag
-                        </strong>
-                      </div>
-                    )}
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
                         {t("crafting.metrics.saleUnitPrice", { city: citySell })}
                       </span>
-                      <strong>{calculation.saleUnitPrice.toLocaleString(numberLocale)} Ag</strong>
+                      <strong>
+                        {formatSilver(profit.sell_price, numberLocale, missingLabel)}
+                      </strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t("crafting.metrics.netRevenue")}</span>
-                      <strong>{calculation.netRevenue.toLocaleString(numberLocale)} Ag</strong>
+                      <span className="text-muted-foreground">
+                        {t("crafting.metrics.netRevenue")}
+                      </span>
+                      <strong>
+                        {formatSilver(profit.net_revenue, numberLocale, missingLabel)}
+                      </strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t("crafting.metrics.craftingFee")}</span>
-                      <strong>{craftingFee.toLocaleString(numberLocale)} Ag</strong>
+                      <span className="text-muted-foreground">
+                        {t("crafting.metrics.focusCost")}
+                      </span>
+                      <strong>
+                        {profit.focus_cost == null
+                          ? missingLabel
+                          : profit.focus_cost.toLocaleString(numberLocale)}
+                      </strong>
                     </div>
-
-                    <div className="flex items-end justify-between border-t border-border/30 pt-3">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                          {t("crafting.metrics.estimatedProfit")}
-                        </p>
-                        <p
-                          className={`text-3xl font-black tracking-tight ${
-                            calculation.profit >= 0 ? "text-emerald-400" : "text-red-400"
-                          }`}
-                        >
-                          {calculation.profit >= 0 ? "+" : ""}
-                          {calculation.profit.toLocaleString(numberLocale)}
-                        </p>
-                      </div>
-                      <Badge
-                        className={
-                          calculation.roi >= 0
-                            ? "bg-emerald-500/20 text-emerald-300"
-                            : "bg-red-500/20 text-red-300"
-                        }
-                      >
-                        {t("crafting.metrics.roiPrefix")} {calculation.roi >= 0 ? "+" : ""}
-                        {calculation.roi.toFixed(2)}%
-                      </Badge>
-                    </div>
-
                     <p className="text-[10px] leading-relaxed text-muted-foreground/70">
-                      {t("crafting.regionNotice", { region, cityBuy, citySell })}
+                      {t("crafting.regionNotice", {
+                        region,
+                        cityBuy,
+                        citySell,
+                      })}
                     </p>
                   </CardContent>
                 </Card>
@@ -497,6 +586,117 @@ export function CraftingPage() {
           )}
         </div>
       </div>
+
+      <Card className="rounded-3xl border-border/40 bg-card/40 shadow-xl">
+        <CardHeader className="flex flex-col gap-3 border-b border-border/20 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex items-center gap-2 text-sm font-black uppercase tracking-widest">
+            <Trophy className="h-4 w-4 text-amber-400" />
+            {t("crafting.topTitle")}
+          </CardTitle>
+          <div className="flex flex-wrap gap-2">
+            {(["profit", "roi", "silver_per_focus"] as const).map((key) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={topSort === key ? "default" : "ghost"}
+                className="rounded-xl text-[10px] font-black uppercase tracking-widest"
+                onClick={() => setTopSort(key)}
+              >
+                {t(`crafting.sort.${key}`)}
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          {topQuery.isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 rounded-2xl" />
+              ))}
+            </div>
+          ) : (topQuery.data?.items?.length ?? 0) === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {t("crafting.topEmpty")}
+            </p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {topQuery.data!.items.map((row) => (
+                <button
+                  key={row.item}
+                  onClick={() =>
+                    setSelectedItem({
+                      unique_name: row.item,
+                      name_pt: row.name_pt,
+                      name_en: row.name_en,
+                    })
+                  }
+                  className="rounded-2xl border border-border/30 bg-background/40 p-4 text-left transition hover:border-primary/40 hover:bg-background/70"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getItemImageUrl(row.item)}
+                        alt=""
+                        className="h-10 w-10 rounded-lg bg-black/40"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black">
+                          {displayName(row.name_pt, row.name_en, row.item)}
+                        </p>
+                        <p className="font-mono text-[10px] text-muted-foreground">
+                          {row.item}
+                        </p>
+                      </div>
+                    </div>
+                    <DataAgeBadge hours={row.data_age_hours} t={t} />
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {t("crafting.metrics.estimatedProfit")}
+                      </p>
+                      <p
+                        className={`text-xl font-black ${
+                          row.profit >= 0 ? "text-emerald-400" : "text-red-400"
+                        }`}
+                      >
+                        {row.profit >= 0 ? "+" : ""}
+                        {row.profit.toLocaleString(numberLocale)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge className="bg-primary/15 text-primary">
+                        ROI {row.roi.toFixed(1)}%
+                      </Badge>
+                      {row.silver_per_focus != null && (
+                        <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-sky-300">
+                          <Sparkles className="h-3 w-3" />
+                          {row.silver_per_focus.toLocaleString(numberLocale)} / foco
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          {topQuery.data && (
+            <p className="mt-4 text-[10px] text-muted-foreground">
+              {t("crafting.topMeta", {
+                scanned: topQuery.data.scanned,
+                withRecipe: topQuery.data.with_recipe,
+              })}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-3xl border-dashed border-border/40 bg-card/20">
+        <CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground">
+          <Sparkles className="h-5 w-5 text-amber-400/70" />
+          {t("crafting.refiningSoon")}
+        </CardContent>
+      </Card>
     </div>
   );
 }
