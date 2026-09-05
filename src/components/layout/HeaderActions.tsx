@@ -2,7 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { LanguageSwitcher } from "../common/LanguageSwitcher";
+// LanguageSwitcher hidden until EN translations cover landing/auth chrome.
+// import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 import { ThemeToggle } from "../common/ThemeToggle";
@@ -28,26 +29,27 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1.5 rounded-2xl border border-border/40 bg-background/35 px-2 py-1.5 backdrop-blur-md">
+    <div className="flex min-w-0 items-center gap-1.5 lg:gap-2">
+      <div className="flex items-center gap-1 rounded-2xl border border-border/40 bg-background/35 px-1.5 py-1.5 backdrop-blur-md">
         <ThemeToggle />
-        <LanguageSwitcher />
-        <RegionSwitcher />
+        <div className="hidden xl:block">
+          <RegionSwitcher />
+        </div>
         <NotificationsBell />
       </div>
 
       {user ? (
         <HeaderUserMenu user={user} onLogout={handleLogout} />
       ) : (
-        <div className="flex items-center gap-1 rounded-2xl border border-border/45 bg-background/40 p-1 backdrop-blur-md">
-          <Button variant="ghost" size="sm" asChild className="rounded-xl hover:bg-accent/10 h-8 px-3 text-xs font-semibold">
+        <div className="flex min-w-0 items-center gap-1 rounded-2xl border border-border/45 bg-background/40 p-1 backdrop-blur-md">
+          <Button variant="ghost" size="sm" asChild className="rounded-xl hover:bg-accent/10 h-8 px-2.5 lg:px-3 text-xs font-semibold shrink-0">
             <Link to="/login">{t("login.submit")}</Link>
           </Button>
           <Button
             variant="default"
             size="sm"
             asChild
-            className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 h-8 px-3 text-xs"
+            className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 h-8 px-2.5 lg:px-3 text-xs shrink-0 whitespace-nowrap"
           >
             <Link to="/signup">{t("signup.submit")}</Link>
           </Button>

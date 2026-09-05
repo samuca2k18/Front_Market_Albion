@@ -11,7 +11,7 @@ export function AppLayout() {
   const showSideNav = !!token;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell overflow-x-hidden">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -left-32 h-96 w-96 rounded-full bg-emerald-400/10 blur-[110px] animate-pulse-slow" />
         <div

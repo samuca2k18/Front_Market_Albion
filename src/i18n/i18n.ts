@@ -9,22 +9,9 @@ const resources = {
   'en-US': { translation: enUS },
 };
 
-// Detecta o idioma do navegador
-const getBrowserLanguage = (): string => {
-  const nav = navigator.language || 'pt-BR';
-  return nav.startsWith('en') ? 'en-US' : 'pt-BR';
-};
-
-// Tenta obter o idioma salvo no localStorage
-const getSavedLanguage = (): string | null => {
-  try {
-    return localStorage.getItem('app_language');
-  } catch {
-    return null;
-  }
-};
-
-const defaultLanguage = getSavedLanguage() || getBrowserLanguage() || 'pt-BR';
+// Force pt-BR until EN translations cover landing/auth chrome fully.
+// LanguageSwitcher is hidden in HeaderActions/MobileMenu for the same reason.
+const defaultLanguage = 'pt-BR';
 
 i18n
   .use(initReactI18next)
@@ -36,5 +23,9 @@ i18n
       escapeValue: false,
     },
   });
+
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = 'pt-BR';
+}
 
 export default i18n;

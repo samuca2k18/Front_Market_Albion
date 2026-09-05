@@ -32,7 +32,10 @@ import {
   Star,
   Zap,
   Plus,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
+import { parseApiError } from "@/api/client";
 
 
 // TYPE_TABS is now generated inside the component with i18n (see TYPE_TABS_I18N)
@@ -172,6 +175,8 @@ export function ItemDatabasePage() {
     queryKey: ["openalbion-categories", activeType],
     queryFn: () => fetchCategories(activeType),
     staleTime: 1000 * 60 * 60, // 1h cache
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch items
@@ -183,7 +188,18 @@ export function ItemDatabasePage() {
         category_id: selectedCategoryId,
       }),
     staleTime: 1000 * 60 * 60,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
+
+  const catalogError = itemsQuery.isError
+    ? itemsQuery.error
+    : categoriesQuery.isError
+      ? categoriesQuery.error
+      : null;
+  const catalogErrorMessage = catalogError
+    ? parseApiError(catalogError).message
+    : null;
 
   const items = itemsQuery.data?.data || [];
   const categories = categoriesQuery.data?.data || [];
@@ -375,7 +391,30 @@ export function ItemDatabasePage() {
               </p>
             </div>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-              {itemsQuery.isLoading ? (
+              {catalogError ? (
+                <div className="col-span-full py-12 px-6 text-center border border-destructive/30 rounded-3xl bg-destructive/10">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10">
+                    <AlertCircle className="h-8 w-8 text-destructive/70" />
+                  </div>
+                  <h3 className="text-lg font-black uppercase tracking-tight mb-2">
+                    Falha ao carregar catálogo
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
+                    {catalogErrorMessage || "Erro inesperado ao buscar itens."}
+                  </p>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      void categoriesQuery.refetch();
+                      void itemsQuery.refetch();
+                    }}
+                    className="font-bold uppercase tracking-widest gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Tentar novamente
+                  </Button>
+                </div>
+              ) : itemsQuery.isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <Skeleton key={i} className="h-28 w-full rounded-2xl" />
                 ))

@@ -103,6 +103,7 @@ function App() {
               {/* Rotas públicas (acessível por qualquer um) */}
               <Route path="data-client" element={<DataClientPage />} />
               <Route path="items" element={<ItemDatabasePage />} />
+              <Route path="killboard" element={<KillboardPage />} />
 
               {/* Rotas protegidas (somente logado) */}
               <Route element={<ProtectedRoute />}>
@@ -110,7 +111,6 @@ function App() {
                 <Route path="prices" element={<PricesPage />} />
                 <Route path="opportunities" element={<OpportunitiesPage />} />
                 <Route path="crafting" element={<CraftingPage />} />
-                <Route path="killboard" element={<KillboardPage />} />
                 <Route path="tracker" element={<TrackerPage />} />
                 <Route path="meta-market" element={<MetaMarketPage />} />
                 <Route path="guild-hub" element={<GuildHubPage />} />

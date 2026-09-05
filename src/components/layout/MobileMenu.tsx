@@ -2,7 +2,8 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../ui/button";
-import { LanguageSwitcher } from "../common/LanguageSwitcher";
+// LanguageSwitcher hidden until EN translations cover landing/auth chrome.
+// import { LanguageSwitcher } from "../common/LanguageSwitcher";
 import { RegionSwitcher } from "../common/RegionSwitcher";
 import { NotificationsBell } from "./NotificationsBell";
 import { ThemeToggle } from "../common/ThemeToggle";
@@ -64,7 +65,7 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
 
   return (
     <div
-      className={`border-t border-border/60 bg-background/92 backdrop-blur-xl transition-[max-height,opacity] duration-300 md:hidden ${
+      className={`border-t border-border/60 bg-background/98 backdrop-blur-2xl shadow-[0_24px_48px_rgba(0,0,0,0.55)] transition-[max-height,opacity] duration-300 lg:hidden ${
         isOpen ? "max-h-[720px] opacity-100" : "max-h-0 overflow-hidden opacity-0"
       }`}
     >
@@ -106,7 +107,6 @@ export function MobileMenu({ items, isOpen, onClose }: MobileMenuProps) {
 
         <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/45 bg-background/35 p-2">
           <ThemeToggle />
-          <LanguageSwitcher />
           <RegionSwitcher />
           <NotificationsBell />
         </div>

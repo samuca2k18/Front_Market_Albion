@@ -13,6 +13,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { User, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { getSafeReturnTo } from "../utils/returnTo";
 import "./auth-pages.css";
 
 const loginSchema = z.object({
@@ -48,8 +49,12 @@ export function LoginPage() {
       await login(formData);
     },
     onSuccess: () => {
-      const redirectTo =
-        (location.state as { from?: Location })?.from?.pathname ?? "/dashboard";
+      const searchParams = new URLSearchParams(location.search);
+      const returnTo = getSafeReturnTo(searchParams.get("returnTo"));
+      const from = (location.state as { from?: Location })?.from;
+      const fromPath =
+        from != null ? `${from.pathname}${from.search || ""}` : null;
+      const redirectTo = returnTo ?? fromPath ?? "/dashboard";
       navigate(redirectTo, { replace: true });
     },
   });
