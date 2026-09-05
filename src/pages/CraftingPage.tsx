@@ -40,14 +40,23 @@ const SELL_CITIES = [...BUY_CITIES, "Black Market"];
 function DataAgeBadge({
   hours,
   t,
+  compact = false,
 }: {
   hours: number | null | undefined;
   t: (k: string, o?: Record<string, unknown>) => string;
+  compact?: boolean;
 }) {
+  const base =
+    compact
+      ? "shrink-0 max-w-[7.5rem] truncate px-1.5 py-0 text-[10px] leading-5"
+      : "";
   if (hours == null) {
     return (
-      <Badge variant="outline" className="border-border/40 text-muted-foreground">
-        {t("crafting.dataAge.unknown")}
+      <Badge
+        variant="outline"
+        className={`border-border/40 text-muted-foreground ${base}`}
+      >
+        {compact ? "?" : t("crafting.dataAge.unknown")}
       </Badge>
     );
   }
@@ -63,10 +72,13 @@ function DataAgeBadge({
       : hours < 6
         ? t("crafting.dataAge.ok", { hours: hours.toFixed(1) })
         : t("crafting.dataAge.stale", { hours: hours.toFixed(1) });
+  const compactLabel = `${hours.toFixed(1)}h`;
   return (
-    <Badge variant="outline" className={`gap-1 ${tone}`}>
-      <Clock className="h-3 w-3" />
-      {label}
+    <Badge variant="outline" className={`gap-1 ${tone} ${base}`} title={label}>
+      <Clock className={compact ? "h-2.5 w-2.5 shrink-0" : "h-3 w-3"} />
+      <span className={compact ? "truncate" : undefined}>
+        {compact ? compactLabel : label}
+      </span>
     </Badge>
   );
 }
@@ -371,13 +383,13 @@ export function CraftingPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
                       {t("crafting.labels.cityBuy")}
                       <select
                         value={cityBuy}
                         onChange={(e) => setCityBuy(e.target.value)}
-                        className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
+                        className="h-10 w-full min-w-0 rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
                       >
                         {BUY_CITIES.map((city) => (
                           <option key={city} value={city}>
@@ -396,7 +408,7 @@ export function CraftingPage() {
                             /* keep auto 0 */
                           }
                         }}
-                        className="h-10 w-full rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
+                        className="h-10 w-full min-w-0 rounded-xl border border-border/40 bg-background/70 px-3 text-sm font-semibold"
                       >
                         {SELL_CITIES.map((city) => (
                           <option key={city} value={city}>
@@ -413,7 +425,7 @@ export function CraftingPage() {
                         max={90}
                         value={focusReturnPct}
                         onChange={(e) => setFocusReturnPct(Number(e.target.value || 0))}
-                        className="bg-background/70"
+                        className="w-full min-w-0 bg-background/70"
                       />
                     </label>
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
@@ -424,7 +436,7 @@ export function CraftingPage() {
                         max={100}
                         value={journalBonusPct}
                         onChange={(e) => setJournalBonusPct(Number(e.target.value || 0))}
-                        className="bg-background/70"
+                        className="w-full min-w-0 bg-background/70"
                       />
                     </label>
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
@@ -441,7 +453,7 @@ export function CraftingPage() {
                             e.target.value === "" ? "" : Number(e.target.value),
                           )
                         }
-                        className="bg-background/70"
+                        className="w-full min-w-0 bg-background/70"
                       />
                     </label>
                     <label className="space-y-1 text-xs font-bold text-muted-foreground">
@@ -451,7 +463,7 @@ export function CraftingPage() {
                         min={0}
                         value={craftingFee}
                         onChange={(e) => setCraftingFee(Number(e.target.value || 0))}
-                        className="bg-background/70"
+                        className="w-full min-w-0 bg-background/70"
                       />
                     </label>
                   </div>
@@ -659,33 +671,33 @@ export function CraftingPage() {
                       name_en: row.name_en,
                     })
                   }
-                  className="rounded-2xl border border-border/30 bg-background/40 p-4 text-left transition hover:border-primary/40 hover:bg-background/70"
+                  className="flex min-w-0 flex-col gap-3 overflow-hidden rounded-2xl border border-border/30 bg-background/40 p-4 text-left transition hover:border-primary/40 hover:bg-background/70"
                 >
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={getItemImageUrl(row.item)}
-                        alt=""
-                        className="h-10 w-10 rounded-lg bg-black/40"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black">
-                          {displayName(row.name_pt, row.name_en, row.item)}
-                        </p>
-                        <p className="font-mono text-[10px] text-muted-foreground">
-                          {row.item}
-                        </p>
-                      </div>
+                  <div className="flex min-w-0 items-start gap-3">
+                    <img
+                      src={getItemImageUrl(row.item)}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-lg bg-black/40"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black">
+                        {displayName(row.name_pt, row.name_en, row.item)}
+                      </p>
+                      <p className="truncate font-mono text-[10px] text-muted-foreground">
+                        {row.item}
+                      </p>
                     </div>
-                    <DataAgeBadge hours={row.data_age_hours} t={t} />
                   </div>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <div className="min-w-0">
+                    <DataAgeBadge hours={row.data_age_hours} t={t} compact />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 overflow-hidden">
+                    <div className="min-w-0 overflow-hidden">
+                      <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
                         {t("crafting.metrics.estimatedProfit")}
                       </p>
                       <p
-                        className={`text-xl font-black ${
+                        className={`truncate text-lg font-black sm:text-xl ${
                           row.profit >= 0 ? "text-emerald-400" : "text-red-400"
                         }`}
                       >
@@ -693,14 +705,16 @@ export function CraftingPage() {
                         {row.profit.toLocaleString(numberLocale)}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <Badge className="bg-primary/15 text-primary">
+                    <div className="min-w-0 overflow-hidden text-right">
+                      <Badge className="max-w-full truncate bg-primary/15 text-primary">
                         ROI {row.roi.toFixed(1)}%
                       </Badge>
                       {row.silver_per_focus != null && (
-                        <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-sky-300">
-                          <Sparkles className="h-3 w-3" />
-                          {row.silver_per_focus.toLocaleString(numberLocale)} / foco
+                        <p className="mt-1 flex items-center justify-end gap-1 truncate text-[10px] text-sky-300">
+                          <Sparkles className="h-3 w-3 shrink-0" />
+                          <span className="truncate">
+                            {row.silver_per_focus.toLocaleString(numberLocale)} / foco
+                          </span>
                         </p>
                       )}
                     </div>
