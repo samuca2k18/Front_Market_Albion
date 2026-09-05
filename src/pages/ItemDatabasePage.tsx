@@ -41,6 +41,7 @@ import { parseApiError } from "@/api/client";
 // TYPE_TABS is now generated inside the component with i18n (see TYPE_TABS_I18N)
 
 
+// value 0 = "all tiers"; backend already excludes T0/vanity by default (no T0 chip).
 const TIER_OPTIONS = [
   { value: 0, key: "tierAll" },
   { value: 3, label: "T3" },
@@ -134,7 +135,7 @@ function ItemCard({
 }
 
 export function ItemDatabasePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeType, setActiveType] = useState<ItemType>("weapon");
   const [selectedTier, setSelectedTier] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -143,6 +144,8 @@ export function ItemDatabasePage() {
   const [detailItem, setDetailItem] = useState<OpenAlbionItem | null>(null);
   const [comparisonList, setComparisonList] = useState<OpenAlbionItem[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const catalogLang = i18n.language?.toLowerCase().startsWith("en") ? "en_us" as const : "pt_br" as const;
 
   // Build TYPE_TABS dynamically with i18n
   const TYPE_TABS_I18N = [
@@ -172,8 +175,8 @@ export function ItemDatabasePage() {
 
   // Fetch categories
   const categoriesQuery = useQuery({
-    queryKey: ["catalog-categories", activeType],
-    queryFn: () => fetchCategories(activeType),
+    queryKey: ["catalog-categories", activeType, catalogLang],
+    queryFn: () => fetchCategories(activeType, { lang: catalogLang }),
     staleTime: 1000 * 60 * 60, // 1h cache
     retry: 1,
     refetchOnWindowFocus: false,
@@ -181,11 +184,12 @@ export function ItemDatabasePage() {
 
   // Fetch items
   const itemsQuery = useQuery({
-    queryKey: ["catalog-items", activeType, selectedTier, selectedCategoryId],
+    queryKey: ["catalog-items", activeType, selectedTier, selectedCategoryId, catalogLang],
     queryFn: () =>
       fetchItemsByType(activeType, {
         tier: selectedTier || undefined,
         category_id: selectedCategoryId,
+        lang: catalogLang,
       }),
     staleTime: 1000 * 60 * 60,
     retry: 1,

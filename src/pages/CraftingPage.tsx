@@ -253,8 +253,17 @@ export function CraftingPage() {
               </p>
             </div>
           ) : !recipe ? (
-            <div className="rounded-3xl border-2 border-amber-500/20 bg-amber-500/5 p-12 text-center">
-              <p className="font-bold text-amber-500">{t("crafting.noRecipeFound")}</p>
+            <div className="flex h-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 p-12 text-center">
+              <Hammer className="mb-4 h-14 w-14 text-amber-500/40" />
+              <h3 className="mb-2 text-xl font-black text-foreground">
+                {t("crafting.recipeUnavailableTitle")}
+              </h3>
+              <p className="mb-3 max-w-md text-sm font-medium text-muted-foreground">
+                {t("crafting.recipeUnavailableDescription")}
+              </p>
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-500/80">
+                {t("crafting.noRecipeFound")}
+              </p>
             </div>
           ) : !calculation ? (
             <div className="rounded-3xl border-2 border-red-500/20 bg-red-500/5 p-12 text-center">
