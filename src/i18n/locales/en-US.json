@@ -285,7 +285,7 @@
     "emptyStateTitle": "No item selected",
     "emptyStateDescription": "Choose a consumable to calculate cost and return by city.",
     "loadingMessage": "Processing recipe and market data...",
-    "noRecipeFound": "No recipe found for this item on OpenAlbion.",
+    "noRecipeFound": "Crafting data is not available yet.",
     "calculationError": "Could not calculate the values.",
     "yieldBaseBadge": "Base yield: {{value}}x",
     "noUniqueName": "no unique_name",
@@ -311,7 +311,9 @@
       "estimatedProfit": "Estimated profit",
       "roiPrefix": "ROI"
     },
-    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}."
+    "regionNotice": "Active region: {{region}}. Materials: {{cityBuy}} — Sell: {{citySell}}.",
+    "recipeUnavailableTitle": "Crafting unavailable for now",
+    "recipeUnavailableDescription": "Craft recipes are not in the local catalog yet. Soon you will be able to calculate cost and profit here — for now this page lists consumables but does not invent recipes."
   },
   "itemDatabase": {
     "title": "Item Database",

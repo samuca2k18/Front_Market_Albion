@@ -44,6 +44,8 @@ export interface OpenAlbionItemQueryParams {
   lang?: 'pt_br' | 'en_us';
   limit?: number;
   offset?: number;
+  /** Default false on backend — omit unless browsing vanity/tools. */
+  include_vanity?: boolean;
 }
 
 export type ItemType = 'weapon' | 'armor' | 'accessory' | 'consumable';
@@ -52,10 +54,13 @@ export type ItemType = 'weapon' | 'armor' | 'accessory' | 'consumable';
 
 export async function fetchCategories(
   type?: ItemType,
+  opts?: { lang?: 'pt_br' | 'en_us'; include_vanity?: boolean },
 ): Promise<OpenAlbionCategoriesResponse> {
   try {
-    const params: Record<string, string> = {};
+    const params: Record<string, string | boolean> = {};
     if (type) params.type = type;
+    if (opts?.lang) params.lang = opts.lang;
+    if (opts?.include_vanity != null) params.include_vanity = opts.include_vanity;
     const { data } = await api.get<OpenAlbionCategoriesResponse>(
       '/catalog/categories',
       { params },

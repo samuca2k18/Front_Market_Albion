@@ -58,6 +58,13 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
     queryFn: () => fetchAlbionPrices([uniqueName], undefined, undefined, region),
     enabled: !!uniqueName,
     staleTime: 1000 * 60 * 2,
+    // Guests hitting protected price routes get 401 — do not retry-spam.
+    retry: (failureCount, error) => {
+      const status = (error as { status?: number; response?: { status?: number } })?.status
+        ?? (error as { response?: { status?: number } })?.response?.status;
+      if (status === 401) return false;
+      return failureCount < 1;
+    },
   });
 
   const detailQuery = useQuery({
@@ -269,6 +276,17 @@ export function ItemDetailModal({ item, itemType, onClose }: ItemDetailModalProp
                   <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">
                     Buscando preços...
                   </span>
+                </div>
+              ) : (() => {
+                  const err = pricesQuery.error as { status?: number; response?: { status?: number } } | null;
+                  const status = err?.status ?? err?.response?.status;
+                  return status === 401;
+                })() ? (
+                <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 text-center">
+                  <Info className="w-4 h-4 text-amber-400" />
+                  <p className="text-[11px] font-bold text-amber-400">
+                    {t("nav.login")}: faça login para ver preços das cidades.
+                  </p>
                 </div>
               ) : cityPrices.length === 0 ? (
                 <div className="text-center py-6 px-4 rounded-xl bg-muted/10 border border-border/20">
