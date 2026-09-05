@@ -88,9 +88,8 @@ export function PriceGridPage() {
   }, [selected]);
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen space-y-6 bg-background py-10 pb-16">
       <SEO title={t("priceGrid.title")} />
-      <div className="app-container space-y-6 py-10">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight lg:text-4xl">
@@ -240,7 +239,7 @@ export function PriceGridPage() {
             <table className="min-w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border/30 bg-muted/20">
-                  <th className="sticky left-0 z-10 bg-card/95 px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest backdrop-blur">
+                  <th className="sticky left-0 z-20 min-w-[140px] max-w-[160px] bg-background px-3 py-3 text-left text-[10px] font-black uppercase tracking-widest shadow-[4px_0_8px_-4px_rgba(0,0,0,0.45)] sm:min-w-[180px] sm:max-w-[220px] sm:px-4">
                     {t("priceGrid.item")}
                   </th>
                   {cities.map((city) => (
@@ -256,14 +255,20 @@ export function PriceGridPage() {
               <tbody>
                 {gridQuery.data!.items.map((row) => (
                   <tr key={row.item_id} className="border-b border-border/20 hover:bg-background/40">
-                    <td className="sticky left-0 z-10 bg-card/95 px-4 py-3 backdrop-blur">
-                      <div className="flex min-w-[180px] items-center gap-2">
-                        <img src={getItemImageUrl(row.item_id)} alt="" className="h-8 w-8" />
-                        <div>
-                          <p className="font-bold">
+                    <td className="sticky left-0 z-20 min-w-[140px] max-w-[160px] bg-background px-3 py-3 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.45)] sm:min-w-[180px] sm:max-w-[220px] sm:px-4">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <img
+                          src={getItemImageUrl(row.item_id)}
+                          alt=""
+                          className="h-8 w-8 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate font-bold">
                             {i18n.language.startsWith("en") ? row.name_en : row.name_pt}
                           </p>
-                          <p className="font-mono text-[10px] text-muted-foreground">{row.item_id}</p>
+                          <p className="hidden truncate font-mono text-[10px] text-muted-foreground sm:block">
+                            {row.item_id}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -312,7 +317,6 @@ export function PriceGridPage() {
             </table>
           </div>
         )}
-      </div>
     </div>
   );
 }
