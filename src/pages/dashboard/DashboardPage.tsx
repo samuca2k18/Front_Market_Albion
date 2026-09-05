@@ -185,7 +185,7 @@ export function DashboardPage() {
       <SEO title={t("navigation.dashboard")} />
       <div className="app-container py-8 space-y-10">
         {/* Top Section: Quick Summary, Gold, and Add Item */}
-        <section className="grid gap-6 md:grid-cols-3">
+        <section className="grid gap-6 lg:grid-cols-3">
           <QuickSummary
             trackedCount={trackedItems.length}
             activePricesCount={myPrices.length}
@@ -199,9 +199,9 @@ export function DashboardPage() {
         </section>
 
         {/* Bottom: lista + preços / gráfico + alertas */}
-        <section className="grid gap-6 lg:grid-cols-3 items-start pb-8">
+        <section className="grid gap-6 lg:grid-cols-5 items-start pb-8">
           {/* Itens cadastrados */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             <ItemsListSection
               trackedItems={trackedItems}
               isItemsLoading={itemsQueryIsLoading}
@@ -221,7 +221,7 @@ export function DashboardPage() {
           </div>
 
           {/* Preços em tempo real + histórico */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <PricesTableSection
               myPrices={myPrices}
               myPricesQueryIsLoading={myPricesQuery.isLoading}

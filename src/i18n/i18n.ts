@@ -9,9 +9,17 @@ const resources = {
   'en-US': { translation: enUS },
 };
 
-// Force pt-BR until EN translations cover landing/auth chrome fully.
-// LanguageSwitcher is hidden in HeaderActions/MobileMenu for the same reason.
-const defaultLanguage = 'pt-BR';
+function readSavedLanguage(): 'pt-BR' | 'en-US' {
+  try {
+    const saved = localStorage.getItem('app_language');
+    if (saved === 'en-US' || saved === 'pt-BR') return saved;
+  } catch {
+    // ignore
+  }
+  return 'pt-BR';
+}
+
+const defaultLanguage = typeof window !== 'undefined' ? readSavedLanguage() : 'pt-BR';
 
 i18n
   .use(initReactI18next)
@@ -25,7 +33,10 @@ i18n
   });
 
 if (typeof document !== 'undefined') {
-  document.documentElement.lang = 'pt-BR';
+  document.documentElement.lang = defaultLanguage;
+  i18n.on('languageChanged', (lng) => {
+    document.documentElement.lang = lng;
+  });
 }
 
 export default i18n;

@@ -51,9 +51,9 @@ export function QuickSummary({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
           {/* Tracked Items */}
-          <div className="flex flex-col p-4 rounded-xl border border-border/40 bg-background/40 hover:bg-background/60 hover:border-primary/20 transition-all duration-300 group/card">
+          <div className="flex flex-col p-4 md:p-5 rounded-xl border border-border/40 bg-background/40 hover:bg-background/60 hover:border-primary/20 transition-all duration-300 group/card">
             <div className="flex items-center gap-2 mb-2 text-muted-foreground">
               <BarChart3 className="w-3.5 h-3.5 group-hover/card:text-primary transition-colors" />
               <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -66,7 +66,7 @@ export function QuickSummary({
           </div>
 
           {/* Active Prices */}
-          <div className={`flex flex-col p-4 rounded-xl border transition-all duration-300 group/card ${
+          <div className={`flex flex-col p-4 md:p-5 rounded-xl border transition-all duration-300 group/card ${
             liveBumpsCount > 0
               ? "border-emerald-400/40 bg-emerald-500/10 shadow-[0_0_24px_rgba(16,185,129,0.2)]"
               : "border-primary/20 bg-primary/5 hover:bg-primary/10"
@@ -82,7 +82,7 @@ export function QuickSummary({
             </p>
             {liveBumpsCount > 0 && (
               <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-emerald-300/90">
-                {liveBumpsCount} update(s) ao vivo
+                {t("dashboard.liveUpdates", { count: liveBumpsCount })}
               </p>
             )}
           </div>
@@ -90,14 +90,14 @@ export function QuickSummary({
           {/* Opportunities */}
           <Link
             to="/opportunities"
-            className="flex flex-col p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-all group/opp relative overflow-hidden"
+            className="flex flex-col p-5 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-all group/opp relative overflow-hidden"
           >
             {/* Shimmer effect on hover */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/5 to-transparent -translate-x-full group-hover/opp:translate-x-full transition-transform duration-700" />
 
             <div className="flex justify-between items-center mb-2 relative z-10">
               <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">
-                Oportunidades
+                {t("dashboard.opportunitiesLabel")}
               </span>
               <TrendingUp
                 size={14}
@@ -109,11 +109,11 @@ export function QuickSummary({
                 <AnimatedNumber value={opportunityCount} />
               </p>
               <span className="text-xs font-medium text-blue-400/60 uppercase">
-                vias
+                {t("dashboard.routesLabel")}
               </span>
             </div>
             <div className="mt-2 text-[10px] font-bold text-blue-400/40 group-hover/opp:text-blue-400/80 transition-colors uppercase tracking-widest relative z-10">
-              Ver Detalhes →
+              {t("dashboard.viewDetails")}
             </div>
           </Link>
         </div>

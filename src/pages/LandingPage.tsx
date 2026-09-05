@@ -1,5 +1,6 @@
 // src/pages/LandingPage.tsx
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { Button } from "../components/ui/button";
@@ -66,6 +67,7 @@ const PREVIEW_PLACEHOLDER_SVG =
 
 // Gold ticker at the top
 function GoldTicker() {
+  const { t } = useTranslation();
   const { data } = useQuery({
     queryKey: ["gold-ticker"],
     queryFn: () => fetchGoldPrices("europe"),
@@ -85,7 +87,7 @@ function GoldTicker() {
             <div className="flex items-center gap-2">
               <Coins className="w-3.5 h-3.5 text-amber-500" />
               <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
-                Gold
+                {t("landing.gold")}
               </span>
               <span className="text-sm font-black text-amber-400">
                 {data.current!.price.toLocaleString("pt-BR")}
@@ -108,21 +110,21 @@ function GoldTicker() {
             <div className="flex items-center gap-2">
               <MapPin className="w-3 h-3 text-primary/60" />
               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                6 Cidades • 3 Regiões
+                {t("landing.citiesRegions")}
               </span>
             </div>
             <div className="h-3 w-px bg-border/20" />
             <div className="flex items-center gap-2">
               <Sword className="w-3 h-3 text-red-400/60" />
               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                Killboard Live
+                {t("landing.killboardLive")}
               </span>
             </div>
             <div className="h-3 w-px bg-border/20" />
             <div className="flex items-center gap-2">
               <Database className="w-3 h-3 text-blue-400/60" />
               <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                Item Database
+                {t("landing.itemDatabase")}
               </span>
             </div>
             <div className="h-3 w-px bg-border/20" />
@@ -134,6 +136,7 @@ function GoldTicker() {
 }
 
 export function LandingPage() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
   const { data: pricesData, isLoading: pricesLoading } = useQuery({
@@ -146,10 +149,10 @@ export function LandingPage() {
   const previewItems = HERO_PREVIEW_ITEMS.map((itemName) => {
     if (!isAuthenticated) {
       return {
-        city: "Faça login",
+        city: t("landing.loginRequired"),
         item: itemName,
         price: "—",
-        trend: "Login",
+        trend: t("landing.loginTrend"),
         href: "/login",
       };
     }
@@ -172,7 +175,7 @@ export function LandingPage() {
     }
 
     return {
-      city: pricesLoading ? "Carregando..." : "Sem dados",
+      city: pricesLoading ? t("landing.loading") : t("landing.noData"),
       item: itemName,
       price: "—",
       trend: "—",
@@ -229,7 +232,7 @@ export function LandingPage() {
                   className="h-14 px-8 rounded-2xl border-border/40 bg-background/40 backdrop-blur-md font-black uppercase tracking-widest hover:bg-white/5 transition-all"
                   asChild
                 >
-                  <Link to="/items">Item Database</Link>
+                  <Link to="/items">{t("landing.itemDatabase")}</Link>
                 </Button>
               </div>
 

@@ -10,7 +10,9 @@
     "search": "Search",
     "clear": "Clear",
     "close": "Close",
-    "save": "Save"
+    "save": "Save",
+    "loadingPage": "Loading page...",
+    "loadingSubtitle": "This may take just a few seconds."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -45,7 +47,8 @@
     "logout": "Logout",
     "toggleMenu": "Toggle navigation",
     "login": "Sign in",
-    "signup": "Create account"
+    "signup": "Create account",
+    "settings": "Settings"
   },
   "footer": {
     "description": "Price monitoring, history, and market intelligence for Albion Online players and traders.",
@@ -133,7 +136,13 @@
     "freshnessUnknown": "-",
     "freshnessNoDate": "No date",
     "freshnessMinutes": "{{value}}min",
-    "freshnessHours": "{{value}}h"
+    "freshnessHours": "{{value}}h",
+    "opportunitiesLabel": "Opportunities",
+    "routesLabel": "routes",
+    "viewDetails": "View Details →",
+    "liveUpdates": "{{count}} live update(s)",
+    "noItemsYet": "No items added yet.",
+    "addFirstItemHint": "Start by adding one above!"
   },
   "prices": {
     "title": "My Item Prices",
@@ -183,7 +192,21 @@
       "Access the smart dashboard in real time",
       "Favorite items synced in the cloud",
       "History to understand market behavior"
-    ]
+    ],
+    "chip": "Albion Market • Login",
+    "welcomeBack": "Welcome back",
+    "welcomePanel": "to your dashboard",
+    "heroDescription": "Sign in to track your items, compare cities, and catch the best Albion Online market opportunities.",
+    "accountCreated": "Account created successfully! We sent a verification link to",
+    "yourEmail": "your email",
+    "confirmBeforeLogin": "Confirm your email before signing in.",
+    "emailUnverified": "Your email is not verified yet. Confirm the link sent to your inbox.",
+    "resendVerification": "Resend verification email",
+    "resending": "Resending...",
+    "resendSuccess": "If the email exists, we will send a new verification link.",
+    "resendError": "Could not resend the email.",
+    "promptEmail": "Enter your registered email:",
+    "usernamePlaceholder": "albion.name"
   },
   "signup": {
     "title": "Create account",
@@ -205,7 +228,15 @@
       "Items synced per user",
       "Professional design for quick decisions",
       "Price history integrated into the dashboard"
-    ]
+    ],
+    "chip": "Albion Market • Sign up",
+    "heroTitle": "Start monitoring",
+    "heroHighlight": "your market",
+    "heroDescription": "Create your account to save favorite items, compare cities, and understand how prices behave over time.",
+    "usernamePlaceholder": "albion.name",
+    "emailPlaceholder": "you@example.com",
+    "confirmPasswordPlaceholder": "Repeat password",
+    "invalidUsernameChars": "Only letters, numbers, _, -, @ and ."
   },
   "search": {
     "loading": "Loading...",
@@ -213,7 +244,14 @@
     "noResults": "No items found.",
     "placeholder": "Search item...",
     "resultsTitle": "Search Results",
-    "openModal": "Open results"
+    "openModal": "Open results",
+    "commandTitle": "Albion Command Search",
+    "shortcutHint": "Press Ctrl+K to open quickly",
+    "placeholderLong": "Search items, weapons, armor...",
+    "emptyHint": "Type to search Albion Online items",
+    "navHint": "Use arrows to navigate - Enter to open",
+    "triggerPlaceholder": "Search...",
+    "footerBrand": "Albion Market Search"
   },
   "dataClient": {
     "badge": "Community",
@@ -293,7 +331,10 @@
       "armor": "Armor",
       "accessory": "Accessories",
       "consumable": "Consumables"
-    }
+    },
+    "loadErrorTitle": "Failed to load catalog",
+    "loadErrorFallback": "Unexpected error fetching items.",
+    "retry": "Try again"
   },
   "comparison": {
     "title": "Comparison ({{count}}/{{max}})",
@@ -309,5 +350,15 @@
     "noPrice": "no price",
     "ipValue": "{{value}} IP",
     "bestPriceInline": "{{price}} ({{city}})"
+  },
+  "landing": {
+    "loginRequired": "Sign in",
+    "loading": "Loading...",
+    "noData": "No data",
+    "gold": "Gold",
+    "killboardLive": "Killboard Live",
+    "itemDatabase": "Item Database",
+    "citiesRegions": "6 Cities • 3 Regions",
+    "loginTrend": "Login"
   }
 }

@@ -1,11 +1,15 @@
 // src/components/common/LoadingScreen.tsx
+import { useTranslation } from 'react-i18next';
 import './common.css';
 
 interface LoadingScreenProps {
   label?: string;
 }
 
-export function LoadingScreen({ label = 'Carregando...' }: LoadingScreenProps) {
+export function LoadingScreen({ label }: LoadingScreenProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t('common.loading');
+
   return (
     <div className="loading-overlay">
       <div className="loading-backdrop" />
@@ -14,14 +18,14 @@ export function LoadingScreen({ label = 'Carregando...' }: LoadingScreenProps) {
         className="loading-card"
         role="status"
         aria-live="polite"
-        aria-label={label}
+        aria-label={resolvedLabel}
       >
         <div className="loading-spinner" />
 
         <div className="loading-text">
-          <span className="loading-label">{label}</span>
+          <span className="loading-label">{resolvedLabel}</span>
           <span className="loading-subtitle">
-            Isso pode levar apenas alguns segundos.
+            {t('common.loadingSubtitle')}
           </span>
         </div>
       </div>

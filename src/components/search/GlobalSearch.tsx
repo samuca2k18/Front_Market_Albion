@@ -16,7 +16,7 @@ export function GlobalSearch() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const debouncedQuery = useDebounce(query, 300);
   const hasQuery = debouncedQuery.trim().length >= 2;
 
@@ -128,10 +128,10 @@ export function GlobalSearch() {
               </div>
               <div className="leading-none">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/75">
-                  Albion Command Search
+                  {t("search.commandTitle")}
                 </p>
                 <p className="text-[10px] text-muted-foreground/60">
-                  Pressione Ctrl+K para abrir rapido
+                  {t("search.shortcutHint")}
                 </p>
               </div>
             </div>
@@ -151,7 +151,7 @@ export function GlobalSearch() {
                 setSelectedIndex(0);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Buscar itens, armas, armaduras..."
+              placeholder={t("search.placeholderLong")}
               className="flex-1 bg-transparent text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground/45"
             />
             {loading && (
@@ -171,7 +171,7 @@ export function GlobalSearch() {
               <div className="py-12 text-center">
                 <Tag className="mx-auto mb-3 h-8 w-8 text-muted-foreground/20" />
                 <p className="text-sm font-medium text-muted-foreground/60">
-                  Nenhum item encontrado
+                  {t("search.noResults")}
                 </p>
               </div>
             )}
@@ -180,10 +180,10 @@ export function GlobalSearch() {
               <div className="py-12 text-center">
                 <Command className="mx-auto mb-3 h-8 w-8 text-muted-foreground/20" />
                 <p className="text-sm font-medium text-muted-foreground/60">
-                  Digite para buscar itens do Albion Online
+                  {t("search.emptyHint")}
                 </p>
                 <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">
-                  Use as setas para navegar - Enter para abrir
+                  {t("search.navHint")}
                 </p>
               </div>
             )}
@@ -237,7 +237,7 @@ export function GlobalSearch() {
 
           <div className="flex items-center justify-between border-t border-border/20 px-5 py-3">
             <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/35">
-              Albion Market Search
+              {t("search.footerBrand")}
             </span>
             <kbd className="rounded border border-border/40 bg-background/60 px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground">
               Ctrl+K
@@ -250,6 +250,7 @@ export function GlobalSearch() {
 }
 
 export function GlobalSearchTrigger() {
+  const { t } = useTranslation();
   const handleClick = () => {
     window.dispatchEvent(new Event(GLOBAL_SEARCH_EVENT));
   };
@@ -261,7 +262,7 @@ export function GlobalSearchTrigger() {
     >
       <Search className="h-3.5 w-3.5 text-muted-foreground/60 transition-colors group-hover:text-primary" />
       <span className="text-[11px] font-medium text-muted-foreground/50">
-        Buscar...
+        {t("search.triggerPlaceholder")}
       </span>
       <kbd className="hidden rounded border border-border/40 bg-background/60 px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground/45 lg:inline">
         Ctrl+K
