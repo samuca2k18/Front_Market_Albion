@@ -9,7 +9,7 @@ import {
   fetchItemsByType,
   type ItemType,
   type OpenAlbionItem,
-} from "@/api/openalbion";
+} from "@/api/catalog";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   Card,
@@ -172,7 +172,7 @@ export function ItemDatabasePage() {
 
   // Fetch categories
   const categoriesQuery = useQuery({
-    queryKey: ["openalbion-categories", activeType],
+    queryKey: ["catalog-categories", activeType],
     queryFn: () => fetchCategories(activeType),
     staleTime: 1000 * 60 * 60, // 1h cache
     retry: 1,
@@ -181,7 +181,7 @@ export function ItemDatabasePage() {
 
   // Fetch items
   const itemsQuery = useQuery({
-    queryKey: ["openalbion-items", activeType, selectedTier, selectedCategoryId],
+    queryKey: ["catalog-items", activeType, selectedTier, selectedCategoryId],
     queryFn: () =>
       fetchItemsByType(activeType, {
         tier: selectedTier || undefined,
